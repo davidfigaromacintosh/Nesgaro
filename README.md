@@ -2,4 +2,4 @@
 
 ![alt text][logo]
 
-# **_NESGARO_** ~ a simple C++ NES emulator
+# **A simple NES emulator written in C++**
