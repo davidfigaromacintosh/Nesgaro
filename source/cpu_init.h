@@ -103,7 +103,7 @@
 #define ORA_ABS_Y	0x19
 #define ORA_IND_X	0x01
 #define ORA_IND_Y	0x11
-#define TAX			0xaa	//Instrukcje rejestrów
+#define TAX			0xaa	//Instrukcje rejestrÃ³w
 #define TXA			0x8a
 #define	DEX			0xca
 #define	INX			0xe8
@@ -151,7 +151,7 @@
 #define	STY_ZP_X	0x94
 #define	STY_ABS		0x8c
 
-//Maski wszystkich "legalnych" instrukcji (PS: okaza³o siê, ¿e nie bêdê tego potrzebowa³, wiêc okomentowa³em)
+//Maski wszystkich "legalnych" instrukcji (PS: okazaÅ‚o siÄ™, Å¼e nie bÄ™dÄ™ tego potrzebowaÅ‚, wiÄ™c okomentowaÅ‚em)
 /*
 #define ADC_MASK	ADC_ABS&ADC_ABS_X&ADC_ABS_Y&ADC_IMM&ADC_IND_X&ADC_IND_Y&ADC_ZP&ADC_ZP_X	//Maska instrukcji ADC
 #define AND_MASK	AND_ABS&AND_ABS_X&AND_ABS_Y&AND_IMM&ADC_IND_X&AND_IND_Y&AND_ZP&AND_ZP_X	//Maska instrukcji AND
@@ -201,7 +201,12 @@
 #define STY	0x115
 #define ILL	0x200
 
-//Grupy bitów (maska grupy 4 to po prostu 0 wiêc nie definiujemy)
+//Typy przerwaÅ„ (NMI, IRQ, BRK)
+#define	INT_NMI	0
+#define	INT_IRQ	1
+#define	INT_BRK	2
+
+//Grupy bitÃ³w (maska grupy 4 to po prostu 0 wiÄ™c nie definiujemy)
 #define _1A_MASK	0b00011100	//Maska grupy 1A
 #define _1B_MASK	0b00011100	//Maska grupy 1B
 #define _2A_MASK	0b00011000	//Maska grupy 2A
@@ -209,18 +214,18 @@
 #define _3A_MASK	0b00001000	//Maska grupy 3A
 #define _3B_MASK	0b00100000	//Maska grupy 3B
 
-//Nieindeksowane, nie wymagaj¹ dostêpu do pamiêci
+//Nieindeksowane, nie wymagajÄ… dostÄ™pu do pamiÄ™ci
 #define ACCUMULATOR	0	//Accumulator
 #define IMMEDIATE	1	//Immediate
 #define IMPLIED		2	//Implied
 
-//Nieindeksowane, wymagaj¹ dostêpu do pamiêci
+//Nieindeksowane, wymagajÄ… dostÄ™pu do pamiÄ™ci
 #define RELATIVE	3	//Relative
 #define ABSOLUTE	4	//Absolute
 #define ZEROPAGE	5	//Zero-Page
 #define INDIRECT	6	//indirect
 
-//Indeksowane, wymagaj¹ dostêpu do pamiêci
+//Indeksowane, wymagajÄ… dostÄ™pu do pamiÄ™ci
 #define ABSOLUTE_X	7	//Absolute X
 #define	ABSOLUTE_Y	8	//Absolute Y
 #define ZEROPAGE_X	9	//Zero-Page X
@@ -228,33 +233,36 @@
 #define INDIRECT_X	11	//Indexed Indirect (X)
 #define	INDIRECT_Y	12	//Indirect Indexed (Y)
 
-#define ADDRMODE_ERROR 13 //B³¹d odczytu trybu adresowania lub nielegalna instrukcja
+#define ADDRMODE_ERROR 13 //BÅ‚Ä…d odczytu trybu adresowania lub nielegalna instrukcja
 
 /*
-Wszystkie potrzebne informacje znalaz³em tu:
+Wszystkie potrzebne informacje znalazÅ‚em tu:
+https://nesdev.com/6502bugs.txt
+http://www.oxyron.de/html/opcodes02.html
 http://www.emulator101.com/6502-addressing-modes.html
 https://www.cs.otago.ac.nz/cosc243/pdf/6502Poster.pdf
 https://www.atarimax.com/jindroush.atari.org/aopc.html
+https://wiki.nesdev.com/w/index.php/CPU_addressing_modes
 https://link.springer.com/content/pdf/bbm%3A978-1-349-07360-3%2F1.pdf
 http://www.thealmightyguru.com/Games/Hacking/Wiki/index.php/6502_Opcodes
 
 Architektura mikroprocesora Ricoh 2A03 jest prawie identyczna jak
-architektura mikroprocesora MOS Technology 6502 z jednym wyj¹tkiem:
-Ricoh 2A03 nie wspiera trybu dziesiêtnego.
+architektura mikroprocesora MOS Technology 6502 z jednym wyjÄ…tkiem:
+Ricoh 2A03 nie wspiera trybu dziesiÄ™tnego.
 */
 
 //Mikroprocesor Ricol 2A03
 namespace CPU {
 
-	u8 A;	//Akumulator
-	u8 X;	//Rejestr X
-	u8 Y;	//Rejsetr Y
-	u8 P;	//Flagi C, Z, I, D, flaga czwarta i pi¹ta s¹ pozorne, V, N
-	u8 S;	//WskaŸnik stosu
-	u16 PC;	//WskaŸnik programu
+	u8 A;		//Akumulator
+	u8 X;		//Rejestr X
+	u8 Y;		//Rejsetr Y
+	u8 P;		//0bNV1BDIZC (Flagi C, Z, I, D, flaga czwarta i piÄ…ta sÄ… pozorne, V, N)
+	u8 S;		//WskaÅºnik stosu
+	u16 PC;		//WskaÅºnik programu
 	u64 cycles; //Licznik cykli	
 
-	//WskaŸnik do ³añcucha znaków zawieraj¹cego mnemoniki wszystkich 256 instrukcji (nielegalne instrukcje zosta³y nazwane "ILL")
+	//Zawiera mnemoniki wszystkich 256 instrukcji (nielegalne instrukcje zostaÅ‚y nazwane "ILL")
 	u16 opcodeMnemonic[256] = { /*
 
 			00   01   02   03   04   05   06   07   08   09   0A   0B   0C   0D   0E   0F	/*
@@ -279,10 +287,10 @@ namespace CPU {
 	
 	
 
-	//Zwraca dan¹ instrukcjê jako identyfikator
+	//Zwraca danÄ… instrukcjÄ™ jako identyfikator
 	u16 getOpcode(u8 opcode);
 
-	//Zwraca wskaŸnik do ³añcucha znaków z mnemonikiem danej instrukcji (nielegalna instrukcja zwróci mnemonik "ILL")
+	//Zwraca wskaÅºnik do Å‚aÅ„cucha znakÃ³w z mnemonikiem danej instrukcji (nielegalna instrukcja zwrÃ³ci mnemonik "ILL")
 	const char* getOpcodeMnemonic(u8 opcode);
 
 	void init();
@@ -290,6 +298,38 @@ namespace CPU {
 	void reset();
 
 	void NMI();
+	
+	//Zwraca wartoÅ›Ä‡ flagi
+	b getC();
+	b getZ();
+	b getI();
+	b getD();
+	b getV();
+	b getN();
+	
+	//Ustaw flagÄ™ na 1
+	void setC();
+	void setZ();
+	void setI();
+	void setD();
+	void setV();
+	void setN();
+
+	//Ustaw flagÄ™ w zaleÅ¼noÅ›ci od parametru
+	void setC(b flag);
+	void setZ(b flag);
+	void setI(b flag);
+	void setD(b flag);
+	void setV(b flag);
+	void setN(b flag);
+
+	//WyczyÅ›Ä‡ flagÄ™
+	void clrC();
+	void clrZ();
+	void clrI();
+	void clrD();
+	void clrV();
+	void clrN();
 
 /*	u8 opcodeCycle[256] = {
 	
@@ -312,14 +352,14 @@ namespace CPU {
 	
 	};*/
 
-	//Zawiera d³ugoœci cyklów wszystkich 256 instrukcji (nielegalne zwróc¹ 0)
+	//WskaÅºnik do Å‚aÅ„cucha znakÃ³w zaawierajÄ…cego dÅ‚ugoÅ›ci cyklÃ³w wszystkich 256 instrukcji (nielegalne zwrÃ³cÄ… 0)
 	u8 *opcodeCycle = (u8*)
 	"7600035032200460250004602400047066003350422044602500046024000470660003503220346025000460240004706600035042205460250004602400047006003330202044402600444025200500262033302220444025004440242044402600335022204460250004602400047026003350222244602500046024000470";
 
 	//Zwraca ile cykli zajmuje wykonanie danej instrukcji
 	int getOpcodeCycle(u8 opcode);
 
-	/* Wartoœci zwracane przez funkcje:
+	/* WartoÅ›ci zwracane przez funkcje:
 	0 = Accumulator
 	1 = Immediate
 	2 = Implied
@@ -339,19 +379,92 @@ namespace CPU {
 
 	int getOpcodeLength(u8 opcode);
 
-	//Wyœwietla tekst opisuj¹cy tryb adresowania danej instrukcji
+	//WyÅ›wietla tekst opisujÄ…cy tryb adresowania danej instrukcji
 	const char* getOpcodeAddressingModeName(u8 opcode);
 
-	/*
-	//Definicje zadañ dla instrukcji
-	void executeADC();
+	//Ta funkcja sprawdza, czy zostaÅ‚a przekroczona strona. JeÅ›li tak, dodaj +1 do cyklu
+	void checkPageCross(u16 pagea, u16 pageb, u64 value);
 
-	//Tutaj zaczyna siê wykonywanie instrukcji
-	void execute() {
-		u8 addrmode = getOpcodeAddressingMode(PC);
-		u16 opcode = getOpcode(PC);
+	//Ustaw flagi Z i N w zaleÅ¼noÅ›ci od podanego parametru
+	void setFlagsZN(u8 value);
 
+	//ZrÃ³b przerwanie
+	void interrupt(u8 int_type);
+
+	//Wykonaj przeskok
+	void executeBranch(u8 branch_type);
+
+	//Jak na podstawie typu opokdu pobraÄ‡ dane z operandu?
+	u16 getAddressFromType(u8 addrmode, u16 pointer);
+
+	//Definicje zadaÅ„ dla instrukcji
+	//1A - 8 typÃ³w adresacji
+	void executeADC(u8 addrmode);
+	void executeAND(u8 addrmode);
+	void executeCMP(u8 addrmode);
+	void executeEOR(u8 addrmode);
+	void executeLDA(u8 addrmode);
+	void executeORA(u8 addrmode);
+	void executeSBC(u8 addrmode);
+	void executeSTA(u8 addrmode);
+	//1B - 6 typÃ³w adresacji
+	void executeASL(u8 addrmode);
+	void executeLDX(u8 addrmode);
+	void executeLDY(u8 addrmode);
+	void executeLSR(u8 addrmode);
+	void executeROL(u8 addrmode);
+	void executeROR(u8 addrmode);
+	//2A - 4 typÃ³w adresacji
+	void executeDEC(u8 addrmode);
+	void executeINC(u8 addrmode);
+	void executeSTX(u8 addrmode);
+	void executeSTY(u8 addrmode);
+	//2B - 3 typÃ³w adresacji
+	void executeCPX(u8 addrmode);
+	void executeCPY(u8 addrmode);
+	//3A - 2 typÃ³w adresacji
+	void executeBIT(u8 addrmode);
+	//3B - 2 typÃ³w adresacji
+	void executeJMP(u8 addrmode);
+	//4 - 1 typ adresacji
+	void executeBCC();
+	void executeBCS();
+	void executeBEQ();
+	void executeBMI();
+	void executeBNE();
+	void executeBPL();
+	void executeBRK();
+	void executeBVC();
+	void executeBVS();
+	void executeCLC();
+	void executeCLD();
+	void executeCLI();
+	void executeCLV();
+	void executeDEX();
+	void executeDEY();
+	void executeINX();
+	void executeINY();
+	void executeNOP();
+	void executePHA();
+	void executePHP();
+	void executePLA();
+	void executePLP();
+	void executeRTI();
+	void executeRTS();
+	void executeSEC();
+	void executeSED();
+	void executeSEI();
+	void executeTAX();
+	void executeTAY();
+	void executeTSX();
+	void executeTXA();
+	void executeTXS();
+	void executeTYA();
+	void executeJSR();
+
+	void disassemblyC(const char* num);
+
+	//Tutaj zaczyna siÄ™ wykonywanie instrukcji
+	void execute();
 	
-	}
-	*/
 }
