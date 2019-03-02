@@ -1,11 +1,11 @@
 namespace CPU {
 
-	//Zwraca dan� instrukcj� jako identyfikator
+	//Zwraca daną instrukcję jako identyfikator
 	u16 getOpcode(u8 opcode) {
 		return opcodeMnemonic[opcode];
 	}
 
-	//Zwraca wska�nik do �a�cucha znak�w z mnemonikiem danej instrukcji (nielegalna instrukcja zwr�ci mnemonik "ILL")
+	//Zwraca wskaźnik do łańcucha znaków z mnemonikiem danej instrukcji (nielegalna instrukcja zwróci mnemonik "ILL")
 	const char* getOpcodeMnemonic(u8 opcode) {
 		switch (opcodeMnemonic[opcode]) {
 		case ADC: { return "ADC"; }
@@ -85,12 +85,12 @@ namespace CPU {
 
 		PC = 0xc000;
 		S = 0xfd;
-		P = 0x24;
+		P = 0b00110100;
 
 	}
 
 	void reset() {
-		//TODO gdy napisz� menedzera pami�ci
+		//TODO gdy napiszę menedzera pamięci
 	}
 
 	void NMI() {
@@ -102,7 +102,7 @@ namespace CPU {
 		return (int)(opcodeCycle[opcode] - '0');
 	}
 
-	/* Warto�ci zwracane przez funkcje:
+	/* Wartości zwracane przez funkcje:
 	0 = Accumulator
 	1 = Immediate
 	2 = Implied
@@ -396,7 +396,7 @@ namespace CPU {
 		}
 	}
 
-	//Wy�wietla tekst opisuj�cy tryb adresowania danej instrukcji
+	//Wyświetla tekst opisujący tryb adresowania danej instrukcji
 	const char* getOpcodeAddressingModeName(u8 opcode) {
 		switch (getOpcodeAddressingMode(opcode)) {
 		case ACCUMULATOR: {
@@ -444,16 +444,649 @@ namespace CPU {
 		}
 	}
 
-	/*
-	//Definicje zada� dla instrukcji
-	void executeADC();
+	//Ta funkcja sprawdza, czy została przekroczona strona. Jeśli tak, dodaj +1 do cyklu
+	void checkPageCross(u16 pagea, u16 pageb, u64 value) {
 
-	//Tutaj zaczyna si� wykonywanie instrukcji
-	void execute() {
-		u8 addrmode = getOpcodeAddressingMode(PC);
-		u16 opcode = getOpcode(PC);
+		if ((pagea & 0xff00) != (pageb & 0xff00)) {
+			cycles += value; //Jeżeli strona zostanie przkroczona, dodaj +value do cyklu
+		}
+	}
 
+	//Ustaw flagi Z i N w zależności od podanego parametru
+	void setFlagsZN(u8 value) {
+		setZ(!value);
+		setN(!!(value & 0x80));
+	}
+
+	//Zwraca wartość flagi
+	b getC() {
+		return (P & 0b00000001);
+	}
+	b getZ() {
+		return ((P & 0b00000010) >> 1);
+	}
+	b getI() {
+		return ((P & 0b00000100) >> 2);
+	}
+	b getD() {
+		return ((P & 0b00001000) >> 3);
+	}
+	b getV() {
+		return ((P & 0b01000000) >> 6);
+	}
+	b getN() {
+		return ((P & 0b10000000) >> 7);
+	}
+
+	//Ustaw flagę na 1
+	void setC() {
+		P |= 0b00000001;
+	}
+	void setZ() {
+		P |= 0b00000010;
+	}
+	void setI() {
+		P |= 0b00000100;
+	}
+	void setD() {
+		P |= 0b00001000;
+	}
+	void setV() {
+		P |= 0b01000000;
+	}
+	void setN() {
+		P |= 0b10000000;
+	}
+
+	//Ustaw flagę w zależności od parametru
+	void setC(b flag) {
+
+		u8 tf =
+			(flag) |
+			getZ() << 1 |
+			getI() << 2 |
+			getD() << 3 |
+			P & 0b00010000 |
+			0b00100000 |
+			getV() << 6 |
+			getN() << 7;
+
+		P = tf;
+		return;
+	}
+	void setZ(b flag) {
+
+		u8 tf =
+			getC() |
+			(0xff & flag) << 1 |
+			getI() << 2 |
+			getD() << 3 |
+			P & 0b00010000 |
+			0b00100000 |
+			getV() << 6 |
+			getN() << 7;
+
+		P = tf;
+		return;
+	}
+	void setI(b flag) {
+
+		u8 tf =
+			getC() |
+			getZ() << 1 |
+			(0xff & flag) << 2 |
+			getD() << 3 |
+			P & 0b00010000 |
+			0b00100000 |
+			getV() << 6 |
+			getN() << 7;
+
+		P = tf;
+		return;
+	}
+	void setD(b flag) {
+
+		u8 tf =
+			getC() |
+			getZ() << 1 |
+			getI() << 2 |
+			(0xff & flag) << 3 |
+			P & 0b00010000 |
+			0b00100000 |
+			getV() << 6 |
+			getN() << 7;
+
+		P = tf;
+		return;
+	}
+	void setV(b flag) {
+
+		u8 tf =
+			getC() |
+			getZ() << 1 |
+			getI() << 2 |
+			getD() << 3 |
+			P & 0b00010000 |
+			0b00100000 |
+			(0xff & flag) << 6 |
+			getN() << 7;
+
+		P = tf;
+		return;
+	}
+	void setN(b flag) {
+
+		u8 tf =
+			getC() |
+			getZ() << 1 |
+			getI() << 2 |
+			getD() << 3 |
+			P & 0b00010000 |
+			0b00100000 |
+			getV() << 6 |
+			(0xff & flag) << 7;
+
+		P = tf;
+		return;
+	}
+
+	//Wyczyść flagę
+	void clrC() {
+		P &= 0b11111110;
+	}
+	void clrZ() {
+		P &= 0b11111101;
+	}
+	void clrI() {
+		P &= 0b11111011;
+	}
+	void clrD() {
+		P &= 0b11110111;
+	}
+	void clrV() {
+		P &= 0b10111111;
+	}
+	void clrN() {
+		P &= 0b01111111;
+	}
+
+	//Zrób przerwanie
+	void interrupt(u8 int_type) {
+
+		// Wepchnij aktualny wskaźnik programu do stosu
+		MAINBUS::pushStack((0xff00 & PC) >> 8);
+		MAINBUS::pushStack(0xff & PC);
+
+		// Jeżeli BRK, ustawiamy pozorną flagę B na 1
+		P |= ((int_type == BRK) << 4);
+
+		// Wpychamy status procka do stosu
+		MAINBUS::pushStack(P);
+
+		switch (int_type) {
+		case INT_NMI: {
+			PC = MAINBUS::readAddr(MEM::NMI);
+		}
+		case INT_IRQ:
+		case INT_BRK: {
+			PC = MAINBUS::readAddr(MEM::IRQ);
+		}
+
+		}
 
 	}
-	*/
+
+	//Jak na podstawie typu opokdu pobrać dane z operandu?
+	//Na podstawie typu adresowania oraz danego operandu, zwraca adres danej wartości w pamięci
+	u16 getAddressFromType(u8 addrmode, u16 pointer) {
+		
+		switch (addrmode) {
+			
+		case ABSOLUTE: {
+			return MAINBUS::read(pointer) + MAINBUS::read(pointer + 1) * 256;
+		}
+		case ABSOLUTE_X: {
+			return MAINBUS::read(pointer) + MAINBUS::read(pointer + 1) * 256 + X;
+		}
+		case ABSOLUTE_Y: {
+			return MAINBUS::read(pointer) + MAINBUS::read(pointer + 1) * 256 + Y;
+		}
+		case IMMEDIATE: {
+			return pointer;
+		}
+		case ZEROPAGE: {
+			return MAINBUS::read(pointer);
+		}
+		case ZEROPAGE_X: {
+			return (MAINBUS::read(pointer) + X) % 256;
+		}
+		case ZEROPAGE_Y: {
+			return (MAINBUS::read(pointer) + Y) % 256;
+		}
+		case INDIRECT: {
+			//INDIRECT używa jedynie instrukcja JMP
+			u8 polo = MAINBUS::read(pointer);
+			u16 pohi = 256 * MAINBUS::read(pointer + 1);
+
+			//Typ INDIRECT posiada bardzo specyficznego buga: Nie potrafi przekraczać stron.
+			//Przykład: Jeżeli jako operand mamy (Adresik) i pierwsze 2 bity od adresu "Adresik" to np. $24FF to MSB pobierze już nie z $2500 a z $2400.
+			
+			return MAINBUS::read(polo + pohi) +	MAINBUS::read(((polo + 1) % 256) + pohi) * 256;
+
+		}
+		case INDIRECT_X: {
+			u8 val = MAINBUS::read(pointer);
+			return MAINBUS::read((val + X) % 256) + MAINBUS::read((val + X + 1) % 256) * 256;
+		}
+		case INDIRECT_Y: {
+			u8 val = MAINBUS::read(pointer);
+			return MAINBUS::read(val) + MAINBUS::read((val + 1) % 256) * 256 + Y;
+		}
+		default: {
+			return pointer;
+		}
+		}
+		return pointer;
+	}
+
+
+
+	void executeBranch(u8 branch_type) {
+	}
+
+
+	//Definicje zadań dla instrukcji
+	//1A - 8 typów adresacji
+	void executeADC(u8 addrmode);
+	void executeAND(u8 addrmode);
+	void executeCMP(u8 addrmode);
+	void executeEOR(u8 addrmode);
+	void executeLDA(u8 addrmode);
+	void executeORA(u8 addrmode);
+	void executeSBC(u8 addrmode);
+	void executeSTA(u8 addrmode);
+
+	//1B - 6 typów adresacji
+	void executeASL(u8 addrmode);
+	void executeLDX(u8 addrmode);
+	void executeLDY(u8 addrmode);
+	void executeLSR(u8 addrmode);
+	void executeROL(u8 addrmode) {	//ROL
+		u8 tempC = getC();
+		switch (addrmode) {
+			case ACCUMULATOR: {
+				setC(!!(A & 0x80));
+				A = (A << 1) | (tempC);
+				setFlagsZN(A);
+			}
+			default: {
+				u16 address = getAddressFromType(addrmode, PC);
+				u8 operand = MAINBUS::read(address);
+				setC(!!(operand & 0x80));
+				operand = (operand << 1) | (tempC);
+				setFlagsZN(operand);
+				MAINBUS::write(address, operand);
+			}
+		}
+	}
+	void executeROR(u8 addrmode) {	//ROR
+		u8 tempC = getC();
+		switch (addrmode) {
+			case ACCUMULATOR: {
+				setC(!!(A & 0x01));
+				A = (A >> 1) | (tempC << 7);
+				setFlagsZN(A);
+			}
+			default: {
+				u16 address = getAddressFromType(addrmode, PC);
+				u8 operand = MAINBUS::read(address);
+				setC(operand & 0x01);
+				operand = (operand >> 1) | (tempC << 7);
+				setFlagsZN(operand);
+				MAINBUS::write(address, operand);
+			}
+		}
+	}
+
+	//2A - 4 typów adresacji
+	void executeDEC(u8 addrmode) {	//DEC
+		u16 addr = getAddressFromType(addrmode, PC);
+		u8 temp = MAINBUS::read(addr) - 1u;
+		MAINBUS::write(addr, temp);
+	}
+	void executeINC(u8 addrmode) {	//INC
+		u16 addr = getAddressFromType(addrmode, PC);
+		u8 temp = MAINBUS::read(addr) + 1u;
+		MAINBUS::write(addr, temp);
+	}
+	void executeSTX(u8 addrmode) {	//STX
+		u16 addr = getAddressFromType(addrmode, PC);
+		MAINBUS::write(addr, X);
+		return;
+	}
+	void executeSTY(u8 addrmode) {	//STY
+		u16 addr = getAddressFromType(addrmode, PC);
+		MAINBUS::write(addr, Y);
+		return;
+	}
+
+	//2B - 3 typów adresacji
+	void executeCPX(u8 addrmode) {	//CPX
+		u8 operand = MAINBUS::read(getAddressFromType(addrmode, PC));
+
+		u16 result = X - operand;
+		//Flagi C Z i N
+		setC( !(result & 0x100) );
+		setFlagsZN(0xff & result);
+		return;
+	}
+	void executeCPY(u8 addrmode) {	//CPY
+		u8 operand = MAINBUS::read(getAddressFromType(addrmode, PC));
+
+		u16 result = Y - operand;
+		//Flagi C Z i N
+		setC( !(result & 0x100) );
+		setFlagsZN(0xff & result);
+		return;
+	}
+
+	//3A - 2 typów adresacji
+	void executeBIT(u8 addrmode) {	//BIT
+		u8 operand = MAINBUS::read(getAddressFromType(addrmode, PC));
+
+		//Na podstawie wartości otrzymanej z "operand" ustaw flagi Z V i N
+		setZ(!(operand & A));
+		setV(!!(operand & 0b01000000));
+		setN(!!(operand & 0b10000000));
+		return;
+	}
+
+	//3B - 2 typów adresacji
+	void executeJMP(u8 addrmode) {	//JMP
+
+		u16 address = getAddressFromType(addrmode, PC);
+		PC = address;
+		
+	}
+
+	//4 - 1 typ adresacji
+	void executeBCC() {	//BCC
+		executeBranch(BCC);
+	}
+	void executeBCS() {	//BCS
+		executeBranch(BCS);
+	}
+	void executeBEQ() {	//BEQ
+		executeBranch(BEQ);
+	}
+	void executeBMI() {	//BMI
+		executeBranch(BMI);
+	}
+	void executeBNE() {	//BNE
+		executeBranch(BNE);
+	}
+	void executeBPL() {	//BPL
+		executeBranch(BPL);
+	}
+	void executeBRK() {	//BRK
+		interrupt(BRK);
+	}
+	void executeBVC() {	//BVC
+		executeBranch(BVC);
+	}
+	void executeBVS() {	//BVS
+		executeBranch(BVS);
+	}
+	void executeCLC() {	//CLC
+		clrC();
+	}
+	void executeCLD() {	//CLD
+		clrD();
+	}
+	void executeCLI() {	//CLI
+		clrI();
+	}
+	void executeCLV() {	//CLV
+		clrV();
+	}
+	void executeDEX() {	//DEX
+		X--;
+		setFlagsZN(X);
+	}
+	void executeDEY() {	//DEY
+		Y--;
+		setFlagsZN(X);
+	}
+	void executeINX() {	//INX
+		X++;
+		setFlagsZN(X);
+	}
+	void executeINY() {	//INY
+		Y++;
+		setFlagsZN(Y);
+	}
+	void executeNOP() {	//NOP
+		/* ZONK!!! Zabrałem Ci 2 cenne cykle, pracuj dalej XD */
+	}
+	void executePHA() {	//PHA
+		MAINBUS::pushStack(A);
+	}
+	void executePHP() {	//PHP
+
+		P |= 0b00010000;	//Ustawiamy pozorną flagę B na 1
+		MAINBUS::pushStack(P);	//Wpychamy stan procka do stosu
+
+	}
+	void executePLA() {	//PLA
+		A = MAINBUS::pullStack();
+	}
+	void executePLP() {	//PLP
+		P = MAINBUS::pullStack();
+	}
+	void executeRTI() {	//RTI
+		P = MAINBUS::pullStack();
+		PC = MAINBUS::pullStack();
+		PC |= MAINBUS::pullStack() << 8;
+	}
+	void executeRTS() {	//RTS
+		PC = MAINBUS::pullStack() | MAINBUS::pullStack() << 8;
+	}
+	void executeSEC() {	//SEC
+		setC();
+	}
+	void executeSED() {	//SED
+		setD();
+	}
+	void executeSEI() {	//SEI
+		setI();
+	}
+	void executeTAX() {	//TAX
+		X = A;
+		setFlagsZN(X);
+	}
+	void executeTAY() {	//TAY
+		Y = A;
+		setFlagsZN(Y);
+	}
+	void executeTSX() {	//TSX
+		X = S;
+		setFlagsZN(X);
+	}
+	void executeTXA() {	//TXA
+		A = X;
+		setFlagsZN(A);
+	}
+	void executeTXS() {	//TXS
+		S = X;
+	}
+	void executeTYA() {	//TYA
+		A = Y;
+		setFlagsZN(A);
+	}
+	void executeJSR() {	//JSR
+		MAINBUS::pushStack( (u8)( (PC + 1)>>8 ) );	//Najpierw wpychamy PC do stosu
+		MAINBUS::pushStack((u8)(PC));
+		PC = MAINBUS::readAddr(PC);	//Potem ustawiamy PC na wartość, którą niesie operand
+	}
+
+	//Podajesz rozkazy, otrzymujesz instrukcje!
+	void disassemblyC(const char* num) {
+		int stringptr = 0;
+		int stringlen = strlen(num);
+		int opindex;
+		u8 _opcode;
+		u8 _operand[2];
+
+		while (stringptr < stringlen) {
+
+			_opcode = 0;
+			_operand[0] = 0;
+			_operand[1] = 0;
+
+			while (num[stringptr] == ' ') { stringptr++; }
+
+			//Najpierw odczytaj jaki to opcode:
+			//High nibble
+			switch (num[stringptr]) {
+			
+				case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9': {
+					_opcode |= (num[stringptr] - '0') << 4; break;
+				}
+
+				case 'A': case 'B': case 'C': case 'D': case 'E': case 'F': {
+					_opcode |= (num[stringptr] - 'A' + 10) << 4; break;
+				}
+
+				case 'a': case 'b': case 'c': case 'd': case 'e': case 'f': {
+					_opcode |= (num[stringptr] - 'a' + 10) << 4; break;
+				}
+
+				default: break;
+	
+			}
+			stringptr++;
+
+			//Low nibble
+			switch (num[stringptr]) {
+
+				case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9': {
+					_opcode |= num[stringptr] - '0'; break;
+				}
+
+				case 'A': case 'B': case 'C': case 'D': case 'E': case 'F': {
+					_opcode |= num[stringptr] - 'A' + 10; break;
+				}
+
+				case 'a': case 'b': case 'c': case 'd': case 'e': case 'f': {
+					_opcode |= num[stringptr] - 'a' + 10; break;
+				}
+
+				default: break;
+
+			}
+			stringptr++;
+
+			std::cout << '\n' << getOpcodeMnemonic(_opcode) << ' ';
+
+			int howmany = getOpcodeLength(_opcode) - 1;
+			opindex = 0;
+
+			while (howmany > 0) {
+
+				while (num[stringptr] == ' ') { stringptr++; }
+			
+				//Potem odczytujemy operandy:
+				//High nibble
+				switch (num[stringptr]) {
+
+				case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9': {
+					_operand[opindex] += (num[stringptr] - '0') << 4; break;
+				}
+
+				case 'A': case 'B': case 'C': case 'D': case 'E': case 'F': {
+					_operand[opindex] += (num[stringptr] - 'A' + 10) << 4; break;
+				}
+
+				case 'a': case 'b': case 'c': case 'd': case 'e': case 'f': {
+					_operand[opindex] += (num[stringptr] - 'a' + 10) << 4; break;
+				}
+
+				default: break;
+
+				}
+				stringptr++;
+
+				//Low nibble
+				switch (num[stringptr]) {
+
+				case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9': {
+					_operand[opindex] += (num[stringptr] - '0'); break;
+				}
+
+				case 'A': case 'B': case 'C': case 'D': case 'E': case 'F': {
+					_operand[opindex] += (num[stringptr] - 'A' + 10); break;
+				}
+
+				case 'a': case 'b': case 'c': case 'd': case 'e': case 'f': {
+					_operand[opindex] += (num[stringptr] - 'a' + 10); break;
+				}
+
+				default: break;
+
+				}
+				stringptr++;
+				opindex++;
+				howmany--;
+
+				if ( howmany == 0) {
+					switch (getOpcodeAddressingMode(_opcode)) {
+					
+					case ACCUMULATOR: {
+						std::cout << 'A'; break;
+					}
+					case IMMEDIATE: {
+						std::cout << "#$" << std::setw(2) << std::hex << (int)_operand[0]; break;
+					}
+					case RELATIVE: case ZEROPAGE: {
+						std::cout << '$' << std::setw(2) << std::hex << (int)_operand[0]; break;
+					}
+					case ZEROPAGE_X: {
+						std::cout << '$' << std::setw(2) << std::hex << (int)_operand[0] << ",X"; break;
+					}
+					case ZEROPAGE_Y: {
+						std::cout << '$' << std::setw(2) << std::hex << (int)_operand[0] << ",Y"; break;
+					}
+					case INDIRECT: {
+						std::cout << "($" << std::setw(2) << std::hex << (int)_operand[1] << std::setw(2) << std::hex << (int)_operand[0] << ')'; break;
+					}
+					case INDIRECT_X: {
+						std::cout << "($" << std::setw(2) << std::hex << (int)_operand[0] << ",X)"; break;
+					}
+					case INDIRECT_Y: {
+						std::cout << "($" << std::setw(2) << std::hex << (int)_operand[0] << "),Y"; break;
+					}
+					case ABSOLUTE: {
+						std::cout << '$' << std::setw(2) << std::hex << (int)_operand[1] << std::setw(2) << std::hex << (int)_operand[0]; break;
+					}
+					case ABSOLUTE_X: {
+						std::cout << '$' << std::setw(2) << std::hex << (int)_operand[1] << std::setw(2) << std::hex << (int)_operand[0] << ",X"; break;
+					}
+					case ABSOLUTE_Y: {
+						std::cout << '$' << std::setw(2) << std::hex << (int)_operand[1] << std::setw(2) << std::hex << (int)_operand[0] << ",Y"; break;
+					}
+
+					default: break;
+
+					}
+				}
+			}
+		}
+	}
+
+	//Tutaj zaczyna się wykonywanie instrukcji (jeszcze nie wiem)
+	void execute() {
+		u8 addrmode = getOpcodeAddressingMode(MAINBUS::read(PC));
+		u16 opcode = getOpcode(MAINBUS::read(PC));
+	}
+
 }
