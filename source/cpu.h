@@ -717,7 +717,7 @@ namespace CPU {
 	void executeCMP(u8 addrmode) { //CMP
 		u16 diff = A - MAINBUS::read(getAddressFromType(addrmode, PC));
 		setC(!(diff & 0x100));
-		setFlagsZN(diff);
+		setFlagsZN(diff & 0xff);
 	}
 	void executeEOR(u8 addrmode) { //EOR
 		A ^= MAINBUS::read(getAddressFromType(addrmode, PC));
