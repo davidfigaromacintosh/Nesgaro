@@ -99,7 +99,7 @@ namespace CPU {
 
 	//Zwraca ile cykli zajmuje wykonanie danej instrukcji
 	int getOpcodeCycle(u8 opcode) {
-		return (int)(opcodeCycle[opcode] - '0');
+		return opcodeCycle[opcode];
 	}
 
 	/* Wartości zwracane przez funkcje:
@@ -133,8 +133,8 @@ namespace CPU {
 		u8 group = 7;
 		switch (opcode) {
 
-			/*1A
-			case XXX_ABS: case XXX_ABS_X: case XXX_ABS_Y: case XXX_IMM: case XXX_IND_X: case XXX_IND_Y: case XXX_ZP: case XXX_ZP_X:	8  */
+		/*1A
+		case XXX_ABS: case XXX_ABS_X: case XXX_ABS_Y: case XXX_IMM: case XXX_IND_X: case XXX_IND_Y: case XXX_ZP: case XXX_ZP_X:	8  */
 		case ADC_ABS: case ADC_ABS_X: case ADC_ABS_Y: case ADC_IMM: case ADC_IND_X: case ADC_IND_Y: case ADC_ZP: case ADC_ZP_X:	//ADC
 		case AND_ABS: case AND_ABS_X: case AND_ABS_Y: case AND_IMM: case AND_IND_X: case AND_IND_Y: case AND_ZP: case AND_ZP_X:	//AND
 		case CMP_ABS: case CMP_ABS_X: case CMP_ABS_Y: case CMP_IMM: case CMP_IND_X: case CMP_IND_Y: case CMP_ZP: case CMP_ZP_X:	//CMP
@@ -148,8 +148,8 @@ namespace CPU {
 		/*1B
 		case XXX_ACC: case XXX_ABS: case XXX_ABS_X: case XXX_ABS_Y: case XXX_IMM: case XXX_ZP: case XXX_ZP_X: case XXX_ZP_Y:	6  */
 		case ASL_ACC: case ASL_ABS: case ASL_ABS_X:                               case ASL_ZP: case ASL_ZP_X:					//ASL
-		case LDX_ABS:                 case LDX_ABS_Y: case LDX_IMM: case LDX_ZP:                case LDX_ZP_Y:	//LDX
-		case LDY_ABS: case LDY_ABS_X:                 case LDY_IMM: case LDY_ZP: case LDY_ZP_X:					//LDY
+		              case LDX_ABS:                 case LDX_ABS_Y: case LDX_IMM: case LDX_ZP:                case LDX_ZP_Y:	//LDX
+		              case LDY_ABS: case LDY_ABS_X:                 case LDY_IMM: case LDY_ZP: case LDY_ZP_X:					//LDY
 		case LSR_ACC: case LSR_ABS: case LSR_ABS_X:                               case LSR_ZP: case LSR_ZP_X:					//LSR
 		case ROL_ACC: case ROL_ABS: case ROL_ABS_X:                               case ROL_ZP: case ROL_ZP_X:					//ROL
 		case ROR_ACC: case ROR_ABS: case ROR_ABS_X:                               case ROR_ZP: case ROR_ZP_X:					//ROR
@@ -445,10 +445,10 @@ namespace CPU {
 	}
 
 	//Ta funkcja sprawdza, czy została przekroczona strona. Jeśli tak, dodaj +1 do cyklu
-	void checkPageCross(u16 pagea, u16 pageb, u64 value) {
+	void checkPageCross(u16 pagea, u16 pageb, u8 value) {
 
 		if ((pagea & 0xff00) != (pageb & 0xff00)) {
-			cycles += value; //Jeżeli strona zostanie przkroczona, dodaj +value do cyklu
+			cyclesLeft += value; //Jeżeli strona zostanie przkroczona, dodaj +value do cyklu
 		}
 	}
 
@@ -498,10 +498,9 @@ namespace CPU {
 		P |= 0b10000000;
 	}
 
-	//Ustaw flagę w zależności od parametru
-	void setC(b flag) {
-
-		u8 tf =
+	/*
+	
+	u8 tf =
 			(flag) |
 			getZ() << 1 |
 			getI() << 2 |
@@ -513,81 +512,39 @@ namespace CPU {
 
 		P = tf;
 		return;
+
+	*/
+
+	//Ustaw flagę w zależności od parametru
+	void setC(u8 flag) {
+
+		if (flag) { setC(); }
+		else { clrC(); }
 	}
-	void setZ(b flag) {
+	void setZ(u8 flag) {
 
-		u8 tf =
-			getC() |
-			(0xff & flag) << 1 |
-			getI() << 2 |
-			getD() << 3 |
-			P & 0b00010000 |
-			0b00100000 |
-			getV() << 6 |
-			getN() << 7;
-
-		P = tf;
-		return;
+		if (flag) { setZ(); }
+		else { clrZ(); }
 	}
-	void setI(b flag) {
+	void setI(u8 flag) {
 
-		u8 tf =
-			getC() |
-			getZ() << 1 |
-			(0xff & flag) << 2 |
-			getD() << 3 |
-			P & 0b00010000 |
-			0b00100000 |
-			getV() << 6 |
-			getN() << 7;
-
-		P = tf;
-		return;
+		if (flag) { setI(); }
+		else { clrI(); }
 	}
-	void setD(b flag) {
+	void setD(u8 flag) {
 
-		u8 tf =
-			getC() |
-			getZ() << 1 |
-			getI() << 2 |
-			(0xff & flag) << 3 |
-			P & 0b00010000 |
-			0b00100000 |
-			getV() << 6 |
-			getN() << 7;
-
-		P = tf;
-		return;
+		if (flag) { setD(); }
+		else { clrD(); }
 	}
-	void setV(b flag) {
+	void setV(u8 flag) {
 
-		u8 tf =
-			getC() |
-			getZ() << 1 |
-			getI() << 2 |
-			getD() << 3 |
-			P & 0b00010000 |
-			0b00100000 |
-			(0xff & flag) << 6 |
-			getN() << 7;
-
-		P = tf;
-		return;
+		if (flag) { setV(); }
+		else { clrV(); }
 	}
-	void setN(b flag) {
+	void setN(u8 flag) {
 
-		u8 tf =
-			getC() |
-			getZ() << 1 |
-			getI() << 2 |
-			getD() << 3 |
-			P & 0b00010000 |
-			0b00100000 |
-			getV() << 6 |
-			(0xff & flag) << 7;
-
-		P = tf;
-		return;
+		if (flag) { setN(); }
+		else { clrN(); }
 	}
 
 	//Wyczyść flagę
@@ -692,25 +649,153 @@ namespace CPU {
 
 
 	void executeBranch(u8 branch_type) {
+		bool br = false;
+		
+		switch (branch_type) {
+			case BPL: {
+				br = !getN();
+				break;
+			}
+			case BMI: {
+				br = getN();
+				break;
+			}
+			case BVC: {
+				br = !getV();
+				break;
+			}
+			case BVS: {
+				br = getV();
+				break;
+			}
+			case BCC: {
+				br = !getC();
+				break;
+			}
+			case BCS: {
+				br = getC();
+				break;
+			}
+			case BNE: {
+				br = !getZ();
+				break;
+			}
+			case BEQ: {
+				br = getZ();
+				break;
+			}
+		}
+
+		if (br) {
+			s8 off = MAINBUS::read(PC);
+			cyclesLeft++;
+
+			u16 PC2 = PC + off;
+			checkPageCross(PC, PC2, 2);
+			PC = PC2;
+		}
 	}
 
 
 	//Definicje zadań dla instrukcji
 	//1A - 8 typów adresacji
-	void executeADC(u8 addrmode);
-	void executeAND(u8 addrmode);
-	void executeCMP(u8 addrmode);
-	void executeEOR(u8 addrmode);
-	void executeLDA(u8 addrmode);
-	void executeORA(u8 addrmode);
-	void executeSBC(u8 addrmode);
-	void executeSTA(u8 addrmode);
+	void executeADC(u8 addrmode) {	//ADC
+		
+		u8 operand = MAINBUS::read(getAddressFromType(addrmode, PC));
+
+		u16 sum = A + operand + getC();
+		setC(!!(sum & 0x100));
+		setV( !!((A ^ sum) & (operand ^ sum) & 0x80) );
+		A = sum & 0xff;
+
+		setFlagsZN(A);
+	}
+	void executeAND(u8 addrmode) { //AND
+		A &= MAINBUS::read(getAddressFromType(addrmode, PC));
+		setFlagsZN(A);
+	}
+	void executeCMP(u8 addrmode) { //CMP
+		u16 diff = A - MAINBUS::read(getAddressFromType(addrmode, PC));
+		setC(!(diff & 0x100));
+		setFlagsZN(diff);
+	}
+	void executeEOR(u8 addrmode) { //EOR
+		A ^= MAINBUS::read(getAddressFromType(addrmode, PC));
+		setFlagsZN(A);
+	}
+	void executeLDA(u8 addrmode) { //LDA
+		A = MAINBUS::read(getAddressFromType(addrmode, PC));
+		setFlagsZN(A);
+	}
+	void executeORA(u8 addrmode) { //ORA
+		A |= MAINBUS::read(getAddressFromType(addrmode, PC));
+		setFlagsZN(A);
+	}
+	void executeSBC(u8 addrmode) { //SBC
+
+		u8 operand = MAINBUS::read(getAddressFromType(addrmode, PC));
+
+		u16 diff = A - operand - !getC();
+
+		setC( !(diff & 0x100) );
+		setV( !!((A ^ diff) & (~operand ^ diff) & 0x80) );
+		A = diff & 0xff;
+
+		setFlagsZN(A);
+	}
+	void executeSTA(u8 addrmode) { //STA
+		MAINBUS::write(getAddressFromType(addrmode, PC), A);
+	}
 
 	//1B - 6 typów adresacji
-	void executeASL(u8 addrmode);
-	void executeLDX(u8 addrmode);
-	void executeLDY(u8 addrmode);
-	void executeLSR(u8 addrmode);
+	void executeASL(u8 addrmode) {	//ASL
+		u8 tempC = getC();
+		switch (addrmode) {
+			case ACCUMULATOR: {
+				setC(!!(A & 0x80));
+				A <<= 1;
+				setFlagsZN(A);
+				break;
+			}
+			default: {
+				u16 address = getAddressFromType(addrmode, PC);
+				u8 operand = MAINBUS::read(address);
+				setC(!!(operand & 0x80));
+				operand = (operand << 1);
+				setFlagsZN(operand);
+				MAINBUS::write(address, operand);
+				break;
+			}
+		}
+	}
+	void executeLDX(u8 addrmode) { //LDX
+		X = MAINBUS::read(getAddressFromType(addrmode, PC));
+		setFlagsZN(X);
+	}
+	void executeLDY(u8 addrmode) { //LDY
+		Y = MAINBUS::read(getAddressFromType(addrmode, PC));
+		setFlagsZN(Y);
+	}
+	void executeLSR(u8 addrmode) {	//LSR
+		u8 tempC = getC();
+		switch (addrmode) {
+			case ACCUMULATOR: {
+				setC(!!(A & 0x01));
+				A >>= 1;
+				setFlagsZN(A);
+				break;
+			}
+			default: {
+				u16 address = getAddressFromType(addrmode, PC);
+				u8 operand = MAINBUS::read(address);
+				setC(operand & 0x01);
+				operand = (operand >> 1);
+				setFlagsZN(operand);
+				MAINBUS::write(address, operand);
+				break;
+			}
+		}
+	}
 	void executeROL(u8 addrmode) {	//ROL
 		u8 tempC = getC();
 		switch (addrmode) {
@@ -718,6 +803,7 @@ namespace CPU {
 				setC(!!(A & 0x80));
 				A = (A << 1) | (tempC);
 				setFlagsZN(A);
+				break;
 			}
 			default: {
 				u16 address = getAddressFromType(addrmode, PC);
@@ -726,6 +812,7 @@ namespace CPU {
 				operand = (operand << 1) | (tempC);
 				setFlagsZN(operand);
 				MAINBUS::write(address, operand);
+				break;
 			}
 		}
 	}
@@ -736,6 +823,7 @@ namespace CPU {
 				setC(!!(A & 0x01));
 				A = (A >> 1) | (tempC << 7);
 				setFlagsZN(A);
+				break;
 			}
 			default: {
 				u16 address = getAddressFromType(addrmode, PC);
@@ -744,6 +832,7 @@ namespace CPU {
 				operand = (operand >> 1) | (tempC << 7);
 				setFlagsZN(operand);
 				MAINBUS::write(address, operand);
+				break;
 			}
 		}
 	}
@@ -1042,37 +1131,38 @@ namespace CPU {
 					switch (getOpcodeAddressingMode(_opcode)) {
 					
 					case ACCUMULATOR: {
-						std::cout << 'A'; break;
+						putchar('A'); break;
 					}
 					case IMMEDIATE: {
-						std::cout << "#$" << std::setw(2) << std::hex << (int)_operand[0]; break;
+						printf("#$%02x", _operand[0]); break;
+						
 					}
 					case RELATIVE: case ZEROPAGE: {
-						std::cout << '$' << std::setw(2) << std::hex << (int)_operand[0]; break;
+						printf("$%02x", _operand[0]); break;
 					}
 					case ZEROPAGE_X: {
-						std::cout << '$' << std::setw(2) << std::hex << (int)_operand[0] << ",X"; break;
+						printf("$%02x,X", _operand[0]); break;
 					}
 					case ZEROPAGE_Y: {
-						std::cout << '$' << std::setw(2) << std::hex << (int)_operand[0] << ",Y"; break;
+						printf("$%02x,Y", _operand[0]); break;
 					}
 					case INDIRECT: {
-						std::cout << "($" << std::setw(2) << std::hex << (int)_operand[1] << std::setw(2) << std::hex << (int)_operand[0] << ')'; break;
+						printf("($%02x%02x)", _operand[1], _operand[0]); break;
 					}
 					case INDIRECT_X: {
-						std::cout << "($" << std::setw(2) << std::hex << (int)_operand[0] << ",X)"; break;
+						printf("($%02x,X)", _operand[0]); break;
 					}
 					case INDIRECT_Y: {
-						std::cout << "($" << std::setw(2) << std::hex << (int)_operand[0] << "),Y"; break;
+						printf("($%02x),Y", _operand[0]); break;
 					}
 					case ABSOLUTE: {
-						std::cout << '$' << std::setw(2) << std::hex << (int)_operand[1] << std::setw(2) << std::hex << (int)_operand[0]; break;
+						printf("$%02x%02x", _operand[1], _operand[0]); break;
 					}
 					case ABSOLUTE_X: {
-						std::cout << '$' << std::setw(2) << std::hex << (int)_operand[1] << std::setw(2) << std::hex << (int)_operand[0] << ",X"; break;
+						printf("$%02x%02x,X", _operand[1], _operand[0]); break;
 					}
 					case ABSOLUTE_Y: {
-						std::cout << '$' << std::setw(2) << std::hex << (int)_operand[1] << std::setw(2) << std::hex << (int)_operand[0] << ",Y"; break;
+						printf("$%02x%02x,Y", _operand[1], _operand[0]); break;
 					}
 
 					default: break;
