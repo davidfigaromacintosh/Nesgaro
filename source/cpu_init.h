@@ -262,6 +262,8 @@ namespace CPU {
 	u16 PC;		//Wskaźnik programu
 	u64 cycles; //Licznik cykli	
 
+	u8 cyclesLeft = 0;
+
 	//Zawiera mnemoniki wszystkich 256 instrukcji (nielegalne instrukcje zostały nazwane "ILL")
 	u16 opcodeMnemonic[256] = { /*
 
@@ -316,12 +318,12 @@ namespace CPU {
 	void setN();
 
 	//Ustaw flagę w zależności od parametru
-	void setC(b flag);
-	void setZ(b flag);
-	void setI(b flag);
-	void setD(b flag);
-	void setV(b flag);
-	void setN(b flag);
+	void setC(u8 flag);
+	void setZ(u8 flag);
+	void setI(u8 flag);
+	void setD(u8 flag);
+	void setV(u8 flag);
+	void setN(u8 flag);
 
 	//Wyczyść flagę
 	void clrC();
@@ -331,7 +333,7 @@ namespace CPU {
 	void clrV();
 	void clrN();
 
-/*	u8 opcodeCycle[256] = {
+	u8 opcodeCycle[256] = {
 	
 		7, 6, 0, 0, 0, 3, 5, 0, 3, 2, 2, 0, 0, 4, 6, 0,
 		2, 5, 0, 0, 0, 4, 6, 0, 2, 4, 0, 0, 0, 4, 7, 0,
@@ -350,11 +352,11 @@ namespace CPU {
 		2, 6, 0, 0, 3, 3, 5, 0, 2, 2, 2, 2, 4, 4, 6, 0,
 		2, 5, 0, 0, 0, 4, 6, 0, 2, 4, 0, 0, 0, 4, 7, 0
 	
-	};*/
+	};
 
 	//Wskaźnik do łańcucha znaków zaawierającego długości cyklów wszystkich 256 instrukcji (nielegalne zwrócą 0)
-	u8 *opcodeCycle = (u8*)
-	"7600035032200460250004602400047066003350422044602500046024000470660003503220346025000460240004706600035042205460250004602400047006003330202044402600444025200500262033302220444025004440242044402600335022204460250004602400047026003350222244602500046024000470";
+	//u8 *opcodeCycle = (u8*)
+	//"7600035032200460250004602400047066003350422044602500046024000470660003503220346025000460240004706600035042205460250004602400047006003330202044402600444025200500262033302220444025004440242044402600335022204460250004602400047026003350222244602500046024000470";
 
 	//Zwraca ile cykli zajmuje wykonanie danej instrukcji
 	int getOpcodeCycle(u8 opcode);
@@ -383,7 +385,7 @@ namespace CPU {
 	const char* getOpcodeAddressingModeName(u8 opcode);
 
 	//Ta funkcja sprawdza, czy została przekroczona strona. Jeśli tak, dodaj +1 do cyklu
-	void checkPageCross(u16 pagea, u16 pageb, u64 value);
+	void checkPageCross(u16 pagea, u16 pageb, u8 value);
 
 	//Ustaw flagi Z i N w zależności od podanego parametru
 	void setFlagsZN(u8 value);
