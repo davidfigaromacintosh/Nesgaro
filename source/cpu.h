@@ -98,7 +98,7 @@ namespace CPU {
 	}
 
 	//Zwraca ile cykli zajmuje wykonanie danej instrukcji
-	int getOpcodeCycle(u8 opcode) {
+	u8 getOpcodeCycle(u8 opcode) {
 		return opcodeCycle[opcode];
 	}
 
@@ -575,7 +575,7 @@ namespace CPU {
 		MAINBUS::pushStack(0xff & PC);
 
 		// Jeżeli BRK, ustawiamy pozorną flagę B na 1
-		P |= ((int_type == BRK) << 4);
+		P |= ((int_type == INT_BRK) << 4);
 
 		// Wpychamy status procka do stosu
 		MAINBUS::pushStack(P);
@@ -1174,9 +1174,186 @@ namespace CPU {
 	}
 
 	//Tutaj zaczyna się wykonywanie instrukcji (jeszcze nie wiem)
-	void execute() {
-		u8 addrmode = getOpcodeAddressingMode(MAINBUS::read(PC));
-		u16 opcode = getOpcode(MAINBUS::read(PC));
+	void step() {
+
+		if (cyclesLeft == 0) {
+
+			u8 addrmode = getOpcodeAddressingMode(MAINBUS::read(PC));
+			u16 opcode = getOpcode(MAINBUS::read(PC));
+
+			cyclesLeft = opcodeCycle[opcode];
+			PC++;
+
+			//Wertujesz listę 
+			switch (opcode) {
+
+				//1A - 8 typów adresacji
+				case ADC: {
+					executeADC(addrmode); break;
+				}
+				case AND: {
+					executeAND(addrmode); break;
+				}
+				case CMP: {
+					executeCMP(addrmode); break;
+				}
+				case EOR: {
+					executeEOR(addrmode); break;
+				}
+				case LDA: {
+					executeLDA(addrmode); break;
+				}
+				case ORA: {
+					executeORA(addrmode); break;
+				}
+				case SBC: {
+					executeSBC(addrmode); break;
+				}
+				case STA: {
+					executeSTA(addrmode); break;
+				}
+				
+				//1B - 6 typów adresacji
+				case ASL: {
+					executeASL(addrmode); break;
+				}
+				case LDX: {
+					executeLDX(addrmode); break;
+				}
+				case LDY: {
+					executeLDY(addrmode); break;
+				}
+				case LSR: {
+					executeLSR(addrmode); break;
+				}
+				case ROL: {
+					executeROL(addrmode); break;
+				}
+				case ROR: {
+					executeROR(addrmode); break;
+				}
+				
+				//2A - 4 typy adresacji
+				case DEC: {
+					executeDEC(addrmode); break;
+				}
+				case INC: {
+					executeINC(addrmode); break;
+				}
+				case STX: {
+					executeSTX(addrmode); break;
+				}
+				case STY: {
+					executeSTY(addrmode); break;
+				}
+
+				//2B - 3 typy adresacji
+				case CPX: {
+					executeCPX(addrmode); break;
+				}
+				case CPY: {
+					executeCPY(addrmode); break;
+				}
+				
+				//3A - 2 typy adresacji
+				case BIT: {
+					executeBIT(addrmode); break;
+				}
+
+				//3B - 2 typy adresacji
+				case JMP: {
+					executeJMP(addrmode); break;
+				}
+
+				//4 - 1 typ adresacji
+				case BCC: case BCS: case BEQ: case BMI: case BNE: case BPL: case BVC: case BVS: {
+					executeBranch(opcode); break;
+				}
+				case BRK: {
+					interrupt(BRK); break;
+				}
+				case CLC: {
+					clrC(); break;
+				}
+				case CLD: {
+					clrD(); break;
+				}
+				case CLI: {
+					clrI(); break;
+				}
+				case CLV: {
+					clrV(); break;
+				}
+				case DEX: {
+					executeDEX(); break;
+				}
+				case DEY: {
+					executeDEY(); break;
+				}
+				case INX: {
+					executeINX(); break;
+				}
+				case INY: {
+					executeINY(); break;
+				}
+				case PHA: {
+					executePHA(); break;
+				}
+				case PHP: {
+					executePHP(); break;
+				}
+				case PLA: {
+					executePLA(); break;
+				}
+				case PLP: {
+					executePLP(); break;
+				}
+				case RTI: {
+					executeRTI(); break;
+				}
+				case RTS: {
+					executeRTS(); break;
+				}
+				case SEC: {
+					setC(); break;
+				}
+				case SED: {
+					setD(); break;
+				}
+				case SEI: {
+					setI(); break;
+				}
+				case TAX: {
+					executeTAX(); break;
+				}
+				case TAY: {
+					executeTAY(); break;
+				}
+				case TSX: {
+					executeTSX(); break;
+				}
+				case TXA: {
+					executeTXA(); break;
+				}
+				case TXS: {
+					executeTXS(); break;
+				}
+				case TYA: {
+					executeTYA(); break;
+				}
+				case JSR: {
+					executeJSR(); break;
+				}
+
+				default: {
+					break;
+				}
+			}
+
+			PC += getOpcodeLength(opcode) - 1;
+		}
+
+		if (cyclesLeft > 0) cyclesLeft--;
 	}
 
 }
