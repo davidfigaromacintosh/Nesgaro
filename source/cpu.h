@@ -391,7 +391,7 @@ namespace CPU {
 			return 2;
 		}
 		default: {
-			return 0;
+			return 1;
 		}
 		}
 	}
@@ -1176,12 +1176,18 @@ namespace CPU {
 	//Tutaj zaczyna się wykonywanie instrukcji (jeszcze nie wiem)
 	void step() {
 
+		printf("\nCPU Cycle!");
+
 		if (cyclesLeft == 0) {
 
-			u8 addrmode = getOpcodeAddressingMode(MAINBUS::read(PC));
-			u16 opcode = getOpcode(MAINBUS::read(PC));
+			u8 op = MAINBUS::read(PC);
 
-			cyclesLeft = opcodeCycle[opcode];
+			u8 addrmode = getOpcodeAddressingMode(op);
+			u16 opcode = getOpcode(op);
+
+			printf(" Executed OP = %02x (%s %s, %d length, %d cycles) @ PC = %04x", op, getOpcodeMnemonic(op), getOpcodeAddressingModeName(op), getOpcodeLength(op), opcodeCycle[op], PC);
+
+			cyclesLeft = opcodeCycle[op];
 			PC++;
 
 			//Wertujesz listę 
@@ -1350,8 +1356,8 @@ namespace CPU {
 				}
 			}
 
-			PC += getOpcodeLength(opcode) - 1;
-		}
+			PC += getOpcodeLength(op) - 1;
+		} else { printf(" Still executing..."); }
 
 		if (cyclesLeft > 0) cyclesLeft--;
 	}
