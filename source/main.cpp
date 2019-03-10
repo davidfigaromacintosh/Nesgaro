@@ -1,5 +1,5 @@
 //W razie jakby pojawi³ siê jakiœ b³¹d!
-#define DEBUG_MODE
+//#define DEBUG_MODE
 
 #ifndef DEBUG_MODE
 #pragma comment(linker, "/subsystem:windows")
@@ -33,7 +33,9 @@
 
 int main(int _argc, char **_argv) {
 
-	sf::RenderWindow window{ sf::VideoMode{256 * 3, 240 * 3}, "NESgaro ^-^", sf::Style::Close};
+	sf::Image windowIcon;
+
+	sf::RenderWindow window{ sf::VideoMode{256 * 3, 240 * 3}, "", sf::Style::Close};
 	sf::Event wEvent;
 
 	#ifdef DEBUG_MODE
@@ -54,6 +56,9 @@ int main(int _argc, char **_argv) {
 	window.setVerticalSyncEnabled(false);
 	window.setFramerateLimit(60);
 
+	windowIcon.loadFromFile("icon.png");
+	window.setIcon(16, 16, windowIcon.getPixelsPtr());
+
 	MEM::init();
 	MEM::loadROM("D:\\NESASM\\nes_asm6502_test2.nes");
 	PPU::init();
@@ -69,7 +74,7 @@ int main(int _argc, char **_argv) {
 		//SFML Poll
 		if (PPU::dot == 1 && PPU::scanline == -1) {
 
-			window.clear(sf::Color(PPU::colors[0x22]));
+			window.clear(sf::Color(PPU::colors[0]));
 
 			window.pollEvent(wEvent);
 			if (wEvent.type == sf::Event::Closed) {

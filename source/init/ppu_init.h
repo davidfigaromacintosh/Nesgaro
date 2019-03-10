@@ -42,10 +42,12 @@ namespace PPU {
 	u16	V;			//Aktualny adres VRAM
 	u8	X;			//X scroll
 	u8	W;			//Pierwszy lub drugi odczyt
+	u8 OAMV;
 
 	//Bity $2000
 	u8 NMIenabled;
-	u8 PPUms;
+	u8 PPUmasterslave;
+	u8 SPRsize;
 	u8 BGpattern;
 	u8 SPRpattern;
 	u8 VRAMincrement;

@@ -49,6 +49,11 @@ namespace MEM {
 		for (int i = 0; i < 0x8000; i++) {
 			PRGROM[i] = 0xff;
 		}
+
+		//Sekcja VRAM
+		for (int i = 0; i < 0x4000; i++) {
+			VRAM[i] = 0x00;
+		}
 	}
 
 	int loadROM(const char* filename) {
