@@ -78,13 +78,13 @@ namespace PPU {
 	//Szyna danych PPU (odczyt)
 	u8 readbus(u16 regno) {
 		switch (regno) {
-			case 0x2000: {	//Read $2000
+			case PPU_CTRL: {	//Read $2000
 				return 0;
 			}
-			case 0x2001: {	//Read $2001
+			case PPU_MASK: {	//Read $2001
 				return 0;
 			}
-			case 0x2002: {	//Read $2002
+			case PPU_STATUS: {	//Read $2002
 
 				W = 0;
 				u8 tempvblank = vblank;
@@ -92,20 +92,19 @@ namespace PPU {
 
 				return ((tempvblank << 2) | (spr0 << 1) | (sproverflow)) << 5;
 			}
-			case 0x2003: {	//Read $2003
+			case OAM_ADDR: {	//Read $2003
 				return 0;
 			}
-			case 0x2004: {	//Read $2004
+			case OAM_DATA: {	//Read $2004
 				return MEM::OAM[OAMV];
-				OAMV += 1;
 			}
-			case 0x2005: {	//Read $2005
+			case PPU_SCROLL: {	//Read $2005
 				return 0;
 			}
-			case 0x2006: {	//Read $2006
+			case PPU_ADDR: {	//Read $2006
 				return 0;
 			}
-			case 0x2007: {	//Read $2007
+			case PPU_DATA: {	//Read $2007
 				u8 tempbuff = MEM::VRAM[V];
 				if (VRAMincrement == 0) {
 					V += 1;
@@ -120,7 +119,7 @@ namespace PPU {
 	//Szyna danych PPU (zapis)
 	void writebus(u16 regno, u8 value) {
 		switch (regno) {
-			case 0x2000: {	//Write $2000
+			case PPU_CTRL: {	//Write $2000
 
 				T = (T & 0b111001111111111) | ((0xffff & value) & 0b0000000000000011) << 10;
 				
@@ -134,22 +133,22 @@ namespace PPU {
 
 				break;
 			}
-			case 0x2001: {	//Write $2001
+			case PPU_MASK: {	//Write $2001
 				break;
 			}
-			case 0x2002: {	//Write $2002
+			case PPU_STATUS: {	//Write $2002
 				break;
 			}
-			case 0x2003: {	//Write $2003
+			case OAM_ADDR: {	//Write $2003
+				OAMV = value;
+			}
+			case OAM_DATA: {	//Write $2004
+				MEM::OAM[OAMV++] = value;
+			}
+			case PPU_SCROLL: {	//Write $2005
 				break;
 			}
-			case 0x2004: {	//Write $2004
-				break;
-			}
-			case 0x2005: {	//Write $2005
-				break;
-			}
-			case 0x2006: {	//Write $2006
+			case PPU_ADDR: {	//Write $2006
 
 				if (W == 0) {
 
@@ -161,7 +160,7 @@ namespace PPU {
 				
 				break;
 			}
-			case 0x2007: {	//$2007
+			case PPU_DATA: {	//$2007
 				MEM::VRAM[V] = value;
 				if (VRAMincrement == 0) {
 					V += 1;
