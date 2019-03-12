@@ -35,7 +35,7 @@ int main(int _argc, char **_argv) {
 
 	sf::Image windowIcon;
 
-	sf::RenderWindow window{ sf::VideoMode{256, 240}, "NESgaro v0.1 alpha", sf::Style::Close};
+	sf::RenderWindow window{ sf::VideoMode{256 * 3, 240 * 3}, "NESgaro v0.1 alpha", sf::Style::Close};
 	sf::Event wEvent;
 
 	#ifdef DEBUG_MODE
@@ -76,7 +76,7 @@ int main(int _argc, char **_argv) {
 		//SFML Poll
 		if (PPU::dot == 1 && PPU::scanline == -1) {
 
-			window.clear(sf::Color(PPU::colors[rand()%64]));
+			window.clear(sf::Color(PPU::colors[0x00]));
 
 			window.pollEvent(wEvent);
 			if (wEvent.type == sf::Event::Closed) {

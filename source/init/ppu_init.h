@@ -53,6 +53,16 @@ namespace PPU {
 	u8 VRAMincrement;
 	u8 nametable;
 
+	//Bity $2001
+	u8 grayscale;
+	u8 BGenable8;
+	u8 SPRenable8;
+	u8 BGenable;
+	u8 SPRenable;
+	u8 emphasisR;
+	u8 emphasisR;
+	u8 emphasisB;
+
 	//Paleta kolorów (TODO)
 	u32 colors[] = {
 		0x7C7C7C00,

@@ -25,6 +25,16 @@ namespace PPU {
 		SPRpattern = 0;
 		VRAMincrement = 0;
 		nametable = 0;
+
+		//Bity $2001
+		grayscale = 0;
+		BGenable8 = 0;
+		SPRenable8 = 0;
+		BGenable = 0;
+		SPRenable = 0;
+		emphasisR = 0;
+		emphasisR = 0;
+		emphasisB = 0;
 	}
 
 	void step() {
@@ -51,22 +61,33 @@ namespace PPU {
 		}
 
 		if (scanline == -1) { //Pre scan (-1)
+
+			//Zawsze na docie 1 pre-linii flagi VBlank, SPR0 oraz SPROV s¹ czyszczone
 			if (dot == 1) {
 				vblank = 0;
+				spr0 = 0;
+				sproverflow = 0;
 			}
+			else if (dot >= 280 && dot <= 304) {
+				V = V & 0b111101111100000 | T & 0b000010000011111;
+			}
+
 		}
 		else if (scanline >= 0 && scanline <= 239) {	//Widzialne linie (od 0 do 239)
-			if (scanline == 0 && dot == 0 && oddframe) dot = 1;	//Pierwszy pixel jest pomijany na linii 0 gdy klatka video jest nieparzysta
+
+			if (scanline == 0 && dot == 0 && oddframe && (BGenable || SPRenable)) dot = 1;	//Pierwszy pixel jest pomijany na linii 0 gdy klatka video jest nieparzysta
 
 
 		}
 		else if (scanline >= 240 && scanline <= 260) { //Post scan (od 240 do 260)
+
 			if (scanline == 241 && dot == 1) {
 				vblank = 1;
 				if (NMIenabled) {
 					CPU::NMIoccured = 1;
 				}
 			}
+
 		}
 
 		#ifdef DEBUG_MODE
@@ -78,13 +99,13 @@ namespace PPU {
 	//Szyna danych PPU (odczyt)
 	u8 readbus(u16 regno) {
 		switch (regno) {
-			case PPU_CTRL: {	//Read $2000
+			case PPU_CTRL: {	//Read $2000 W
 				return 0;
 			}
-			case PPU_MASK: {	//Read $2001
+			case PPU_MASK: {	//Read $2001 W
 				return 0;
 			}
-			case PPU_STATUS: {	//Read $2002
+			case PPU_STATUS: {	//Read $2002 R
 
 				W = 0;
 				u8 tempvblank = vblank;
@@ -92,19 +113,19 @@ namespace PPU {
 
 				return ((tempvblank << 2) | (spr0 << 1) | (sproverflow)) << 5;
 			}
-			case OAM_ADDR: {	//Read $2003
+			case OAM_ADDR: {	//Read $2003 W
 				return 0;
 			}
-			case OAM_DATA: {	//Read $2004
+			case OAM_DATA: {	//Read $2004 R W
 				return MEM::OAM[OAMV];
 			}
-			case PPU_SCROLL: {	//Read $2005
+			case PPU_SCROLL: {	//Read $2005 W W
 				return 0;
 			}
-			case PPU_ADDR: {	//Read $2006
+			case PPU_ADDR: {	//Read $2006 W W
 				return 0;
 			}
-			case PPU_DATA: {	//Read $2007
+			case PPU_DATA: {	//Read $2007 R W
 				u8 tempbuff = MEM::VRAM[V];
 				if (VRAMincrement == 0) {
 					V += 1;
@@ -119,36 +140,47 @@ namespace PPU {
 	//Szyna danych PPU (zapis)
 	void writebus(u16 regno, u8 value) {
 		switch (regno) {
-			case PPU_CTRL: {	//Write $2000
+			case PPU_CTRL: {	//Write $2000 W
 
 				T = (T & 0b111001111111111) | ((0xffff & value) & 0b0000000000000011) << 10;
 				
-				NMIenabled = !!(value & 0b10000000);
-				PPUmasterslave = !!(value & 0b01000000);;
-				SPRsize = !!(value & 0b00100000);;
-				BGpattern = !!(value & 0b00010000);;
-				SPRpattern = !!(value & 0b00001000);;
-				VRAMincrement = !!(value & 0b00000100);;
-				nametable = !!(value & 0b00000011);;
+				NMIenabled =		!!(value & 0b10000000);
+				PPUmasterslave =	!!(value & 0b01000000);
+				SPRsize =			!!(value & 0b00100000);
+				BGpattern =			!!(value & 0b00010000);
+				SPRpattern =		!!(value & 0b00001000);
+				VRAMincrement =		!!(value & 0b00000100);
+				nametable =			  (value & 0b00000011);
 
 				break;
 			}
-			case PPU_MASK: {	//Write $2001
+			case PPU_MASK: {	//Write $2001 W
+
+				grayscale =			!!(value & 0b00000001);
+				BGenable8 =			!!(value & 0b00000010);
+				SPRenable8 =		!!(value & 0b00000100);
+				BGenable =			!!(value & 0b00001000);
+				SPRenable =			!!(value & 0b00010000);
+				emphasisR =			!!(value & 0b00100000);
+				emphasisR =			!!(value & 0b01000000);
+				emphasisB =			!!(value & 0b10000000);
+
 				break;
 			}
-			case PPU_STATUS: {	//Write $2002
+			case PPU_STATUS: {	//Write $2002 R
 				break;
 			}
-			case OAM_ADDR: {	//Write $2003
+			case OAM_ADDR: {	//Write $2003 W
 				OAMV = value;
 			}
-			case OAM_DATA: {	//Write $2004
+			case OAM_DATA: {	//Write $2004 W R
+
 				MEM::OAM[OAMV++] = value;
 			}
-			case PPU_SCROLL: {	//Write $2005
+			case PPU_SCROLL: {	//Write $2005 W W
 				break;
 			}
-			case PPU_ADDR: {	//Write $2006
+			case PPU_ADDR: {	//Write $2006 W W
 
 				if (W == 0) {
 
@@ -160,7 +192,7 @@ namespace PPU {
 				
 				break;
 			}
-			case PPU_DATA: {	//$2007
+			case PPU_DATA: {	//$2007 R W
 				MEM::VRAM[V] = value;
 				if (VRAMincrement == 0) {
 					V += 1;
