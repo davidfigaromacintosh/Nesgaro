@@ -90,12 +90,14 @@ namespace MEM {
 
 		char buff[0x4000] = { 0 };
 
+
+		// £adujemy pierwszy bank PRG
 		fread_s(buff, sizeof(buff), 1, 0x4000, f);
 		for (int i = 0; i < 0x4000; i++) {
 			PRGROM[i] = buff[i];
 			PRGROM[i + 0x4000] = buff[i];
 		}
-
+		// £adujemy pierwszy ostatni bank PRG
 		if (header[4] > 1) {
 			fread_s(buff, sizeof(buff), 1, 0x4000, f);
 			for (int i = 0; i < 0x4000; i++) {
@@ -103,6 +105,15 @@ namespace MEM {
 				PRGROM[i + 0x4000] = buff[i];
 			}
 		}
+
+		//£adujemy bank CHR
+		if (header[5] > 0) {
+			fread_s(buff, sizeof(buff), 1, 0x2000, f);
+			for (int i = 0; i < 0x2000; i++) {
+				VRAM[i] = buff[i];
+			}
+		}
+
 		// zamykamy
 		fclose(f);
 		return 0;

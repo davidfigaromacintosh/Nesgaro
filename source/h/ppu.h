@@ -16,6 +16,7 @@ namespace PPU {
 		X = 0;
 		W = 0;
 		OAMV = 0;
+		readbuffer = 0;
 
 		//Bity $2000
 		NMIenabled = 0;
@@ -33,7 +34,7 @@ namespace PPU {
 		BGenable = 0;
 		SPRenable = 0;
 		emphasisR = 0;
-		emphasisR = 0;
+		emphasisG = 0;
 		emphasisB = 0;
 	}
 
@@ -126,13 +127,31 @@ namespace PPU {
 				return 0;
 			}
 			case PPU_DATA: {	//Read $2007 R W
-				u8 tempbuff = MEM::VRAM[V];
+
+				u8 tempbuffer;
+				u8 tempvalue;
+
+				if (V < 0x3f00) {
+					tempbuffer = readbuffer;
+					readbuffer = MEM::VRAM[V];
+				}
+				else {
+					tempvalue = MEM::VRAM[V];
+				}
+
 				if (VRAMincrement == 0) {
 					V += 1;
 				} else {
 					V += 32;
 				}
-				return tempbuff;
+
+				if (V < 0x3f00) {
+					return tempbuffer;
+				}
+				else {
+					return tempvalue;
+				}
+
 			}
 		}
 	}
@@ -162,7 +181,7 @@ namespace PPU {
 				BGenable =			!!(value & 0b00001000);
 				SPRenable =			!!(value & 0b00010000);
 				emphasisR =			!!(value & 0b00100000);
-				emphasisR =			!!(value & 0b01000000);
+				emphasisG =			!!(value & 0b01000000);
 				emphasisB =			!!(value & 0b10000000);
 
 				break;

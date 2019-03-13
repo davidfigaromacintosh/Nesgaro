@@ -14,11 +14,6 @@
 #include <SFML/Window.hpp>
 
 #include <stdio.h>
-#include <conio.h>
-#include <Windows.h>
-#include <time.h>
-#include <thread>
-#include <chrono>
 
 #include "types.h"
 
@@ -35,11 +30,11 @@ int main(int _argc, char **_argv) {
 
 	sf::Image windowIcon;
 
-	sf::RenderWindow window{ sf::VideoMode{256 * 3, 240 * 3}, "NESgaro v0.1 alpha", sf::Style::Close};
+	sf::RenderWindow window{ sf::VideoMode{256*3, 240*3}, "NESgaro v0.1 alpha", sf::Style::Close};
 	sf::Event wEvent;
 
 	#ifdef DEBUG_MODE
-	SetConsoleTitleA("NESgaro ^-^");
+	system("title NESgaro");
 	system("color 5f");
 	
 	puts("Preparing, please wait...");
@@ -62,7 +57,7 @@ int main(int _argc, char **_argv) {
 	MEM::init();
 	//MEM::loadROM("D:\\NESASM\\nes_asm6502_test2.nes");
 	MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\donkey kong.nes");
-	
+
 	PPU::init();
 	CPU::init();
 

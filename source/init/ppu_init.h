@@ -7,6 +7,7 @@ https://wiki.nesdev.com/w/index.php/PPU_scrolling						Wpisy i odczyty do rejest
 http://nesdev.com/NES%20emulation%20discussion.txt						Ogólny poradnik jak renderowaæ itd
 https://wiki.nesdev.com/w/images/d/d1/Ntsc_timing.png					Wydarzenia dla odpowiednich punktów na ekranie
 https://wiki.nesdev.com/w/index.php/PPU_power_up_state					Status PPU zaraz po w³¹czeniu konsoli
+https://wiki.nesdev.com/w/index.php/PPU_programmer_reference			Wszystko
 http://thealmightyguru.com/Games/Hacking/Wiki/index.php/NES_Palette		Paleta kolorów
 
 */
@@ -43,6 +44,7 @@ namespace PPU {
 	u8	X;			//X scroll
 	u8	W;			//Pierwszy lub drugi odczyt
 	u8 OAMV;
+	u8 readbuffer;
 
 	//Bity $2000
 	u8 NMIenabled;
@@ -60,7 +62,7 @@ namespace PPU {
 	u8 BGenable;
 	u8 SPRenable;
 	u8 emphasisR;
-	u8 emphasisR;
+	u8 emphasisG;
 	u8 emphasisB;
 
 	//Paleta kolorów (TODO)
