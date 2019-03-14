@@ -43,7 +43,7 @@ namespace PPU {
 		//Rysowany ekran znajduje siê na koordach od 1 do 256 dot i od 0 do 239 scanline...
 
 		#ifdef DEBUG_MODE
-		//printf("\nPPU Cycle!");
+		printf("\nPPU Cycle!");
 		#endif
 
 		dot++;
@@ -56,8 +56,6 @@ namespace PPU {
 			scanline = -1;
 			dot = 1;
 			oddframe = !oddframe;
-
-			//std::this_thread::sleep_for(std::chrono::microseconds(5));
 
 		}
 
@@ -92,7 +90,7 @@ namespace PPU {
 		}
 
 		#ifdef DEBUG_MODE
-		//printf(" Dot=%d Line=%d Odd=%d VBlank=%d NMI=%d BG=%d SPR=%d SPR0=%d SPROV=%d T=%04x V=%04x X=%d W=%d B=%02x", dot, scanline, oddframe, vblank, NMIenabled, BGenable, SPRenable, spr0, sproverflow, T, V, X, W, readbuffer);
+		printf(" Dot=%d Line=%d Odd=%d VBlank=%d NMI=%d BG=%d SPR=%d SPR0=%d SPROV=%d T=%04x V=%04x X=%d W=%d B=%02x", dot, scanline, oddframe, vblank, NMIenabled, BGenable, SPRenable, spr0, sproverflow, T, V, X, W, readbuffer);
 		#endif
 
 	}
