@@ -1,11 +1,11 @@
 //W razie jakby pojawi³ siê jakiœ b³¹d!
-//#define DEBUG_MODE
+#define DEBUG_MODE
 
-#ifndef DEBUG_MODE
+//#ifndef DEBUG_MODE
 #pragma comment(linker, "/subsystem:windows")
-#else
-#pragma comment(linker, "/subsystem:console")
-#endif
+//#else
+//#pragma comment(linker, "/subsystem:console")
+//#endif
 
 #define _CRT_SECURE_NO_WARNINGS
 #define MASTER_CLOCK 21477272
@@ -34,8 +34,8 @@ int main(int _argc, char **_argv) {
 	sf::Event wEvent;
 
 	#ifdef DEBUG_MODE
-	system("title NESgaro");
-	system("color 5f");
+	system("title NESgaro mini debugger");
+	//system("color 5f");
 	
 	puts("Preparing, please wait...");
 
@@ -47,16 +47,18 @@ int main(int _argc, char **_argv) {
 	}
 	#endif
 
-	window.display();
+	
 	window.setVerticalSyncEnabled(false);
-	window.setFramerateLimit(60);
+	window.setFramerateLimit(16);
+	window.display();
 
 	windowIcon.loadFromFile("icon.png");
 	window.setIcon(16, 16, windowIcon.getPixelsPtr());
 
 	MEM::init();
 	//MEM::loadROM("D:\\NESASM\\nes_asm6502_test2.nes");
-	MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\donkey kong.nes");
+	//MEM::loadROM("D:\\NESASM\\mcpong\\McPong (dev 0.1).nes");
+	MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Pac-Man.nes");
 
 	PPU::init();
 	CPU::init();
@@ -71,14 +73,13 @@ int main(int _argc, char **_argv) {
 		//SFML Poll
 		if (PPU::dot == 1 && PPU::scanline == -1) {
 
-			window.clear(sf::Color(PPU::colors[0x00]));
-
 			window.pollEvent(wEvent);
 			if (wEvent.type == sf::Event::Closed) {
 				window.close();
 				return 0xF19A20;
 			}
 
+			window.clear(sf::Color(PPU::colors[MEM::VRAM[0x3f05]]));
 			window.display();
 		}
 		

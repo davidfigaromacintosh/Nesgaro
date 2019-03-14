@@ -41,7 +41,7 @@ namespace PPU {
 	//Wewnêtrzne rejestry PPU
 	u16	T;			//Tymczasowy adress VRAM
 	u16	V;			//Aktualny adres VRAM
-	u8	X;			//X scroll
+	u8	X;			//Fine X scroll
 	u8	W;			//Pierwszy lub drugi odczyt
 	u8 OAMV;
 	u8 readbuffer;

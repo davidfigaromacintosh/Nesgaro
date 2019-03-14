@@ -1187,7 +1187,7 @@ namespace CPU {
 	void step() {
 
 		#ifdef DEBUG_MODE
-		printf("\nCPU Cycle!");
+		//printf("\nCPU Cycle!");
 		#endif
 
 		if (cyclesLeft == 0) {
@@ -1196,7 +1196,7 @@ namespace CPU {
 				NMIoccured = 0;
 				interrupt(INT_NMI);
 				#ifdef DEBUG_MODE
-				printf(" NMI occured!");
+				//printf(" NMI occured!");
 				#endif
 
 			} else {
@@ -1207,6 +1207,7 @@ namespace CPU {
 				u16 opcode = getOpcode(op);
 
 				#ifdef DEBUG_MODE
+				/*
 				u8 opr1 = MAINBUS::read(PC + 1);
 				u8 opr2 = MAINBUS::read(PC + 2);
 				printf(" Opcode=%02x", op);
@@ -1222,6 +1223,7 @@ namespace CPU {
 				}
 			
 				printf(" (%s %s, %d length, %d cycles) @ PC=%04x (pointing at %04x)", getOpcodeMnemonic(op), getOpcodeAddressingModeName(op), getOpcodeLength(op), opcodeCycle[op], PC, getAddressFromType(addrmode, PC+1));
+				*/
 				#endif
 
 				cyclesLeft = opcodeCycle[op];
@@ -1395,7 +1397,7 @@ namespace CPU {
 
 				#ifdef DEBUG_MODE
 				if (opcode != JSR && opcode != JMP) PC += getOpcodeLength(op) - 1;
-				printf(" A=%02x X=%02x Y=%02x S=%02x C=%x Z=%x I=%x D=%x B=%x V=%x N=%x", A, X, Y, S, (P & 1) >> 0, (P & 2) >> 1, (P & 4) >> 2, (P & 8) >> 3, (P & 16) >> 4, (P & 64) >> 6, (P & 128) >> 7);
+				//printf(" A=%02x X=%02x Y=%02x S=%02x C=%x Z=%x I=%x D=%x B=%x V=%x N=%x", A, X, Y, S, (P & 1) >> 0, (P & 2) >> 1, (P & 4) >> 2, (P & 8) >> 3, (P & 16) >> 4, (P & 64) >> 6, (P & 128) >> 7);
 				#endif
 			}
 
@@ -1403,7 +1405,7 @@ namespace CPU {
 
 		#ifdef DEBUG_MODE
 		else {
-			printf(" Still executing...");
+			//printf(" Still executing...");
 		}
 		#endif
 

@@ -43,7 +43,7 @@ namespace PPU {
 		//Rysowany ekran znajduje siê na koordach od 1 do 256 dot i od 0 do 239 scanline...
 
 		#ifdef DEBUG_MODE
-		printf("\nPPU Cycle!");
+		//printf("\nPPU Cycle!");
 		#endif
 
 		dot++;
@@ -69,7 +69,7 @@ namespace PPU {
 				spr0 = 0;
 				sproverflow = 0;
 			}
-			else if (dot >= 280 && dot <= 304) {
+			else if (dot >= 280 && dot <= 304 && (BGenable || SPRenable)) {
 				V = V & 0b111101111100000 | T & 0b000010000011111;
 			}
 
@@ -92,7 +92,7 @@ namespace PPU {
 		}
 
 		#ifdef DEBUG_MODE
-		printf(" Dot=%d Line=%d Odd=%d VBlank=%d NMI=%d SPR0=%d SPROV=%d T=%d V=%d X=%d W=%d", dot, scanline, oddframe, vblank, NMIenabled, spr0, sproverflow, T, V, X, W);
+		//printf(" Dot=%d Line=%d Odd=%d VBlank=%d NMI=%d BG=%d SPR=%d SPR0=%d SPROV=%d T=%04x V=%04x X=%d W=%d B=%02x", dot, scanline, oddframe, vblank, NMIenabled, BGenable, SPRenable, spr0, sproverflow, T, V, X, W, readbuffer);
 		#endif
 
 	}
@@ -100,12 +100,6 @@ namespace PPU {
 	//Szyna danych PPU (odczyt)
 	u8 readbus(u16 regno) {
 		switch (regno) {
-			case PPU_CTRL: {	//Read $2000 W
-				return 0;
-			}
-			case PPU_MASK: {	//Read $2001 W
-				return 0;
-			}
 			case PPU_STATUS: {	//Read $2002 R
 
 				W = 0;
@@ -114,17 +108,8 @@ namespace PPU {
 
 				return ((tempvblank << 2) | (spr0 << 1) | (sproverflow)) << 5;
 			}
-			case OAM_ADDR: {	//Read $2003 W
-				return 0;
-			}
 			case OAM_DATA: {	//Read $2004 R W
 				return MEM::OAM[OAMV];
-			}
-			case PPU_SCROLL: {	//Read $2005 W W
-				return 0;
-			}
-			case PPU_ADDR: {	//Read $2006 W W
-				return 0;
 			}
 			case PPU_DATA: {	//Read $2007 R W
 
@@ -153,6 +138,9 @@ namespace PPU {
 				}
 
 			}
+			default: {
+				return 0;
+			}
 		}
 	}
 
@@ -161,7 +149,7 @@ namespace PPU {
 		switch (regno) {
 			case PPU_CTRL: {	//Write $2000 W
 
-				T = (T & 0b111001111111111) | ((0xffff & value) & 0b0000000000000011) << 10;
+				T = (T & 0b111001111111111) | ((value & 0b00000011) << 10);
 				
 				NMIenabled =		!!(value & 0b10000000);
 				PPUmasterslave =	!!(value & 0b01000000);
@@ -186,32 +174,43 @@ namespace PPU {
 
 				break;
 			}
-			case PPU_STATUS: {	//Write $2002 R
-				break;
-			}
 			case OAM_ADDR: {	//Write $2003 W
 				OAMV = value;
+				break;
 			}
 			case OAM_DATA: {	//Write $2004 W R
-
 				MEM::OAM[OAMV++] = value;
+				break;
 			}
 			case PPU_SCROLL: {	//Write $2005 W W
+
+				if (W == 0) {
+					T = (T & 0b111111111100000) | ((value & 0b11111000) << 3);
+					X = value & 0b00000111;
+				}
+				else {
+					T = (T & 0b000110000011111) | ((value & 0b00000111) << 12) | ((value & 0b11111000) << 5);
+				}
+				W = !W;
+
+
 				break;
 			}
 			case PPU_ADDR: {	//Write $2006 W W
 
 				if (W == 0) {
-
-					W = 1;
+					T = (T & 0b100000011111111) | ((value & 0b00111111) << 8);
+					T &= 0b011111111111111;
+					
 				} else {
-					W = 0;
+					T = (T & 0b111111100000000) | value;
+					V = T;
 				}
-
+				W = !W;
 				
 				break;
 			}
-			case PPU_DATA: {	//$2007 R W
+			case PPU_DATA: {	//Write $2007 R W
 				MEM::VRAM[V] = value;
 				if (VRAMincrement == 0) {
 					V += 1;
@@ -219,6 +218,9 @@ namespace PPU {
 				else {
 					V += 32;
 				}
+				break;
+			}
+			default: {
 				break;
 			}
 		}
