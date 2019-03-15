@@ -1,4 +1,4 @@
-//W razie jakby pojawi³ siê jakiœ b³¹d!
+ï»¿//W razie jakby pojawiÅ‚ siÄ™ jakiÅ› bÅ‚Ä…d!
 //#define DEBUG_MODE
 
 #ifndef DEBUG_MODE
@@ -34,7 +34,7 @@ int main(int _argc, char **_argv) {
 
 	sf::Image windowIcon;
 
-	sf::RenderWindow window{ sf::VideoMode{256*3, 240*3}, "NESgaro v0.1 alpha", sf::Style::Close};
+	sf::RenderWindow window{ sf::VideoMode{256*3, 240*3}, "NESgaro v0.1 alpha", sf::Style::Close}; //= â¬¤ á†º â¬¤ =
 	sf::Event wEvent;
 	
 	#ifdef DEBUG_MODE
@@ -53,18 +53,24 @@ int main(int _argc, char **_argv) {
 
 	window.setVerticalSyncEnabled(false);
 	window.setFramerateLimit(60);
-	window.display();
 
 	windowIcon.loadFromFile("icon.png");
 	window.setIcon(16, 16, windowIcon.getPixelsPtr());
 
+	window.display();
+
+
 	MEM::init();
 	//MEM::loadROM("D:\\NESASM\\nes_asm6502_test2.nes");
 	//MEM::loadROM("D:\\NESASM\\mcpong\\McPong (dev 0.1).nes");
-	MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Pac-Man.nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Pac-Man.nes"); 
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Pinball.nes"); 
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\F-1 Race.nes");
-	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Mario Bros. (World).nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\donkey kong.nes"); 
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Lunar Pool (USA).nes");
+	MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Super Mario Bros. (World).nes");
 
+	//SCR::Screen screen;
 	PPU::init();
 	CPU::init();
 
@@ -85,7 +91,7 @@ int main(int _argc, char **_argv) {
 				return 0xF19A20;
 			}
 
-			window.clear(sf::Color(PPU::colors[MEM::VRAM[0x3f05]]));
+			window.clear(sf::Color(PPU::colors[MEM::VRAM[0x3f00]]));
 			//window.draw(screen);
 			window.display();
 		}

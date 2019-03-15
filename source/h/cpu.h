@@ -605,52 +605,52 @@ namespace CPU {
 	//Jak na podstawie typu opokdu pobraæ dane z operandu?
 	//Na podstawie typu adresowania oraz danego operandu, zwraca adres danej wartoœci w pamiêci
 	u16 getAddressFromType(u8 addrmode, u16 pointer) {
-		
+
 		switch (addrmode) {
-			
-		case ABSOLUTE: {
-			return MAINBUS::read(pointer) + MAINBUS::read(pointer + 1) * 256;
-		}
-		case ABSOLUTE_X: {
-			return MAINBUS::read(pointer) + MAINBUS::read(pointer + 1) * 256 + X;
-		}
-		case ABSOLUTE_Y: {
-			return MAINBUS::read(pointer) + MAINBUS::read(pointer + 1) * 256 + Y;
-		}
-		case IMMEDIATE: {
-			return pointer;
-		}
-		case ZEROPAGE: {
-			return MAINBUS::read(pointer);
-		}
-		case ZEROPAGE_X: {
-			return (MAINBUS::read(pointer) + X) % 256;
-		}
-		case ZEROPAGE_Y: {
-			return (MAINBUS::read(pointer) + Y) % 256;
-		}
-		case INDIRECT: {
-			//INDIRECT u¿ywa jedynie instrukcja JMP
-			u8 polo = MAINBUS::read(pointer);
-			u16 pohi = 256 * MAINBUS::read(pointer + 1);
 
-			//Typ INDIRECT posiada bardzo specyficznego buga: Nie potrafi przekraczaæ stron.
-			//Przyk³ad: Je¿eli jako operand mamy (Adresik) i pierwsze 2 bity od adresu "Adresik" to np. $24FF to MSB pobierze ju¿ nie z $2500 a z $2400.
-			
-			return MAINBUS::read(polo + pohi) +	MAINBUS::read(((polo + 1) % 256) + pohi) * 256;
+			case ABSOLUTE: {
+				return MAINBUS::read(pointer) + MAINBUS::read(pointer + 1) * 256;
+			}
+			case ABSOLUTE_X: {
+				return MAINBUS::read(pointer) + MAINBUS::read(pointer + 1) * 256 + X;
+			}
+			case ABSOLUTE_Y: {
+				return MAINBUS::read(pointer) + MAINBUS::read(pointer + 1) * 256 + Y;
+			}
+			case IMMEDIATE: {
+				return pointer;
+			}
+			case ZEROPAGE: {
+				return MAINBUS::read(pointer);
+			}
+			case ZEROPAGE_X: {
+				return (MAINBUS::read(pointer) + X) % 256;
+			}
+			case ZEROPAGE_Y: {
+				return (MAINBUS::read(pointer) + Y) % 256;
+			}
+			case INDIRECT: {
+				//INDIRECT u¿ywa jedynie instrukcja JMP
+				u8 polo = MAINBUS::read(pointer);
+				u16 pohi = 256 * MAINBUS::read(pointer + 1);
 
-		}
-		case INDIRECT_X: {
-			u8 val = MAINBUS::read(pointer);
-			return MAINBUS::read((val + X) % 256) + MAINBUS::read((val + X + 1) % 256) * 256;
-		}
-		case INDIRECT_Y: {
-			u8 val = MAINBUS::read(pointer);
-			return MAINBUS::read(val) + MAINBUS::read((val + 1) % 256) * 256 + Y;
-		}
-		default: {
-			return pointer;
-		}
+				//Typ INDIRECT posiada bardzo specyficznego buga: Nie potrafi przekraczaæ stron.
+				//Przyk³ad: Je¿eli jako operand mamy (Adresik) i pierwsze 2 bity od adresu "Adresik" to np. $24FF to MSB pobierze ju¿ nie z $2500 a z $2400.
+
+				return MAINBUS::read(polo + pohi) + MAINBUS::read(((polo + 1) % 256) + pohi) * 256;
+
+			}
+			case INDIRECT_X: {
+				u8 val = MAINBUS::read(pointer);
+				return MAINBUS::read((val + X) % 256) + MAINBUS::read((val + X + 1) % 256) * 256;
+			}
+			case INDIRECT_Y: {
+				u8 val = MAINBUS::read(pointer);
+				return MAINBUS::read(val) + MAINBUS::read((val + 1) % 256) * 256 + Y;
+			}
+			default: {
+				return pointer;
+			}
 		}
 		return pointer;
 	}
@@ -742,7 +742,7 @@ namespace CPU {
 	}
 	void executeSBC(u8 addrmode) { //SBC
 
-		u8 operand = MAINBUS::read(getAddressFromType(addrmode, PC));
+		u16 operand = MAINBUS::read(getAddressFromType(addrmode, PC));
 
 		u16 diff = A - operand - !getC();
 
@@ -750,7 +750,7 @@ namespace CPU {
 		setV( !!((A ^ diff) & (~operand ^ diff) & 0x80) );
 		A = diff & 0xff;
 
-		setFlagsZN(A);
+		setFlagsZN(diff & 0xff);
 	}
 	void executeSTA(u8 addrmode) { //STA
 		MAINBUS::write(getAddressFromType(addrmode, PC), A);
@@ -762,7 +762,7 @@ namespace CPU {
 		switch (addrmode) {
 			case ACCUMULATOR: {
 				setC(!!(A & 0x80));
-				A <<= 1;
+				A = A << 1;
 				setFlagsZN(A);
 				break;
 			}
@@ -790,14 +790,14 @@ namespace CPU {
 		switch (addrmode) {
 			case ACCUMULATOR: {
 				setC(!!(A & 0x01));
-				A >>= 1;
+				A = A >> 1;
 				setFlagsZN(A);
 				break;
 			}
 			default: {
 				u16 address = getAddressFromType(addrmode, PC);
 				u8 operand = MAINBUS::read(address);
-				setC(operand & 0x01);
+				setC(!!(operand & 0x01));
 				operand = (operand >> 1);
 				setFlagsZN(operand);
 				MAINBUS::write(address, operand);
@@ -849,13 +849,13 @@ namespace CPU {
 	//2A - 4 typów adresacji
 	void executeDEC(u8 addrmode) {	//DEC
 		u16 addr = getAddressFromType(addrmode, PC);
-		u8 temp = MAINBUS::read(addr) - 1u;
+		u8 temp = MAINBUS::read(addr) - 0x01;
 		setFlagsZN(temp);
 		MAINBUS::write(addr, temp);
 	}
 	void executeINC(u8 addrmode) {	//INC
 		u16 addr = getAddressFromType(addrmode, PC);
-		u8 temp = MAINBUS::read(addr) + 1u;
+		u8 temp = MAINBUS::read(addr) + 0x01;
 		setFlagsZN(temp);
 		MAINBUS::write(addr, temp);
 	}
@@ -989,7 +989,7 @@ namespace CPU {
 		PC |= MAINBUS::pullStack() << 8;
 	}
 	void executeRTS() {	//RTS
-		PC = MAINBUS::pullStack() | MAINBUS::pullStack() << 8;
+		PC = (MAINBUS::pullStack() | MAINBUS::pullStack() << 8) + 1;
 	}
 	void executeSEC() {	//SEC
 		setC();
@@ -1024,8 +1024,8 @@ namespace CPU {
 		setFlagsZN(A);
 	}
 	void executeJSR() {	//JSR
-		MAINBUS::pushStack( (0xff00 & (PC + 2)) >> 8 );	//Najpierw wpychamy PC do stosu
-		MAINBUS::pushStack(0x00ff & (PC + 2));
+		MAINBUS::pushStack( (0xff00 & (PC + 1)) >> 8 );	//Najpierw wpychamy PC do stosu
+		MAINBUS::pushStack(0x00ff & (PC + 1));
 		PC = MAINBUS::readAddr(PC);	//Potem ustawiamy PC na wartoœæ, któr¹ niesie operand
 	}
 
@@ -1397,6 +1397,14 @@ namespace CPU {
 				if (opcode != JSR && opcode != JMP) PC += getOpcodeLength(op) - 1;
 				#ifdef DEBUG_MODE
 				printf(" A=%02x X=%02x Y=%02x S=%02x C=%x Z=%x I=%x D=%x B=%x V=%x N=%x", A, X, Y, S, (P & 1) >> 0, (P & 2) >> 1, (P & 4) >> 2, (P & 8) >> 3, (P & 16) >> 4, (P & 64) >> 6, (P & 128) >> 7);
+
+				puts("\nSTACK:");
+				for (int i = 0; i < 0x10; i++) {
+					for (int j = 0; j < 0x10; j++) {
+						printf("%02x  ", MEM::RAM[0x0100 + 0x10 * i + j]);
+					}
+					putchar('\n');
+				}
 				#endif
 			}
 
@@ -1404,9 +1412,7 @@ namespace CPU {
 
 		#ifdef DEBUG_MODE
 		else {
-			
-			//printf(" Still executing...");
-			
+			printf(" Still executing...");
 		}
 		#endif
 

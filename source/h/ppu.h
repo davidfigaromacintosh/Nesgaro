@@ -115,8 +115,19 @@ namespace PPU {
 				u8 tempvalue;
 
 				if (V < 0x3f00) {
+					u16 tempv = V;
+
+					//mirroring koloru t³a
+					switch (tempv) {
+					case 0x3f10:
+					case 0x3f14:
+					case 0x3f18:
+					case 0x3f1c:
+						tempv -= 0x10;
+					}
 					tempbuffer = readbuffer;
-					readbuffer = MEM::VRAM[V];
+					readbuffer = MEM::VRAM[tempv];
+					tempvalue = readbuffer;
 				}
 				else {
 					tempvalue = MEM::VRAM[V];
@@ -128,13 +139,7 @@ namespace PPU {
 					V += 32;
 				}
 
-				if (V < 0x3f00) {
-					return tempbuffer;
-				}
-				else {
-					return tempvalue;
-				}
-
+				return tempvalue;
 			}
 			default: {
 				return 0;
@@ -209,7 +214,18 @@ namespace PPU {
 				break;
 			}
 			case PPU_DATA: {	//Write $2007 R W
-				MEM::VRAM[V] = value;
+				u16 tempv = V;
+
+				//mirroring koloru t³a
+				switch (tempv) {
+				case 0x3f10:
+				case 0x3f14:
+				case 0x3f18:
+				case 0x3f1c:
+					tempv -= 0x10;
+				}
+
+				MEM::VRAM[tempv] = value;
 				if (VRAMincrement == 0) {
 					V += 1;
 				}
