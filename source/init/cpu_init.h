@@ -261,6 +261,7 @@ namespace CPU {
 	u8 S;			//Wskaünik stosu
 	u16 PC;			//Wskaünik programu
 	u64 cycles;		//Licznik cykli
+	u8 oddCycle;
 	u8 NMIoccured;	//Czy wystapi≥o NMI
 
 	u8 cyclesLeft = 0;

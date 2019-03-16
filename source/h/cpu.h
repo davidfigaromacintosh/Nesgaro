@@ -84,6 +84,7 @@ namespace CPU {
 		Y = 0;
 
 		PC = MAINBUS::readAddr(MEM::reset);
+		oddCycle = 0;
 		S = 0xfd;
 		P = 0b00110100;
 		NMIoccured = 0;
@@ -637,16 +638,16 @@ namespace CPU {
 				//Typ INDIRECT posiada bardzo specyficznego buga: Nie potrafi przekraczaæ stron.
 				//Przyk³ad: Je¿eli jako operand mamy (Adresik) i pierwsze 2 bity od adresu "Adresik" to np. $24FF to MSB pobierze ju¿ nie z $2500 a z $2400.
 
-				return MAINBUS::read(polo + pohi) + MAINBUS::read(((polo + 1) % 256) + pohi) * 256;
+				return MAINBUS::read(polo + pohi) + MAINBUS::read(((polo + 0x01) % 256) + pohi) * 256;
 
 			}
 			case INDIRECT_X: {
 				u8 val = MAINBUS::read(pointer);
-				return MAINBUS::read((val + X) % 256) + MAINBUS::read((val + X + 1) % 256) * 256;
+				return MAINBUS::read((val + X) % 256) + MAINBUS::read((val + X + 0x01) % 256) * 256;
 			}
 			case INDIRECT_Y: {
 				u8 val = MAINBUS::read(pointer);
-				return MAINBUS::read(val) + MAINBUS::read((val + 1) % 256) * 256 + Y;
+				return MAINBUS::read(val) + MAINBUS::read((val + 0x01) % 256) * 256 + Y;
 			}
 			default: {
 				return pointer;
@@ -750,7 +751,7 @@ namespace CPU {
 		setV( !!((A ^ diff) & (~operand ^ diff) & 0x80) );
 		A = diff & 0xff;
 
-		setFlagsZN(diff & 0xff);
+		setFlagsZN(A);
 	}
 	void executeSTA(u8 addrmode) { //STA
 		MAINBUS::write(getAddressFromType(addrmode, PC), A);
@@ -770,7 +771,7 @@ namespace CPU {
 				u16 address = getAddressFromType(addrmode, PC);
 				u8 operand = MAINBUS::read(address);
 				setC(!!(operand & 0x80));
-				operand = (operand << 1);
+				operand = operand << 1;
 				setFlagsZN(operand);
 				MAINBUS::write(address, operand);
 				break;
@@ -798,7 +799,7 @@ namespace CPU {
 				u16 address = getAddressFromType(addrmode, PC);
 				u8 operand = MAINBUS::read(address);
 				setC(!!(operand & 0x01));
-				operand = (operand >> 1);
+				operand = operand >> 1;
 				setFlagsZN(operand);
 				MAINBUS::write(address, operand);
 				break;
@@ -810,7 +811,7 @@ namespace CPU {
 		switch (addrmode) {
 			case ACCUMULATOR: {
 				setC(!!(A & 0x80));
-				A = (A << 1) | (tempC);
+				A = (A << 1) | tempC;
 				setFlagsZN(A);
 				break;
 			}
@@ -818,7 +819,7 @@ namespace CPU {
 				u16 address = getAddressFromType(addrmode, PC);
 				u8 operand = MAINBUS::read(address);
 				setC(!!(operand & 0x80));
-				operand = (operand << 1) | (tempC);
+				operand = (operand << 1) | tempC;
 				setFlagsZN(operand);
 				MAINBUS::write(address, operand);
 				break;
@@ -837,7 +838,7 @@ namespace CPU {
 			default: {
 				u16 address = getAddressFromType(addrmode, PC);
 				u8 operand = MAINBUS::read(address);
-				setC(operand & 0x01);
+				setC(!!(operand & 0x01));
 				operand = (operand >> 1) | (tempC << 7);
 				setFlagsZN(operand);
 				MAINBUS::write(address, operand);
@@ -895,7 +896,7 @@ namespace CPU {
 		u8 operand = MAINBUS::read(getAddressFromType(addrmode, PC));
 
 		//Na podstawie wartoœci otrzymanej z "operand" ustaw flagi Z V i N
-		setZ(!(operand & A));
+		setZ(!(A & operand));
 		setV(!!(operand & 0b01000000));
 		setN(!!(operand & 0b10000000));
 		return;
@@ -1417,6 +1418,8 @@ namespace CPU {
 		#endif
 
 		if (cyclesLeft > 0) cyclesLeft--;
+		oddCycle = !oddCycle;
+
 	}
 
 }

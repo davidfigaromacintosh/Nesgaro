@@ -35,7 +35,7 @@ namespace MEM {
 	
 		//Sekcja RAM
 		for (int i = 0; i < 0x800; i++) {
-			RAM[i] = 0xff;
+			RAM[i] = rand() & 0xff;
 		}
 
 		//Sekcja PRGRAM
@@ -92,14 +92,16 @@ namespace MEM {
 		// £adujemy pierwszy bank PRG
 		fread_s(buff, sizeof(buff), 1, 0x4000, f);
 		for (int i = 0; i < 0x4000; i++) {
+			//fread_s(buff, sizeof(buff), 1, 1, f);
 			PRGROM[i] = buff[i];
 			PRGROM[i + 0x4000] = buff[i];
 		}
+
 		// £adujemy pierwszy ostatni bank PRG
 		if (header[4] > 1) {
 			fread_s(buff, sizeof(buff), 1, 0x4000, f);
 			for (int i = 0; i < 0x4000; i++) {
-				fread_s(buff, sizeof(buff), 1, 1, f);
+				//fread_s(buff, sizeof(buff), 1, 1, f);
 				PRGROM[i + 0x4000] = buff[i];
 			}
 		}
@@ -108,6 +110,7 @@ namespace MEM {
 		if (header[5] > 0) {
 			fread_s(buff, sizeof(buff), 1, 0x2000, f);
 			for (int i = 0; i < 0x2000; i++) {
+				//fread_s(buff, sizeof(buff), 1, 1, f);
 				VRAM[i] = buff[i];
 			}
 		}
@@ -115,6 +118,15 @@ namespace MEM {
 		// zamykamy
 		fclose(f);
 		return 0;
+	}
+
+	void DMA(u8 page) {
+		
+		CPU::cyclesLeft += 513 + CPU::oddCycle;
+		for (int i = 0; i < 0x100; i++) {
+			OAM[i] = MAINBUS::read((page << 8) + i);
+		}
+
 	}
 	
 }

@@ -19,12 +19,14 @@
 #include "types.h"
 
 #include "init/mainbus_init.h"
+#include "init/controller_init.h"
 #include "init/screen_init.h"
 #include "init/ppu_init.h"
 #include "init/cpu_init.h"
 
 #include "h/memory.h"
 #include "h/mainbus.h"
+#include "h/controller.h"
 #include "h/screen.h"
 #include "h/ppu.h"
 #include "h/cpu.h"
@@ -32,9 +34,15 @@
 static bool vsync = false;
 int main(int _argc, char **_argv) {
 
+	srand(time(NULL));
+
+	float windowScale = 3;
+
+	SCREEN::Screen screen;
+
 	sf::Image windowIcon;
 
-	sf::RenderWindow window{ sf::VideoMode{256*3, 240*3}, "NESgaro v0.1 alpha", sf::Style::Close}; //= ⬤ ᆺ ⬤ =
+	sf::RenderWindow window{ sf::VideoMode{(unsigned int)windowScale * 256, (unsigned int)windowScale * 240}, "NESgaro v0.1 alpha", sf::Style::Close}; //= ⬤ ᆺ ⬤ =
 	sf::Event wEvent;
 	
 	#ifdef DEBUG_MODE
@@ -51,7 +59,7 @@ int main(int _argc, char **_argv) {
 	}
 	#endif
 
-	window.setVerticalSyncEnabled(false);
+	window.setVerticalSyncEnabled(true);
 	window.setFramerateLimit(60);
 
 	windowIcon.loadFromFile("icon.png");
@@ -61,38 +69,59 @@ int main(int _argc, char **_argv) {
 
 
 	MEM::init();
-	//MEM::loadROM("D:\\NESASM\\nes_asm6502_test2.nes");
-	//MEM::loadROM("D:\\NESASM\\mcpong\\McPong (dev 0.1).nes");
-	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Pac-Man.nes"); 
-	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Pinball.nes"); 
-	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\F-1 Race.nes");
-	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\donkey kong.nes"); 
-	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Lunar Pool (USA).nes");
-	MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Super Mario Bros. (World).nes");
 
-	//SCR::Screen screen;
+	//ROMy do testowania
+	//MEM::loadROM("D:\\NESASM\\nes_asm6502_test2.nes");
+	//MEM::loadROM("D:\\NESASM\\mcpong\\mcpong.nes");
+	//MEM::loadROM("D:\\NESASM\\mcpong\\McPong (dev 0.1).nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Pac-Man.nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Pinball.nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Mappy.nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\F-1 Race.nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\donkey kong.nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Battle City (Japan).nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Burger Time (USA).nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Lunar Pool (USA).nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Super Mario Bros. (World).nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Sky Destroyer (Japan).nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Ice Climber.nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Magic Jewelry.nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Mario Bros. (World).nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Excitebike.nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Gyromite (World).nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Duck Hunt (World).nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Balloon Fight (USA).nes");
+
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\testroms\\1.frame_basics.nes");
+
+	screen.resize(windowScale);
 	PPU::init();
+	PPU::connectScreen(screen);
 	CPU::init();
 
 	while (1) {
 
-		PPU::step();
-		PPU::step();
-		PPU::step();
 		CPU::step();
+		PPU::step();
+		PPU::step();
+		PPU::step();
 
 		//SFML Poll
 		if (PPU::vblank && !vsync) {
 
 			vsync = true;
 			window.pollEvent(wEvent);
-			if (wEvent.type == sf::Event::Closed) {
-				window.close();
-				return 0xF19A20;
+
+			switch (wEvent.type) {
+
+				case sf::Event::Closed: {
+					window.close();
+					return 0xF19A20;
+				}
+			
 			}
 
-			window.clear(sf::Color(PPU::colors[MEM::VRAM[0x3f00]]));
-			//window.draw(screen);
+			window.draw(screen);
 			window.display();
 		}
 		if (!PPU::vblank && vsync) {

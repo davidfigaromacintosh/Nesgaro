@@ -59,7 +59,10 @@ namespace PPU {
 
 		}
 
-		if (scanline == -1) { //Pre scan (-1)
+
+
+		// === Pre scan (-1) ===
+		if (scanline == -1) { 
 
 			//Zawsze na docie 1 pre-linii flagi VBlank, SPR0 oraz SPROV s¹ czyszczone
 			if (dot == 1) {
@@ -67,19 +70,76 @@ namespace PPU {
 				spr0 = 0;
 				sproverflow = 0;
 			}
-			else if (dot >= 280 && dot <= 304 && (BGenable || SPRenable)) {
-				V = V & 0b111101111100000 | T & 0b000010000011111;
+
+			//dot 257: scroll update
+			if (dot == 257 && renderingEnabled()) {
+				V = (V & 0b111101111100000) | (T & 0b000010000011111);
+			}
+
+			// dot od 280 do 304: scroll update
+			if (dot >= 280 && dot <= 304 && renderingEnabled()) {
+				V = (V & 0b000010000011111) | (T & 0b111101111100000);
 			}
 
 		}
-		else if (scanline >= 0 && scanline <= 239) {	//Widzialne linie (od 0 do 239)
 
-			if (scanline == 0 && dot == 0 && oddframe && (BGenable || SPRenable)) dot = 1;	//Pierwszy pixel jest pomijany na linii 0 gdy klatka video jest nieparzysta
 
+
+		// === Widzialne linie (od 0 do 239) ===
+		else if (scanline >= 0 && scanline <= 239) {
+
+			//Pierwszy pixel jest pomijany na linii 0 gdy klatka video jest nieparzysta
+			if ((scanline == 0) && (dot == 0) && oddframe && renderingEnabled())
+				dot = 1;	
+
+			//Gdy mamy pocz¹tek klatki, T = V;
+			if (scanline == 0) {
+				//V = T;
+			}
+
+			//USUN¥Æ ZARAZ PO TESTACH!!!
+			if (scanline == 30 && dot == 91) {
+				spr0 = 1;
+			}
+
+			//VRAM zwiêkszenie X dla dot od 1 do 256 oraz Y gdy dot = 256
+			if ((dot >= 2) && (dot <= 257) && renderingEnabled()) {
+				if ((dot - 1) % 8 == 0) {
+					u16 tempX = V & 0b11111;
+					tempX++;
+					if (tempX == 32) {
+						tempX = 0;
+						V ^= 0b000010000000000;
+					}
+					V = V & 0b111111111100000 | tempX;
+				}
+
+				if (dot == 257) {
+					u16 tempY = (V & 0b111000000000000) >> 12 | (V & 0b000001111100000) >> 2;
+					tempY++;
+					if ((tempY >> 3) == 30) {
+						tempY = 0;
+						V ^= 0b000100000000000;
+					}
+					V = (V & 0b000110000011111) | ((tempY & 0b00000111) << 12) | ((tempY & 0b11111000) << 2);
+				}
+				
+			}
+
+			//dot 257: scroll update
+			if ((dot == 257) && renderingEnabled()) {
+
+				V = (V & 0b111101111100000) | (T & 0b000010000011111);
+			}
 
 		}
-		else if (scanline >= 240 && scanline <= 260) { //Post scan (od 240 do 260)
 
+
+
+		// === Post scan (od 240 do 260) ===
+		else if (scanline >= 240 && scanline <= 260) { 
+
+			//Pocz¹tek VBlank oraz NMI
 			if (scanline == 241 && dot == 1) {
 				vblank = 1;
 				if (NMIenabled) {
@@ -87,12 +147,58 @@ namespace PPU {
 				}
 			}
 
+			//dot 257: scroll update
+			if (dot == 257 && renderingEnabled()) {
+				V = (V & 0b111101111100000) | (T & 0b000010000011111);
+			}
+
+		}
+
+
+
+		//Piksele s¹ rysowane jedynie na obszarze dla dot od 1 do 256 oraz linii od 0 do 239
+		if ( (scanline >= 0 && scanline <= 239) && ( dot >= 1 && dot <= 256)) {
+			u8 coordX = (dot - 1) & 0xff;
+			u8 coordY = scanline & 0xff;
+
+			scr->put(coordX, coordY, fetchTile(1));
+
 		}
 
 		#ifdef DEBUG_MODE
 		printf(" Dot=%d Line=%d Odd=%d VBlank=%d NMI=%d BG=%d SPR=%d SPR0=%d SPROV=%d T=%04x V=%04x X=%d W=%d B=%02x", dot, scanline, oddframe, vblank, NMIenabled, BGenable, SPRenable, spr0, sproverflow, T, V, X, W, readbuffer);
 		#endif
 
+	}
+
+	b renderingEnabled() {
+		return BGenable || SPRenable;
+	}
+
+	u8 fetchTile(bool liteColor) {
+		fineX = X;
+		coarseX = V & 0b11111;
+		fineY = (V & 0b111000000000000) >> 12;
+		coarseY = (V & 0b000001111100000) >> 5;
+
+		u8 nt = ((V & 0b000110000000000) >> 10);
+
+		//u8 pixel = MEM::VRAM[0x1000 * BGpattern + MEM::VRAM[0x2000 + ((coarseX << 3) + dot % 8) + 0x10 * ((coarseY << 3) + fineY) >> 3]];
+		u8 pixel =		!!(MEM::VRAM[0x1000 * BGpattern     + fineY + 16 * MEM::VRAM[0x2000 + (((coarseX + ((fineX + (dot - 1) % 8) >> 3)) % 32) + 32 * coarseY + 0x400 * nt) % 0x1000]] & (0b10000000 >> (fineX + (dot - 1)) % 8))
+			+
+					2 * !!(MEM::VRAM[0x1000 * BGpattern + 8 + fineY + 16 * MEM::VRAM[0x2000 + (((coarseX + ((fineX + (dot - 1) % 8) >> 3)) % 32) + 32 * coarseY + 0x400 * nt) % 0x1000]] & (0b10000000 >> (fineX + (dot - 1)) % 8))
+			;
+
+		return liteColor ? (MEM::VRAM[0x3f00 + pixel * renderingEnabled()]) : ((V)+((X + ((dot - 1) % 8)) >> 3));
+	}
+
+	u8 fetchColor() {
+		//u16 vram = V;
+
+
+		return ((V) + ((X + ((dot - 1) % 8)) >> 3));
+		//return MEM::VRAM[0x3f0d];
+	
 	}
 
 	//Szyna danych PPU (odczyt)
@@ -115,6 +221,14 @@ namespace PPU {
 				u8 tempvalue;
 
 				if (V < 0x3f00) {
+					
+					tempbuffer = readbuffer;
+					readbuffer = MEM::VRAM[V];
+					tempvalue = readbuffer;
+
+					//tempvalue = MEM::VRAM[V];
+				}
+				else {
 					u16 tempv = V;
 
 					//mirroring koloru t³a
@@ -125,12 +239,8 @@ namespace PPU {
 					case 0x3f1c:
 						tempv -= 0x10;
 					}
-					tempbuffer = readbuffer;
-					readbuffer = MEM::VRAM[tempv];
-					tempvalue = readbuffer;
-				}
-				else {
-					tempvalue = MEM::VRAM[V];
+
+					tempvalue = MEM::VRAM[tempv];
 				}
 
 				if (VRAMincrement == 0) {
@@ -188,28 +298,31 @@ namespace PPU {
 			case PPU_SCROLL: {	//Write $2005 W W
 
 				if (W == 0) {
-					T = (T & 0b111111111100000) | ((value & 0b11111000) << 3);
+					T = (T & 0b111111111100000) | ((0xffff & value & 0b11111000) >> 3);
 					X = value & 0b00000111;
+					W = 1;
 				}
 				else {
-					T = (T & 0b000110000011111) | ((value & 0b00000111) << 12) | ((value & 0b11111000) << 5);
+					T = (T & 0b000110000011111) | ((0xffff & value & 0b00000111) << 12) | ((0xffff & value & 0b11111000) << 2);
+					W = 0;
 				}
-				W = !W;
-
+				//W = !W;
 
 				break;
 			}
 			case PPU_ADDR: {	//Write $2006 W W
 
 				if (W == 0) {
-					T = (T & 0b100000011111111) | ((value & 0b00111111) << 8);
+					T = (T & 0b100000011111111) | ((0xffff & value & 0b00111111) << 8);
 					T &= 0b011111111111111;
-					
-				} else {
+					W = 1;
+				}
+				else {
 					T = (T & 0b111111100000000) | value;
 					V = T;
+					W = 0;
 				}
-				W = !W;
+				//W = !W;
 				
 				break;
 			}
@@ -225,7 +338,8 @@ namespace PPU {
 					tempv -= 0x10;
 				}
 
-				MEM::VRAM[tempv] = value;
+				if (tempv >= 0x2000) MEM::VRAM[tempv] = value;
+
 				if (VRAMincrement == 0) {
 					V += 1;
 				}

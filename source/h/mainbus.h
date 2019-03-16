@@ -34,6 +34,11 @@ namespace MAINBUS {
 		if (address >= 0x2000 && address < 0x2008) {
 			PPU::writebus(address, value);
 		}
+		//DMA
+		if (address == 0x4014) {
+			MEM::DMA(value);
+		}
+
 
 	}
 
@@ -75,6 +80,7 @@ namespace MAINBUS {
 			return MEM::PRGROM[address - 0x8000];
 		}
 
+		return 0;
 	}
 
 	//Wepchnij do stosu
