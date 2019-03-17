@@ -91,7 +91,7 @@ namespace MEM {
 		mapper |= (header[7] & 0b11110000);
 
 		printf("Mapper %d\n", mapper);
-		printf("MMirroring %d\n", mirroring);
+		printf("Mirroring %d\n", mirroring);
 
 		char buff[0x4000] = { 0 };
 

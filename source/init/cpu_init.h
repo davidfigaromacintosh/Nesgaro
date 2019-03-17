@@ -299,6 +299,8 @@ namespace CPU {
 	//Zwraca wskaŸnik do ³añcucha znaków z mnemonikiem danej instrukcji (nielegalna instrukcja zwróci mnemonik "ILL")
 	const char* getOpcodeMnemonic(u8 opcode);
 
+	u16 getOpcodeMnemonicCode(u8 opcode);
+
 	void init();
 
 	void reset();

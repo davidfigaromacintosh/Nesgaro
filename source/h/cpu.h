@@ -79,6 +79,106 @@ namespace CPU {
 		}
 	}
 
+	u16 getOpcodeMnemonicCode(u8 opcode) {
+	
+		switch (opcode) {
+
+		case ADC_ABS: case ADC_ABS_X: case ADC_ABS_Y: case ADC_IMM: case ADC_IND_X: case ADC_IND_Y: case ADC_ZP: case ADC_ZP_X: {
+			return ADC;
+		}
+
+		case AND_ABS: case AND_ABS_X: case AND_ABS_Y: case AND_IMM: case AND_IND_X: case AND_IND_Y: case AND_ZP: case AND_ZP_X: {
+			return AND;
+		}
+
+		case ASL_ABS: case ASL_ABS_X: case ASL_ACC: case ASL_ZP: case ASL_ZP_X: {
+			return ASL;
+		}
+
+		case BIT_ABS: case BIT_ZP: {
+			return BIT;
+		}
+
+		case CMP_ABS: case CMP_ABS_X: case CMP_ABS_Y: case CMP_IMM: case CMP_IND_X: case CMP_IND_Y: case CMP_ZP: case CMP_ZP_X: {
+			return CMP;
+		}
+
+		case CPX_ABS: case CPX_IMM: case CPX_ZP: {
+			return CPX;
+		}
+
+		case CPY_ABS: case CPY_IMM: case CPY_ZP: {
+			return CPY;
+		}
+
+		case DEC_ABS: case DEC_ABS_X: case DEC_ZP: case DEC_ZP_X: {
+			return DEC;
+		}
+
+		case EOR_ABS: case EOR_ABS_X: case EOR_ABS_Y: case EOR_IMM: case EOR_IND_X: case EOR_IND_Y: case EOR_ZP: case EOR_ZP_X: {
+			return EOR;
+		}
+
+		case INC_ABS: case INC_ABS_X: case INC_ZP: case INC_ZP_X: {
+			return INC;
+		}
+
+		case JMP_ABS: case JMP_IND: {
+			return JMP;
+		}
+
+		case LDA_ABS: case LDA_ABS_X: case LDA_ABS_Y: case LDA_IMM: case LDA_IND_X: case LDA_IND_Y: case LDA_ZP: case LDA_ZP_X: {
+			return LDA;
+		}
+
+		case LDX_ABS: case LDX_ABS_Y: case LDX_IMM: case LDX_ZP: case LDX_ZP_Y: {
+			return LDX;
+		}
+
+		case LDY_ABS: case LDY_ABS_X: case LDY_IMM: case LDY_ZP: case LDY_ZP_X: {
+			return LDY;
+		}
+
+		case LSR_ABS: case LSR_ABS_X: case LSR_ACC: case LSR_ZP: case LSR_ZP_X: {
+			return LSR;
+		}
+
+		case ORA_ABS: case ORA_ABS_X: case ORA_ABS_Y: case ORA_IMM: case ORA_IND_X: case ORA_IND_Y: case ORA_ZP: case ORA_ZP_X: {
+			return ORA;
+		}
+
+		case ROL_ABS: case ROL_ABS_X: case ROL_ACC: case ROL_ZP: case ROL_ZP_X: {
+			return ROL;
+		}
+
+		case ROR_ABS: case ROR_ABS_X: case ROR_ACC: case ROR_ZP: case ROR_ZP_X: {
+			return ROR;
+		}
+
+		case SBC_ABS: case SBC_ABS_X: case SBC_ABS_Y: case SBC_IMM: case SBC_IND_X: case SBC_IND_Y: case SBC_ZP: case SBC_ZP_X: {
+			return SBC;
+		}
+
+		case STA_ABS: case STA_ABS_X: case STA_ABS_Y: case STA_IND_X: case STA_IND_Y: case STA_ZP: case STA_ZP_X: {
+			return STA;
+		}
+
+		case STX_ABS: case STX_ZP: case STX_ZP_Y: {
+			return STX;
+		}
+
+		case STY_ABS: case STY_ZP: case STY_ZP_X: {
+			return STY;
+		}
+
+		default: {
+			return opcode;
+		}
+
+		}
+
+	}
+
 	void init() {
 
 		A = 0;
@@ -558,18 +658,22 @@ namespace CPU {
 			}
 			case INDIRECT: {
 				//INDIRECT u¿ywa jedynie instrukcja JMP
-				u8 polo = MAINBUS::read(pointer);
-				u8 pohi = MAINBUS::read(pointer + 1);
+				u16 address = MAINBUS::readAddr(pointer);
+				u16 page = address & 0xff00;
+				//u8 polo = MAINBUS::read(pointer);
+				//u8 pohi = MAINBUS::read(pointer + 1);
 
 				//Typ INDIRECT posiada bardzo specyficznego buga: Nie potrafi przekraczaæ stron.
 				//Przyk³ad: Je¿eli jako operand mamy (Adresik) i pierwsze 2 bity od adresu "Adresik" to np. $24FF to MSB pobierze ju¿ nie z $2500 a z $2400.
 
-				return MAINBUS::read(polo | (pohi << 8)) | (MAINBUS::read((polo + 1) | (pohi << 8)) << 8);
+				return MAINBUS::read(address) | MAINBUS::read(page | ((address + 1) & 0xff)) << 8;
+				//return MAINBUS::read(polo | (pohi << 8)) | (MAINBUS::read((polo + 1) | (pohi << 8)) << 8);
 
 			}
 			case INDIRECT_X: {
 				u8 val = MAINBUS::read(pointer) + X;
 				return MAINBUS::read(val & 0xff) | (MAINBUS::read((val + 1) & 0xff) << 8);
+				//return pointer;
 				//return (MAINBUS::read(pointer) + X) & 0xff;
 			}
 			case INDIRECT_Y: {
@@ -642,7 +746,7 @@ namespace CPU {
 		u16 sum = A + operand + getC();
 		setC(!!(sum & 0x100));
 		setV(!!((A ^ sum) & (operand ^ sum) & 0x80));
-		A = sum & 0xff;
+		A = sum;
 
 		setFlagsZN(A);
 	}
@@ -675,7 +779,7 @@ namespace CPU {
 
 		setC( !(diff & 0x100) );
 		setV( !!((A ^ diff) & (~operand ^ diff) & 0x80) );
-		A = diff & 0xff;
+		A = diff;
 
 		setFlagsZN(A);
 	}
@@ -866,19 +970,19 @@ namespace CPU {
 		clrV();
 	}
 	void executeDEX() {	//DEX
-		X--;
+		--X;
 		setFlagsZN(X);
 	}
 	void executeDEY() {	//DEY
-		Y--;
+		--Y;
 		setFlagsZN(Y);
 	}
 	void executeINX() {	//INX
-		X++;
+		++X;
 		setFlagsZN(X);
 	}
 	void executeINY() {	//INY
-		Y++;
+		++Y;
 		setFlagsZN(Y);
 	}
 	void executeNOP() {	//NOP
@@ -1135,7 +1239,7 @@ namespace CPU {
 				u8 op = MAINBUS::read(PC);
 
 				u8 addrmode = getOpcodeAddressingMode(op);
-				u16 opcode = getOpcode(op);
+				u16 opcode = getOpcodeMnemonicCode(op);
 
 				#ifdef DEBUG_MODE
 				u8 opr1 = MAINBUS::read(PC + 1);
@@ -1325,7 +1429,7 @@ namespace CPU {
 				}
 
 				
-				if (opcode != JSR && opcode != JMP) PC += getOpcodeLength(op) - 1;
+				if (opcode != JSR && opcode != JMP) { PC += getOpcodeLength(op) - 1; }
 				#ifdef DEBUG_MODE
 				printf(" A=%02x X=%02x Y=%02x S=%02x C=%x Z=%x I=%x D=%x B=%x V=%x N=%x", A, X, Y, S, (P & 1) >> 0, (P & 2) >> 1, (P & 4) >> 2, (P & 8) >> 3, (P & 16) >> 4, (P & 64) >> 6, (P & 128) >> 7);
 
