@@ -1,3 +1,5 @@
+#pragma once
+
 //G³ówna szyna danych konsoli (zapis, odczyt, itd itp...)
 //Typów przetwarzania danych w NESie mamy dwa: zapis i odczyt
 

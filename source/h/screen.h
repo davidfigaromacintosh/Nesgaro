@@ -1,3 +1,5 @@
+#pragma once
+
 namespace SCREEN {
 
 	Screen::Screen() {
@@ -64,13 +66,13 @@ namespace SCREEN {
 
 		//Jeden piksel jest kwadratem sk³adaj¹cym siê z dwóch trójk¹tów
 
-		pixel[index].color		= sf::Color(PPU::colors[color % 64]);
-		pixel[index + 1].color	= sf::Color(PPU::colors[color % 64]);
-		pixel[index + 2].color	= sf::Color(PPU::colors[color % 64]);
+		pixel[index].color		= sf::Color(PPU::colors[color & 0x3f]);
+		pixel[index + 1].color	= sf::Color(PPU::colors[color & 0x3f]);
+		pixel[index + 2].color	= sf::Color(PPU::colors[color & 0x3f]);
 
-		pixel[index + 3].color	= sf::Color(PPU::colors[color % 64]);
-		pixel[index + 4].color	= sf::Color(PPU::colors[color % 64]);
-		pixel[index + 5].color	= sf::Color(PPU::colors[color % 64]);
+		pixel[index + 3].color	= sf::Color(PPU::colors[color & 0x3f]);
+		pixel[index + 4].color	= sf::Color(PPU::colors[color & 0x3f]);
+		pixel[index + 5].color	= sf::Color(PPU::colors[color & 0x3f]);
 	}
 
 	void Screen::draw(sf::RenderTarget &target, sf::RenderStates states) const {

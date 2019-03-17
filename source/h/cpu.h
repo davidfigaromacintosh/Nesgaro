@@ -1,3 +1,5 @@
+#pragma once
+
 namespace CPU {
 
 	//Zwraca dan¹ instrukcjê jako identyfikator
@@ -120,236 +122,155 @@ namespace CPU {
 	12 = Indirect Indexed (Y)
 	13 = Error
 	*/
+
 	u8 getOpcodeAddressingMode(u8 opcode) {
-
-		/* Grupy
-		0 = 1A
-		1 = 1B
-		2 = 2A
-		3 = 2B
-		4 = 3A
-		5 = 3B
-		6 = 4
-		7 = Error
-		*/
-		u8 group = 7;
+	
 		switch (opcode) {
-
-		/*1A
-		case XXX_ABS: case XXX_ABS_X: case XXX_ABS_Y: case XXX_IMM: case XXX_IND_X: case XXX_IND_Y: case XXX_ZP: case XXX_ZP_X:	8  */
-		case ADC_ABS: case ADC_ABS_X: case ADC_ABS_Y: case ADC_IMM: case ADC_IND_X: case ADC_IND_Y: case ADC_ZP: case ADC_ZP_X:	//ADC
-		case AND_ABS: case AND_ABS_X: case AND_ABS_Y: case AND_IMM: case AND_IND_X: case AND_IND_Y: case AND_ZP: case AND_ZP_X:	//AND
-		case CMP_ABS: case CMP_ABS_X: case CMP_ABS_Y: case CMP_IMM: case CMP_IND_X: case CMP_IND_Y: case CMP_ZP: case CMP_ZP_X:	//CMP
-		case EOR_ABS: case EOR_ABS_X: case EOR_ABS_Y: case EOR_IMM: case EOR_IND_X: case EOR_IND_Y: case EOR_ZP: case EOR_ZP_X:	//EOR
-		case LDA_ABS: case LDA_ABS_X: case LDA_ABS_Y: case LDA_IMM: case LDA_IND_X: case LDA_IND_Y: case LDA_ZP: case LDA_ZP_X:	//LDA
-		case ORA_ABS: case ORA_ABS_X: case ORA_ABS_Y: case ORA_IMM: case ORA_IND_X: case ORA_IND_Y: case ORA_ZP: case ORA_ZP_X:	//ORA
-		case SBC_ABS: case SBC_ABS_X: case SBC_ABS_Y: case SBC_IMM: case SBC_IND_X: case SBC_IND_Y: case SBC_ZP: case SBC_ZP_X:	//SBC
-		case STA_ABS: case STA_ABS_X: case STA_ABS_Y:               case STA_IND_X: case STA_IND_Y: case STA_ZP: case STA_ZP_X:	//STA
-		{ group = 0; break; }
-
-		/*1B
-		case XXX_ACC: case XXX_ABS: case XXX_ABS_X: case XXX_ABS_Y: case XXX_IMM: case XXX_ZP: case XXX_ZP_X: case XXX_ZP_Y:	6  */
-		case ASL_ACC: case ASL_ABS: case ASL_ABS_X:                               case ASL_ZP: case ASL_ZP_X:					//ASL
-		              case LDX_ABS:                 case LDX_ABS_Y: case LDX_IMM: case LDX_ZP:                case LDX_ZP_Y:	//LDX
-		              case LDY_ABS: case LDY_ABS_X:                 case LDY_IMM: case LDY_ZP: case LDY_ZP_X:					//LDY
-		case LSR_ACC: case LSR_ABS: case LSR_ABS_X:                               case LSR_ZP: case LSR_ZP_X:					//LSR
-		case ROL_ACC: case ROL_ABS: case ROL_ABS_X:                               case ROL_ZP: case ROL_ZP_X:					//ROL
-		case ROR_ACC: case ROR_ABS: case ROR_ABS_X:                               case ROR_ZP: case ROR_ZP_X:					//ROR
-		{ group = 1; break; }
-
-		/*2A
-		case XXX_ABS: case XXX_ABS_X: case XXX_ABS_Y: case XXX_ZP: case XXX_ZP_X: case XXX_ZP_Y:								4  */
-		case DEC_ABS: case DEC_ABS_X:                 case DEC_ZP: case DEC_ZP_X:												//DEC
-		case INC_ABS: case INC_ABS_X:                 case INC_ZP: case INC_ZP_X:												//INC
-		case STX_ABS:                                 case STX_ZP:                case STX_ZP_Y:								//STX
-		case STY_ABS:                                 case STY_ZP: case STY_ZP_X:												//STY
-		{ group = 2; break; }
-
-		/*2B
-		case XXX_ABS: case XXX_IMM: case XXX_ZP																					2  */
-		case CPX_ABS: case CPX_IMM: case CPX_ZP:																				//CPX
-		case CPY_ABS: case CPY_IMM: case CPY_ZP:																				//CPY
-		{ group = 3; break; }
-
-		/*3A
-		case XXX_ABS: case XXX_ZP																								1  */
-		case BIT_ABS: case BIT_ZP:																								//BIT
-		{ group = 4; break; }
-
-		/*3B
-		case XXX_ABS: case XXX_IND																								1  */
-		case JMP_ABS: case JMP_IND:																								//JMP
-		{ group = 5; break; }
-
-		/*4
-		Reszta instrukcji																										34 */
-		default:
-		{ group = 6; break; }
+		
+		//INDIRECT_X
+		/*1*/ case ADC_IND_X: case AND_IND_X: case CMP_IND_X: case EOR_IND_X: case LDA_IND_X: case ORA_IND_X: case SBC_IND_X: case STA_IND_X:
+		/*2*/ 
+		/*3*/ 
+		/*4*/
+		/*5*/
+		/*6*/
+		{
+			return INDIRECT_X;
 		}
 
-		switch (group) {
-		case 0: {	//1A
-			switch ((opcode & _1A_MASK) >> 2) {
-			case 0: {
-				return INDIRECT_X;
-			}
-			case 1: {
-				return ZEROPAGE;
-			}
-			case 2: {
-				return IMMEDIATE;
-			}
-			case 3: {
-				return ABSOLUTE;
-			}
-			case 4: {
-				return INDIRECT_Y;
-			}
-			case 5: {
-				return ZEROPAGE_X;
-			}
-			case 6: {
-				return ABSOLUTE_Y;
-			}
-			case 7: {
-				return ABSOLUTE_X;
-			}
-			default: {
-				return ADDRMODE_ERROR;
-			}
-			}
+		//ZEROPAGE
+		/*1*/ case ADC_ZP: case AND_ZP: case CMP_ZP: case EOR_ZP: case LDA_ZP: case ORA_ZP: case SBC_ZP: case STA_ZP:
+		/*2*/ case ASL_ZP: case LDX_ZP: case LDY_ZP: case LSR_ZP: case ROL_ZP: case ROR_ZP:
+		/*3*/ case DEC_ZP: case INC_ZP: case STX_ZP: case STY_ZP:
+		/*4*/ case CPX_ZP: case CPY_ZP:
+		/*5*/ case BIT_ZP:
+		/*6*/
+		{
+			return ZEROPAGE;
 		}
-		case 1: {	//1B
-			switch ((opcode & _1B_MASK) >> 2) {
-			case 0: {
-				return IMMEDIATE;
-			}
-			case 1: {
-				return ZEROPAGE;
-			}
-			case 2: {
-				return ACCUMULATOR;
-			}
-			case 3: {
-				return ABSOLUTE;
-			}
-			case 5: {
-				if (opcode == LDX_ABS || opcode == LDX_ABS_Y || opcode == LDX_IMM || opcode == LDX_ZP || opcode == LDX_ZP_Y)
-				{
-					return ZEROPAGE_Y;
-				}
-				else
-				{
-					return ZEROPAGE_X;
-				}
-			}
-			case 7: {
-				if (opcode == LDX_ABS || opcode == LDX_ABS_Y || opcode == LDX_IMM || opcode == LDX_ZP || opcode == LDX_ZP_Y)
-				{
-					return ABSOLUTE_Y;
-				}
-				else
-				{
-					return ABSOLUTE_X;
-				}
-			}
-			default: {
-				return ADDRMODE_ERROR;
-			}
-			}
+
+		//IMMEDIATE
+		/*1*/ case ADC_IMM: case AND_IMM: case CMP_IMM: case EOR_IMM: case LDA_IMM: case ORA_IMM: case SBC_IMM:
+		/*2*/               case LDX_IMM: case LDY_IMM:
+		/*3*/ 
+		/*4*/ case CPX_IMM: case CPY_IMM:
+		/*5*/
+		/*6*/
+		{
+			return IMMEDIATE;
 		}
-		case 2: {	//2A
-			switch ((opcode & _2A_MASK) >> 3) {
-			case 0: {
-				return ZEROPAGE;
-			}
-			case 1: {
-				return ABSOLUTE;
-			}
-			case 2: {
-				if (opcode == STX_ABS || opcode == STX_ZP || opcode == STX_ZP_Y)
-				{
-					return ZEROPAGE_Y;
-				}
-				else
-				{
-					return ZEROPAGE_X;
-				}
-			}
-			case 3: {
-				return ABSOLUTE_X;
-			}
-			default: {
-				return ADDRMODE_ERROR;
-			}
-			}
+
+		//ABSOLUTE
+		/*1*/ case ADC_ABS: case AND_ABS: case CMP_ABS: case EOR_ABS: case LDA_ABS: case ORA_ABS: case SBC_ABS: case STA_ABS:
+		/*2*/ case ASL_ABS: case LDX_ABS: case LDY_ABS: case LSR_ABS: case ROL_ABS: case ROR_ABS:
+		/*3*/ case DEC_ABS: case INC_ABS: case STX_ABS: case STY_ABS:
+		/*4*/ case CPX_ABS: case CPY_ABS:
+		/*5*/ case BIT_ABS:
+		/*6*/ case JMP_ABS:
+		/*7*/ case JSR:
+		{
+			return ABSOLUTE;
 		}
-		case 3: {	//2B
-			switch ((opcode & _2B_MASK) >> 2) {
-			case 0: {
-				return IMMEDIATE;
-			}
-			case 1: {
-				return ZEROPAGE;
-			}
-			case 3: {
-				return ABSOLUTE;
-			}
-			default: {
-				return ADDRMODE_ERROR;
-			}
-			}
+
+		//INDIRECT_Y
+		/*1*/ case ADC_IND_Y: case AND_IND_Y: case CMP_IND_Y: case EOR_IND_Y: case LDA_IND_Y: case ORA_IND_Y: case SBC_IND_Y: case STA_IND_Y:
+		/*2*/ 
+		/*3*/ 
+		/*4*/
+		/*5*/
+		/*6*/
+		{
+			return INDIRECT_Y;
 		}
-		case 4: {	//3A
-			switch ((opcode & _3A_MASK) >> 3) {
-			case 0: {
-				return ZEROPAGE;
-			}
-			case 1: {
-				return ABSOLUTE;
-			}
-			default: {
-				return ADDRMODE_ERROR;
-			}
-			}
+
+		//ZEROPAGE_X
+		/*1*/ case ADC_ZP_X: case AND_ZP_X: case CMP_ZP_X: case EOR_ZP_X: case LDA_ZP_X: case ORA_ZP_X: case SBC_ZP_X: case STA_ZP_X:
+		/*2*/ case ASL_ZP_X:                case LDY_ZP_X: case LSR_ZP_X: case ROL_ZP_X: case ROR_ZP_X:
+		/*3*/ case DEC_ZP_X: case INC_ZP_X:                case STY_ZP_X:
+		/*4*/
+		/*5*/
+		/*6*/
+		{
+			return ZEROPAGE_X;
 		}
-		case 5: {	//3B
-			switch ((opcode & _3B_MASK) >> 5) {
-			case 0: {
-				return ABSOLUTE;
-			}
-			case 1: {
-				return INDIRECT;
-			}
-			default: {
-				return ADDRMODE_ERROR;
-			}
-			}
+
+		//ZEROPAGE_Y
+		/*1*/ 
+		/*2*/                case LDX_ZP_Y:
+		/*3*/                               case STX_ZP_Y:
+		/*4*/
+		/*5*/
+		/*6*/
+		{
+			return ZEROPAGE_Y;
 		}
-		case 6: {	//4
-			switch (opcode) {
-			case BPL: case BMI: case BVC: case BVS: case BCC: case BCS: case BNE: case BEQ: {
-				return RELATIVE;
-			}
-			case BRK: case CLC: case CLD: case CLI: case CLV: case DEX: case DEY: case INX: case INY: case NOP: case PHA: case PHP: case PLA: case PLP: case RTI: case RTS: case SEC: case SED: case SEI: case TAX: case TAY: case TSX: case TXA: case TXS: case TYA: {
-				return IMPLIED;
-			}
-			case JSR: {
-				return ABSOLUTE;
-			}
-			default: {
-				return ADDRMODE_ERROR;
-			}
-			}
+
+		//ABSOLUTE_Y
+		/*1*/ case ADC_ABS_Y: case AND_ABS_Y: case CMP_ABS_Y: case EOR_ABS_Y: case LDA_ABS_Y: case ORA_ABS_Y: case SBC_ABS_Y: case STA_ABS_Y:
+		/*2*/                 case LDX_ABS_Y:
+		/*3*/ 
+		/*4*/
+		/*5*/
+		/*6*/
+		{
+			return ABSOLUTE_Y;
 		}
-		default: {	//Error
+
+		//ABSOLUTE_X
+		/*1*/ case ADC_ABS_X: case AND_ABS_X: case CMP_ABS_X: case EOR_ABS_X: case LDA_ABS_X: case ORA_ABS_X: case SBC_ABS_X: case STA_ABS_X:
+		/*2*/ case ASL_ABS_X:                 case LDY_ABS_X: case LSR_ABS_X: case ROL_ABS_X: case ROR_ABS_X:
+		/*3*/ case DEC_ABS_X: case INC_ABS_X:
+		/*4*/
+		/*5*/
+		/*6*/
+		{
+			return ABSOLUTE_X;
+		}
+
+		//ACCUMULATOR
+		/*1*/
+		/*2*/ case ASL_ACC:                             case LSR_ACC: case ROL_ACC: case ROR_ACC:
+		/*3*/ 
+		/*4*/
+		/*5*/
+		/*6*/
+		{
+			return ACCUMULATOR;
+		}
+	
+		//INDIRECT
+		/*1*/
+		/*2*/ 
+		/*3*/ 
+		/*4*/
+		/*5*/
+		/*6*/ case JMP_IND:
+		{
+			return INDIRECT;
+		}
+
+		//RELATIVE
+		case BCC: case BCS: case BEQ: case BMI: case BNE: case BPL: case BVC: case BVS:
+		{
+			return RELATIVE;
+		}
+
+		//IMPLIED
+		case BRK: case CLC: case CLD: case CLI: case CLV: case DEX: case DEY: case INX: case INY: case NOP: case PHA: case PHP: case PLA: case PLP: case RTI: case RTS: case SEC: case SED: case SEI: case TAX: case TAY: case TSX: case TXA: case TXS: case TYA:
+		{
+			return IMPLIED;
+		}
+
+		default: {
 			return ADDRMODE_ERROR;
 		}
 
-		}
 
-		return ADDRMODE_ERROR;
+		}
 	}
+
+
+
 
 	int getOpcodeLength(u8 opcode) {
 		switch (getOpcodeAddressingMode(opcode)) {
@@ -581,10 +502,11 @@ namespace CPU {
 		MAINBUS::pushStack(0xff & PC);
 
 		// Je¿eli BRK, ustawiamy pozorn¹ flagê B na 1
-		P |= ((int_type == INT_BRK) << 4);
+		u8 tempP = P;
+		tempP = (tempP | 0b00100000) | ((int_type == INT_BRK) << 4) ;
 
 		// Wpychamy status procka do stosu
-		MAINBUS::pushStack(P);
+		MAINBUS::pushStack(tempP);
 
 		setI();
 
@@ -610,13 +532,17 @@ namespace CPU {
 		switch (addrmode) {
 
 			case ABSOLUTE: {
-				return MAINBUS::read(pointer) + MAINBUS::read(pointer + 1) * 256;
+				return MAINBUS::read(pointer) | MAINBUS::read(pointer + 1) << 8;
 			}
 			case ABSOLUTE_X: {
-				return MAINBUS::read(pointer) + MAINBUS::read(pointer + 1) * 256 + X;
+				u16 address = (MAINBUS::read(pointer) | (MAINBUS::read(pointer + 1) << 8));
+				checkPageCross(address, address + X, 1);
+				return address + X;
 			}
 			case ABSOLUTE_Y: {
-				return MAINBUS::read(pointer) + MAINBUS::read(pointer + 1) * 256 + Y;
+				u16 address = (MAINBUS::read(pointer) | (MAINBUS::read(pointer + 1) << 8));
+				checkPageCross(address, address + Y, 1);
+				return address + Y;
 			}
 			case IMMEDIATE: {
 				return pointer;
@@ -625,35 +551,35 @@ namespace CPU {
 				return MAINBUS::read(pointer);
 			}
 			case ZEROPAGE_X: {
-				return (MAINBUS::read(pointer) + X) % 256;
+				return (MAINBUS::read(pointer) + X) & 0xff;
 			}
 			case ZEROPAGE_Y: {
-				return (MAINBUS::read(pointer) + Y) % 256;
+				return (MAINBUS::read(pointer) + Y) & 0xff;
 			}
 			case INDIRECT: {
 				//INDIRECT u¿ywa jedynie instrukcja JMP
 				u8 polo = MAINBUS::read(pointer);
-				u16 pohi = 256 * MAINBUS::read(pointer + 1);
+				u8 pohi = MAINBUS::read(pointer + 1);
 
 				//Typ INDIRECT posiada bardzo specyficznego buga: Nie potrafi przekraczaæ stron.
 				//Przyk³ad: Je¿eli jako operand mamy (Adresik) i pierwsze 2 bity od adresu "Adresik" to np. $24FF to MSB pobierze ju¿ nie z $2500 a z $2400.
 
-				return MAINBUS::read(polo + pohi) + MAINBUS::read(((polo + 0x01) % 256) + pohi) * 256;
+				return MAINBUS::read(polo | (pohi << 8)) | (MAINBUS::read((polo + 1) | (pohi << 8)) << 8);
 
 			}
 			case INDIRECT_X: {
-				u8 val = MAINBUS::read(pointer);
-				return MAINBUS::read((val + X) % 256) + MAINBUS::read((val + X + 0x01) % 256) * 256;
+				u8 val = MAINBUS::read(pointer) + X;
+				return MAINBUS::read(val & 0xff) | (MAINBUS::read((val + 1) & 0xff) << 8);
+				//return (MAINBUS::read(pointer) + X) & 0xff;
 			}
 			case INDIRECT_Y: {
 				u8 val = MAINBUS::read(pointer);
-				return MAINBUS::read(val) + MAINBUS::read((val + 0x01) % 256) * 256 + Y;
-			}
-			default: {
-				return pointer;
+				u16 address = (MAINBUS::read(val & 0xff) | (MAINBUS::read((val + 1) & 0xff) << 8)) ;
+				checkPageCross(address, address + Y, 1);
+				return address + Y;
 			}
 		}
-		return pointer;
+		
 	}
 
 
@@ -715,7 +641,7 @@ namespace CPU {
 
 		u16 sum = A + operand + getC();
 		setC(!!(sum & 0x100));
-		setV( !!((A ^ sum) & (operand ^ sum) & 0x80) );
+		setV(!!((A ^ sum) & (operand ^ sum) & 0x80));
 		A = sum & 0xff;
 
 		setFlagsZN(A);
@@ -727,7 +653,7 @@ namespace CPU {
 	void executeCMP(u8 addrmode) { //CMP
 		u16 diff = A - MAINBUS::read(getAddressFromType(addrmode, PC));
 		setC(!(diff & 0x100));
-		setFlagsZN(diff & 0xff);
+		setFlagsZN(diff);
 	}
 	void executeEOR(u8 addrmode) { //EOR
 		A ^= MAINBUS::read(getAddressFromType(addrmode, PC));
@@ -759,24 +685,20 @@ namespace CPU {
 
 	//1B - 6 typów adresacji
 	void executeASL(u8 addrmode) {	//ASL
-		u8 tempC = getC();
-		switch (addrmode) {
-			case ACCUMULATOR: {
-				setC(!!(A & 0x80));
-				A = A << 1;
-				setFlagsZN(A);
-				break;
-			}
-			default: {
-				u16 address = getAddressFromType(addrmode, PC);
-				u8 operand = MAINBUS::read(address);
-				setC(!!(operand & 0x80));
-				operand = operand << 1;
-				setFlagsZN(operand);
-				MAINBUS::write(address, operand);
-				break;
-			}
+
+		if (addrmode == ACCUMULATOR) {
+			setC(!!(A & 0x80));
+			A <<= 1;
+			setFlagsZN(A);
+		} else {
+			u16 address = getAddressFromType(addrmode, PC);
+			u8 operand = MAINBUS::read(address);
+			setC(!!(operand & 0x80));
+			operand = operand << 1;
+			setFlagsZN(operand);
+			MAINBUS::write(address, operand);
 		}
+		
 	}
 	void executeLDX(u8 addrmode) { //LDX
 		X = MAINBUS::read(getAddressFromType(addrmode, PC));
@@ -787,64 +709,57 @@ namespace CPU {
 		setFlagsZN(Y);
 	}
 	void executeLSR(u8 addrmode) {	//LSR
-		u8 tempC = getC();
-		switch (addrmode) {
-			case ACCUMULATOR: {
-				setC(!!(A & 0x01));
-				A = A >> 1;
-				setFlagsZN(A);
-				break;
-			}
-			default: {
-				u16 address = getAddressFromType(addrmode, PC);
-				u8 operand = MAINBUS::read(address);
-				setC(!!(operand & 0x01));
-				operand = operand >> 1;
-				setFlagsZN(operand);
-				MAINBUS::write(address, operand);
-				break;
-			}
+		
+		if (addrmode == ACCUMULATOR) {
+			setC(!!(A & 0x01));
+			A = A >> 1;
+			setFlagsZN(A);
+		} else {
+			u16 address = getAddressFromType(addrmode, PC);
+			u8 operand = MAINBUS::read(address);
+			setC(!!(operand & 0x01));
+			operand = operand >> 1;
+			setFlagsZN(operand);
+			MAINBUS::write(address, operand);
 		}
+		
 	}
 	void executeROL(u8 addrmode) {	//ROL
-		u8 tempC = getC();
-		switch (addrmode) {
-			case ACCUMULATOR: {
-				setC(!!(A & 0x80));
-				A = (A << 1) | tempC;
-				setFlagsZN(A);
-				break;
-			}
-			default: {
-				u16 address = getAddressFromType(addrmode, PC);
-				u8 operand = MAINBUS::read(address);
-				setC(!!(operand & 0x80));
-				operand = (operand << 1) | tempC;
-				setFlagsZN(operand);
-				MAINBUS::write(address, operand);
-				break;
-			}
+		
+		if (addrmode == ACCUMULATOR) {
+			u8 tempC = getC();
+			setC(!!(A & 0x80));
+			A = (A << 1) | tempC;
+			setFlagsZN(A);
+		} else {
+			u8 tempC = getC();
+			u16 address = getAddressFromType(addrmode, PC);
+			u8 operand = MAINBUS::read(address);
+			setC(!!(operand & 0x80));
+			operand = (operand << 1) | tempC;
+			setFlagsZN(operand);
+			MAINBUS::write(address, operand);
 		}
+
 	}
 	void executeROR(u8 addrmode) {	//ROR
-		u8 tempC = getC();
-		switch (addrmode) {
-			case ACCUMULATOR: {
-				setC(!!(A & 0x01));
-				A = (A >> 1) | (tempC << 7);
-				setFlagsZN(A);
-				break;
-			}
-			default: {
-				u16 address = getAddressFromType(addrmode, PC);
-				u8 operand = MAINBUS::read(address);
-				setC(!!(operand & 0x01));
-				operand = (operand >> 1) | (tempC << 7);
-				setFlagsZN(operand);
-				MAINBUS::write(address, operand);
-				break;
-			}
+		
+		if(addrmode == ACCUMULATOR) {
+
+			u8 tempC = getC();
+			setC(!!(A & 0x01));
+			A = (A >> 1) | (tempC << 7);
+			setFlagsZN(A);
+		} else {
+			u8 tempC = getC();
+			u16 address = getAddressFromType(addrmode, PC);
+			u8 operand = MAINBUS::read(address);
+			setC(!!(operand & 0x01));
+			operand = (operand >> 1) | (tempC << 7);
+			setFlagsZN(operand);
+			MAINBUS::write(address, operand);
 		}
+		
 	}
 
 	//2A - 4 typów adresacji
@@ -973,19 +888,34 @@ namespace CPU {
 		MAINBUS::pushStack(A);
 	}
 	void executePHP() {	//PHP
-
-		P |= 0b00010000;	//Ustawiamy pozorn¹ flagê B na 1
-		MAINBUS::pushStack(P);	//Wpychamy stan procka do stosu
+		u8 tempP = P;
+		tempP = tempP | 0b00110000;	//Ustawiamy pozorn¹ flagê B na 1
+		MAINBUS::pushStack(tempP);	//Wpychamy stan procka do stosu
 
 	}
 	void executePLA() {	//PLA
 		A = MAINBUS::pullStack();
+		setFlagsZN(A);
 	}
 	void executePLP() {	//PLP
-		P = MAINBUS::pullStack();
+		u8 tempP = MAINBUS::pullStack();
+		setC(!!(tempP & 0b00000001));
+		setZ(!!(tempP & 0b00000010));
+		setI(!!(tempP & 0b00000100));
+		setD(!!(tempP & 0b00001000));
+		setV(!!(tempP & 0b01000000));
+		setN(!!(tempP & 0b10000000));
 	}
 	void executeRTI() {	//RTI
-		P = MAINBUS::pullStack();
+		u8 tempP = MAINBUS::pullStack(); 
+
+		setC(!!(tempP & 0b00000001));
+		setZ(!!(tempP & 0b00000010));
+		setI(!!(tempP & 0b00000100));
+		setD(!!(tempP & 0b00001000));
+		setV(!!(tempP & 0b01000000));
+		setN(!!(tempP & 0b10000000));
+
 		PC = MAINBUS::pullStack();
 		PC |= MAINBUS::pullStack() << 8;
 	}
@@ -1311,7 +1241,7 @@ namespace CPU {
 
 					//4 - 1 typ adresacji
 					case BCC: case BCS: case BEQ: case BMI: case BNE: case BPL: case BVC: case BVS: {
-						executeBranch(opcode & 0xff); break;
+						executeBranch(opcode); break;
 					}
 					case BRK: {
 						interrupt(BRK); break;

@@ -1,3 +1,5 @@
+#pragma once
+
 namespace PPU {
 
 	void init() {
@@ -104,12 +106,26 @@ namespace PPU {
 
 			//VRAM zwiêkszenie X dla dot od 1 do 256 oraz Y gdy dot = 256
 			if ((dot >= 2) && (dot <= 257) && renderingEnabled()) {
+				
+				
+				u16 temp = (((V & 0b11111) << 3) + (X + (dot - 1) % 8));
+				if (temp >= 256) {
+					//V = V & 0b111101111111111 | (((nametable & 0b01) ^ 0b01) << 10);
+					if (((V & 0b000010000000000) >> 10) == (nametable & 0b01)) {
+						V ^= 0b000010000000000;
+					}
+				}
+				
+
 				if ((dot - 1) % 8 == 0) {
 					u16 tempX = V & 0b11111;
 					tempX++;
+
 					if (tempX == 32) {
 						tempX = 0;
-						V ^= 0b000010000000000;
+						if (((V & 0b000010000000000) >> 10) == (nametable & 0b01)) {
+							V ^= 0b000010000000000;
+						}
 					}
 					V = V & 0b111111111100000 | tempX;
 				}
@@ -117,9 +133,13 @@ namespace PPU {
 				if (dot == 257) {
 					u16 tempY = (V & 0b111000000000000) >> 12 | (V & 0b000001111100000) >> 2;
 					tempY++;
+					if ((tempY) >= 62) {
+						
+					}
 					if ((tempY >> 3) == 30) {
 						tempY = 0;
 						V ^= 0b000100000000000;
+						
 					}
 					V = (V & 0b000110000011111) | ((tempY & 0b00000111) << 12) | ((tempY & 0b11111000) << 2);
 				}
@@ -141,6 +161,11 @@ namespace PPU {
 
 			//Pocz¹tek VBlank oraz NMI
 			if (scanline == 241 && dot == 1) {
+
+				for (int i = 0; i < 64; i++) {
+					if (MEM::OAM[4 * i] < 239) scr->put(MEM::OAM[4 * i + 3], MEM::OAM[4 * i], 0x30);
+				}
+
 				vblank = 1;
 				if (NMIenabled) {
 					CPU::NMIoccured = 1;
@@ -183,12 +208,25 @@ namespace PPU {
 
 		u8 nt = ((V & 0b000110000000000) >> 10);
 
-		//u8 pixel = MEM::VRAM[0x1000 * BGpattern + MEM::VRAM[0x2000 + ((coarseX << 3) + dot % 8) + 0x10 * ((coarseY << 3) + fineY) >> 3]];
-		u8 pixel =		!!(MEM::VRAM[0x1000 * BGpattern     + fineY + 16 * MEM::VRAM[0x2000 + (((coarseX + ((fineX + (dot - 1) % 8) >> 3)) % 32) + 32 * coarseY + 0x400 * nt) % 0x1000]] & (0b10000000 >> (fineX + (dot - 1)) % 8))
+		u16 mirr = 0x1000;
+
+		if (MEM::mirroring == 0) {
+			mirr = 0x400;
+		} else if (MEM::mirroring == 1) {
+			mirr = 0x800;
+		}
+
+		//u8 pixel = MEM::VRAM[0x1000 * BGpattern + MEM::VRAM[0x2000 + ((coarseX << 3) + dot % 8) + 0x10 * ((coarseY << 3) + fineY) >> 3]];      + 0x800 * ((nt & 0b01) && (mirr == 0x400))
+		u8 pixel =		!!(MEM::VRAM[0x1000 * BGpattern     + fineY + 16 * MEM::VRAM[0x2000 + (((coarseX + ((fineX + (dot - 1) % 8) >> 3)) % 32) + 32 * coarseY + 0x400 * nt) % mirr + 0x800 * ((nt & 0b10) && (MEM::mirroring == 0))]] & (0b10000000 >> (fineX + (dot - 1)) % 8))
 			+
-					2 * !!(MEM::VRAM[0x1000 * BGpattern + 8 + fineY + 16 * MEM::VRAM[0x2000 + (((coarseX + ((fineX + (dot - 1) % 8) >> 3)) % 32) + 32 * coarseY + 0x400 * nt) % 0x1000]] & (0b10000000 >> (fineX + (dot - 1)) % 8))
+					2 * !!(MEM::VRAM[0x1000 * BGpattern + 8 + fineY + 16 * MEM::VRAM[0x2000 + (((coarseX + ((fineX + (dot - 1) % 8) >> 3)) % 32) + 32 * coarseY + 0x400 * nt) % mirr + 0x800 * ((nt & 0b10) && (MEM::mirroring == 0))]] & (0b10000000 >> (fineX + (dot - 1)) % 8))
 			;
 
+		if (pixel == 0) {
+			isOpaque[dot - 1][scanline] = false;
+		} else {
+			isOpaque[dot - 1][scanline] = true;
+		}
 		return liteColor ? (MEM::VRAM[0x3f00 + pixel * renderingEnabled()]) : ((V)+((X + ((dot - 1) % 8)) >> 3));
 	}
 
@@ -201,7 +239,7 @@ namespace PPU {
 	
 	}
 
-	//Szyna danych PPU (odczyt)
+	// ### Szyna danych PPU (odczyt) ###
 	u8 readbus(u16 regno) {
 		switch (regno) {
 			case PPU_STATUS: {	//Read $2002 R
@@ -240,6 +278,10 @@ namespace PPU {
 						tempv -= 0x10;
 					}
 
+					while (tempv >= 0x3f20 && tempv < 0x4000) {
+						tempv -= 0x20;
+					}
+
 					tempvalue = MEM::VRAM[tempv];
 				}
 
@@ -257,7 +299,7 @@ namespace PPU {
 		}
 	}
 
-	//Szyna danych PPU (zapis)
+	// ###Szyna danych PPU (zapis) ###
 	void writebus(u16 regno, u8 value) {
 		switch (regno) {
 			case PPU_CTRL: {	//Write $2000 W
@@ -338,7 +380,27 @@ namespace PPU {
 					tempv -= 0x10;
 				}
 
-				if (tempv >= 0x2000) MEM::VRAM[tempv] = value;
+				while (tempv >= 0x3f20 && tempv < 0x4000) {
+					tempv -= 0x20;
+				}
+
+				//Nametable mirroring
+				while (tempv >= 0x3000 && tempv < 0x3f00) {
+					tempv -= 0x1000;
+				}
+
+				//Horizontal mirroring
+				if (MEM::mirroring == 0) {
+					while ( (tempv >= 0x2400 && tempv < 0x2800) || (tempv >= 0x2c00 && tempv < 0x3000) ) {
+						tempv -= 0x0400;
+					}
+				} else if (MEM::mirroring == 1) {
+					while (tempv >= 0x2800 && tempv < 0x3000) {
+						tempv -= 0x0800;
+					}
+				}
+
+				if (tempv >= 0x2000) { MEM::VRAM[tempv] = value; }
 
 				if (VRAMincrement == 0) {
 					V += 1;

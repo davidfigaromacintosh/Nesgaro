@@ -1,3 +1,5 @@
+#pragma once
+
 namespace MEM {
 
 	//CPU
@@ -35,7 +37,7 @@ namespace MEM {
 	
 		//Sekcja RAM
 		for (int i = 0; i < 0x800; i++) {
-			RAM[i] = rand() & 0xff;
+			RAM[i] = rand();
 		}
 
 		//Sekcja PRGRAM
@@ -51,6 +53,10 @@ namespace MEM {
 		//Sekcja VRAM
 		for (int i = 0; i < 0x4000; i++) {
 			VRAM[i] = 0x00;
+		}
+		//Sekcja OAM
+		for (int i = 0; i < 0x100; i++) {
+			OAM[i] = 0xff;
 		}
 	}
 
@@ -85,6 +91,7 @@ namespace MEM {
 		mapper |= (header[7] & 0b11110000);
 
 		printf("Mapper %d\n", mapper);
+		printf("MMirroring %d\n", mirroring);
 
 		char buff[0x4000] = { 0 };
 

@@ -1,6 +1,6 @@
 /*
 
-POTRZEBNE INFORMACJE:
+PRZYDATNE INFORMACJE:
 http://nesdev.com/PPU%20addressing.txt									O adresowaniu
 https://wiki.nesdev.com/w/images/4/4f/Ppu.svg							Wydarzenia dla odpowiednich punktów na ekranie
 https://wiki.nesdev.com/w/index.php/PPU_registers						Rejestry PPU
@@ -80,6 +80,8 @@ namespace PPU {
 	u8 emphasisR;
 	u8 emphasisG;
 	u8 emphasisB;
+
+	b isOpaque[256][240] = { 0 };
 
 	//Paleta kolorów (TODO)
 	u32 colors[64] = {

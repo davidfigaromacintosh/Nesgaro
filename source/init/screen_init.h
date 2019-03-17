@@ -1,3 +1,5 @@
+#pragma once
+
 namespace SCREEN {
 
 	class Screen : public sf::Drawable {

@@ -1,3 +1,5 @@
+#pragma once
+
 // Wszystkie "legalne" instrukcje mikroprocesora Ricol 2A03
 #define	ADC_IMM		0x69	//Add With Carry Immediate
 #define	ADC_ZP		0x65	//Add With Carry Zero-Page
@@ -257,7 +259,7 @@ namespace CPU {
 	u8 A;			//Akumulator
 	u8 X;			//Rejestr X
 	u8 Y;			//Rejsetr Y
-	u8 P;			//0bNV1BDIZC (Flagi C, Z, I, D, flaga czwarta i piπta sπ pozorne, V, N)
+	u8 P;			//0bNV1BDIZC (Flagi C, Z, I, D, flaga czwarta B i piπta sπ pozorne, V, N)
 	u8 S;			//Wskaünik stosu
 	u16 PC;			//Wskaünik programu
 	u64 cycles;		//Licznik cykli

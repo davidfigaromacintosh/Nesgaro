@@ -34,7 +34,7 @@
 static bool vsync = false;
 int main(int _argc, char **_argv) {
 
-	srand(time(NULL));
+	srand(static_cast<unsigned int>(time(NULL)));
 
 	float windowScale = 3;
 
@@ -59,7 +59,7 @@ int main(int _argc, char **_argv) {
 	}
 	#endif
 
-	window.setVerticalSyncEnabled(true);
+	window.setVerticalSyncEnabled(false);
 	window.setFramerateLimit(60);
 
 	windowIcon.loadFromFile("icon.png");
@@ -81,8 +81,9 @@ int main(int _argc, char **_argv) {
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\donkey kong.nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Battle City (Japan).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Burger Time (USA).nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Challenger (Japan).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Lunar Pool (USA).nes");
-	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Super Mario Bros. (World).nes");
+	MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Super Mario Bros. (World).nes"); 
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Sky Destroyer (Japan).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Ice Climber.nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Magic Jewelry.nes");
@@ -92,19 +93,20 @@ int main(int _argc, char **_argv) {
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Duck Hunt (World).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Balloon Fight (USA).nes");
 
-	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\testroms\\1.frame_basics.nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\testroms\\instr_test_v5\\04-zero_page.nes");
 
 	screen.resize(windowScale);
 	PPU::init();
 	PPU::connectScreen(screen);
 	CPU::init();
+	PAD::init();
 
 	while (1) {
 
+		PPU::step();
+		PPU::step();
+		PPU::step();
 		CPU::step();
-		PPU::step();
-		PPU::step();
-		PPU::step();
 
 		//SFML Poll
 		if (PPU::vblank && !vsync) {

@@ -1,3 +1,5 @@
+#pragma once
+
 //G³ówna szyna danych konsoli (zapis, odczyt, itd itp...)
 //Typów przetwarzania danych w NESie mamy dwa: zapis i odczyt
 
@@ -37,6 +39,10 @@ namespace MAINBUS {
 		//DMA
 		if (address == 0x4014) {
 			MEM::DMA(value);
+		}
+		//Kontroler
+		if (address == 0x4016) {
+			PAD::strobe(value);
 		}
 
 
@@ -78,6 +84,10 @@ namespace MAINBUS {
 		//Je¿eli robimy odczyt z PRGROM
 		if (address >= 0x8000 && address <= 0xffff) {
 			return MEM::PRGROM[address - 0x8000];
+		}
+		//Kontroler
+		if (address == 0x4016) {
+			return PAD::read();
 		}
 
 		return 0;
