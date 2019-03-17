@@ -593,7 +593,7 @@ namespace CPU {
 	//Zrób przerwanie
 	void interrupt(u8 int_type) {
 
-		if (int_type != INT_NMI && int_type != INT_BRK) return;
+		if (getI() && int_type != INT_NMI && int_type != INT_BRK) return;
 
 		if (int_type == INT_BRK) PC++;
 
@@ -603,7 +603,7 @@ namespace CPU {
 
 		// Je¿eli BRK, ustawiamy pozorn¹ flagê B na 1
 		u8 tempP = P;
-		tempP = (tempP | 0b00100000) | ((int_type == INT_BRK) << 4) ;
+		tempP = (tempP & 0b11101111) | ((int_type == INT_BRK) << 4) ;
 
 		// Wpychamy status procka do stosu
 		MAINBUS::pushStack(tempP);

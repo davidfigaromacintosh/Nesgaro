@@ -56,7 +56,7 @@ namespace PPU {
 		}
 		if (scanline == 261) {
 			scanline = -1;
-			dot = 1;
+			dot = 0;
 			oddframe = !oddframe;
 
 		}
@@ -74,13 +74,18 @@ namespace PPU {
 			}
 
 			//dot 257: scroll update
-			if (dot == 257 && renderingEnabled()) {
+			if (dot == 258 && renderingEnabled()) {
 				V = (V & 0b111101111100000) | (T & 0b000010000011111);
 			}
 
 			// dot od 280 do 304: scroll update
-			if (dot >= 280 && dot <= 304 && renderingEnabled()) {
+			if (dot > 280 && dot <= 304 && renderingEnabled()) {
 				V = (V & 0b000010000011111) | (T & 0b111101111100000);
+			}
+
+			if (dot == 340 - oddframe && renderingEnabled()) {
+				dot = 0;
+				scanline++;
 			}
 
 		}
@@ -92,7 +97,7 @@ namespace PPU {
 
 			//Pierwszy pixel jest pomijany na linii 0 gdy klatka video jest nieparzysta
 			if ((scanline == 0) && (dot == 0) && oddframe && renderingEnabled())
-				dot = 1;	
+				//dot = 1;	
 
 			//Gdy mamy pocz¹tek klatki, T = V;
 			if (scanline == 0) {
@@ -101,6 +106,7 @@ namespace PPU {
 
 			//USUN¥Æ ZARAZ PO TESTACH!!!
 			if (scanline == 30 && dot == 91) {
+			//if (scanline == 110 && dot == 1) {
 				spr0 = 1;
 			}
 
@@ -130,7 +136,7 @@ namespace PPU {
 					V = V & 0b111111111100000 | tempX;
 				}
 
-				if (dot == 257) {
+				if (dot == 257 && renderingEnabled()) {
 					u16 tempY = (V & 0b111000000000000) >> 12 | (V & 0b000001111100000) >> 2;
 					tempY++;
 					if ((tempY) >= 62) {
@@ -147,7 +153,7 @@ namespace PPU {
 			}
 
 			//dot 257: scroll update
-			if ((dot == 257) && renderingEnabled()) {
+			if (dot == 257 && renderingEnabled()) {
 
 				V = (V & 0b111101111100000) | (T & 0b000010000011111);
 			}
@@ -173,7 +179,7 @@ namespace PPU {
 			}
 
 			//dot 257: scroll update
-			if (dot == 257 && renderingEnabled()) {
+			if (scanline == 240 && dot == 257 && renderingEnabled()) {
 				V = (V & 0b111101111100000) | (T & 0b000010000011111);
 			}
 
@@ -255,14 +261,12 @@ namespace PPU {
 			}
 			case PPU_DATA: {	//Read $2007 R W
 
-				u8 tempbuffer;
 				u8 tempvalue;
 
 				if (V < 0x3f00) {
 					
-					tempbuffer = readbuffer;
-					readbuffer = MEM::VRAM[V];
 					tempvalue = readbuffer;
+					readbuffer = MEM::VRAM[V];
 
 					//tempvalue = MEM::VRAM[V];
 				}
@@ -286,9 +290,9 @@ namespace PPU {
 				}
 
 				if (VRAMincrement == 0) {
-					V += 1;
+					V = (V + 1) & 0x3fff;
 				} else {
-					V += 32;
+					V = (V + 32) & 0x3fff;
 				}
 
 				return tempvalue;
@@ -403,10 +407,10 @@ namespace PPU {
 				if (tempv >= 0x2000) { MEM::VRAM[tempv] = value; }
 
 				if (VRAMincrement == 0) {
-					V += 1;
+					V = (V + 1) & 0x3fff;
 				}
 				else {
-					V += 32;
+					V = (V + 32) & 0x3fff;
 				}
 				break;
 			}
