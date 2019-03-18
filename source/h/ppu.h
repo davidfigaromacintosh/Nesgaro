@@ -83,10 +83,10 @@ namespace PPU {
 				V = (V & 0b000010000011111) | (T & 0b111101111100000);
 			}
 
-			if (dot == 340 - oddframe && renderingEnabled()) {
-				dot = 0;
-				scanline++;
-			}
+			//if (dot == 340 - oddframe && renderingEnabled()) {
+			//	dot = 0;
+			//	scanline++;
+			//}
 
 		}
 
@@ -97,12 +97,7 @@ namespace PPU {
 
 			//Pierwszy pixel jest pomijany na linii 0 gdy klatka video jest nieparzysta
 			if ((scanline == 0) && (dot == 0) && oddframe && renderingEnabled())
-				//dot = 1;	
-
-			//Gdy mamy pocz¹tek klatki, T = V;
-			if (scanline == 0) {
-				//V = T;
-			}
+				dot = 1;
 
 			//USUN¥Æ ZARAZ PO TESTACH!!!
 			if (scanline == 30 && dot == 91) {
@@ -169,7 +164,7 @@ namespace PPU {
 			if (scanline == 241 && dot == 1) {
 
 				for (int i = 0; i < 64; i++) {
-					if (MEM::OAM[4 * i] < 239) scr->put(MEM::OAM[4 * i + 3], MEM::OAM[4 * i], 0x30);
+					if (MEM::OAM[4 * i] < 239 && SPRenable) scr->put(MEM::OAM[4 * i + 3], MEM::OAM[4 * i], 0x30);
 				}
 
 				vblank = 1;
@@ -233,7 +228,7 @@ namespace PPU {
 		} else {
 			isOpaque[dot - 1][scanline] = true;
 		}
-		return liteColor ? (MEM::VRAM[0x3f00 + ((4 + pixel) * !!(pixel)) * renderingEnabled()]) : ((V)+((X + ((dot - 1) % 8)) >> 3));
+		return liteColor ? (MEM::VRAM[0x3f00 + ((pixel) * !!(pixel)) * renderingEnabled()]) : ((V)+((X + ((dot - 1) % 8)) >> 3));
 	}
 
 	u8 fetchColor() {
