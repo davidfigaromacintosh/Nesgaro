@@ -37,13 +37,13 @@ int main(int _argc, char **_argv) {
 
 	srand(static_cast<unsigned int>(time(NULL)));
 
-	float windowScale = 4;
+	float windowScale = 3;
 
 	SCREEN::Screen screen;
 
 	sf::Image windowIcon;
 
-	sf::RenderWindow window{ sf::VideoMode{(unsigned int)windowScale * 256, (unsigned int)windowScale * 240}, "NESgaro v0.1 alpha", sf::Style::Close | sf::Style::Fullscreen}; //= ⬤ ᆺ ⬤ =
+	sf::RenderWindow window{ sf::VideoMode{(unsigned int)windowScale * 256, (unsigned int)windowScale * 240}, "NESgaro v0.1 alpha", sf::Style::Close}; //= ⬤ ᆺ ⬤ =
 	sf::Event wEvent;
 	
 	#ifdef DEBUG_MODE
@@ -72,6 +72,7 @@ int main(int _argc, char **_argv) {
 	MEM::init();
 
 	//ROMy do testowania
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\nespeccy.nes");
 	//MEM::loadROM("D:\\NESASM\\nes_asm6502_test2.nes");
 	//MEM::loadROM("D:\\NESASM\\mcpong\\mcpong.nes");
 	//MEM::loadROM("D:\\NESASM\\mcpong\\McPong (dev 0.1).nes");
@@ -85,7 +86,7 @@ int main(int _argc, char **_argv) {
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Burger Time (USA).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Challenger (Japan).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Lunar Pool (USA).nes");
-	MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Super Mario Bros. (World).nes"); 
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Super Mario Bros. (World).nes"); 
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Sky Destroyer (Japan).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Ice Climber.nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Bomberman.nes");

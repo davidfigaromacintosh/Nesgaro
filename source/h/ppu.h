@@ -54,7 +54,7 @@ namespace PPU {
 			dot = 0;
 			scanline++;
 		}
-		if (scanline == 261) {
+		if (scanline == 260) {
 			scanline = -1;
 			dot = 0;
 			oddframe = !oddframe;

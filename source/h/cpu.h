@@ -595,7 +595,7 @@ namespace CPU {
 
 		if (getI() && int_type != INT_NMI && int_type != INT_BRK) return;
 
-		if (int_type == INT_BRK) PC++;
+		//if (int_type == INT_BRK) PC++;
 
 		// Wepchnij aktualny wskaŸnik programu do stosu
 		MAINBUS::pushStack((0xff00 & PC) >> 8);
