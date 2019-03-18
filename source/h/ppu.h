@@ -61,7 +61,7 @@ namespace PPU {
 
 		}
 
-
+		
 
 		// === Pre scan (-1) ===
 		if (scanline == -1) { 
@@ -83,10 +83,10 @@ namespace PPU {
 				V = (V & 0b000010000011111) | (T & 0b111101111100000);
 			}
 
-			//if (dot == 340 - oddframe && renderingEnabled()) {
-			//	dot = 0;
-			//	scanline++;
-			//}
+			if (dot == 340 - oddframe && renderingEnabled()) {
+				dot = 0;
+				scanline++;
+			}
 
 		}
 
@@ -96,8 +96,8 @@ namespace PPU {
 		else if (scanline >= 0 && scanline <= 239) {
 
 			//Pierwszy pixel jest pomijany na linii 0 gdy klatka video jest nieparzysta
-			if ((scanline == 0) && (dot == 0) && oddframe && renderingEnabled())
-				dot = 1;
+			//if ((scanline == 0) && (dot == 0) && oddframe && renderingEnabled())
+			//	dot = 1;
 
 			//USUN¥Æ ZARAZ PO TESTACH!!!
 			if (scanline == 30 && dot == 91) {

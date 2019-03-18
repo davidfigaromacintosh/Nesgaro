@@ -37,13 +37,13 @@ int main(int _argc, char **_argv) {
 
 	srand(static_cast<unsigned int>(time(NULL)));
 
-	float windowScale = 3;
+	float windowScale = 4;
 
 	SCREEN::Screen screen;
 
 	sf::Image windowIcon;
 
-	sf::RenderWindow window{ sf::VideoMode{(unsigned int)windowScale * 256, (unsigned int)windowScale * 240}, "NESgaro v0.1 alpha", sf::Style::Close}; //= ⬤ ᆺ ⬤ =
+	sf::RenderWindow window{ sf::VideoMode{(unsigned int)windowScale * 256, (unsigned int)windowScale * 240}, "NESgaro v0.1 alpha", sf::Style::Close | sf::Style::Fullscreen}; //= ⬤ ᆺ ⬤ =
 	sf::Event wEvent;
 	
 	#ifdef DEBUG_MODE
@@ -86,17 +86,21 @@ int main(int _argc, char **_argv) {
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Burger Time (USA).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Challenger (Japan).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Lunar Pool (USA).nes");
-	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Super Mario Bros. (World).nes"); 
+	MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Super Mario Bros. (World).nes"); 
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Devil World.nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Sky Destroyer (Japan).nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Hudson's Adventure Island (USA).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Ice Climber.nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Bomberman.nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Magic Jewelry.nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Tetris (USA) (Unl).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Choujikuu Yousai - Macross (Japan).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Duck Maze (Australia) (Unl).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Mario Bros. (World).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Excitebike.nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Gyromite (World).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Duck Hunt (World).nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Wild Gunman (Japan, USA).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Balloon Fight (USA).nes");
 
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\testroms\\instr_test_v5\\03-immediate.nes");
