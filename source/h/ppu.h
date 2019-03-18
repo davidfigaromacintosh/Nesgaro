@@ -233,7 +233,7 @@ namespace PPU {
 		} else {
 			isOpaque[dot - 1][scanline] = true;
 		}
-		return liteColor ? (MEM::VRAM[0x3f00 + pixel * renderingEnabled()]) : ((V)+((X + ((dot - 1) % 8)) >> 3));
+		return liteColor ? (MEM::VRAM[0x3f00 + ((4 + pixel) * !!(pixel)) * renderingEnabled()]) : ((V)+((X + ((dot - 1) % 8)) >> 3));
 	}
 
 	u8 fetchColor() {

@@ -7,6 +7,8 @@ https://wiki.nesdev.com/w/index.php/PPU_registers						Rejestry PPU
 https://wiki.nesdev.com/w/index.php/PPU_scrolling						Wpisy i odczyty do rejestrów $2005 i $2006
 http://nesdev.com/NES%20emulation%20discussion.txt						Ogólny poradnik jak renderowaæ itd
 https://wiki.nesdev.com/w/index.php/PPU_power_up_state					Status PPU zaraz po w³¹czeniu konsoli
+https://wiki.nesdev.com/w/index.php/PPU_pattern_tables					Jak dane kafelków s¹ przechowywane w CHR
+https://wiki.nesdev.com/w/index.php/PPU_attribute_tables				Wszystko o tzw. "tabeli atrybutów"
 https://wiki.nesdev.com/w/index.php/PPU_programmer_reference			Wszystko
 http://thealmightyguru.com/Games/Hacking/Wiki/index.php/NES_Palette		Paleta kolorów
 
