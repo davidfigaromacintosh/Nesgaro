@@ -3,14 +3,14 @@
 namespace PPU {
 
 	void init() {
-		dot = 340;
+		dot = 0;
 		scanline = -1;
 		oddframe = 0;
 
 		//Flagi
-		spr0 = 0;
+		spr0 = 1;
 		sproverflow = 0;
-		vblank = 0;
+		vblank = 1;
 
 		//Wewnêtrzne rejestry PPU
 		T = 0;
@@ -47,21 +47,6 @@ namespace PPU {
 		#ifdef DEBUG_MODE
 		printf("\nPPU Cycle!");
 		#endif
-
-		dot++;
-
-		if (dot == 341) {
-			dot = 0;
-			scanline++;
-		}
-		if (scanline == 260) {
-			scanline = -1;
-			dot = 0;
-			oddframe = !oddframe;
-
-		}
-
-		
 
 		// === Pre scan (-1) ===
 		if (scanline == -1) { 
@@ -195,6 +180,19 @@ namespace PPU {
 		printf(" Dot=%d Line=%d Odd=%d VBlank=%d NMI=%d BG=%d SPR=%d SPR0=%d SPROV=%d T=%04x V=%04x X=%d W=%d B=%02x", dot, scanline, oddframe, vblank, NMIenabled, BGenable, SPRenable, spr0, sproverflow, T, V, X, W, readbuffer);
 		#endif
 
+
+		dot++;
+
+		if (dot > 340) {
+			dot = 0;
+			scanline++;
+		}
+		if (scanline > 260) {
+			scanline = -1;
+			oddframe = !oddframe;
+
+		}
+
 	}
 
 	b renderingEnabled() {
@@ -217,18 +215,22 @@ namespace PPU {
 			mirr = 0x800;
 		}
 
+		u8 tempD = (coarseX + ((fineX + (dot - 1) % 8) >> 3)) % 32;
+
 		//u8 pixel = MEM::VRAM[0x1000 * BGpattern + MEM::VRAM[0x2000 + ((coarseX << 3) + dot % 8) + 0x10 * ((coarseY << 3) + fineY) >> 3]];      + 0x800 * ((nt & 0b01) && (mirr == 0x400))
 		u8 pixel =		!!(MEM::VRAM[0x1000 * BGpattern     + fineY + 16 * MEM::VRAM[0x2000 + (((coarseX + ((fineX + (dot - 1) % 8) >> 3)) % 32) + 32 * coarseY + 0x400 * nt) % mirr + 0x800 * ((nt & 0b10) && (MEM::mirroring == 0))]] & (0b10000000 >> (fineX + (dot - 1)) % 8))
 			+
 					2 * !!(MEM::VRAM[0x1000 * BGpattern + 8 + fineY + 16 * MEM::VRAM[0x2000 + (((coarseX + ((fineX + (dot - 1) % 8) >> 3)) % 32) + 32 * coarseY + 0x400 * nt) % mirr + 0x800 * ((nt & 0b10) && (MEM::mirroring == 0))]] & (0b10000000 >> (fineX + (dot - 1)) % 8))
 			;
 
+		u8 attribute = ( MEM::VRAM[0x23c0 + (((tempD >> 2) + 8 * (coarseY >> 2) + 0x400 * nt) % mirr + 0x800 * ((nt & 0b10) && (MEM::mirroring == 0)))] & (0b11 << ((tempD & 0b10) + 2 * (coarseY & 0b10))) ) >> ((tempD & 0b10) + 2 * (coarseY & 0b10)); // & (0b00000011 << (((tempD & 0b10)/2) + (coarseY & 0b10)))
+
 		if (pixel == 0) {
 			isOpaque[dot - 1][scanline] = false;
 		} else {
 			isOpaque[dot - 1][scanline] = true;
 		}
-		return liteColor ? (MEM::VRAM[0x3f00 + ((pixel) * !!(pixel)) * renderingEnabled()]) : ((V)+((X + ((dot - 1) % 8)) >> 3));
+		return liteColor ? (MEM::VRAM[0x3f00 + ((pixel + 4 * attribute) * !!(pixel)) * renderingEnabled()]) : ((V)+((X + ((dot - 1) % 8)) >> 3));
 	}
 
 	u8 fetchColor() {

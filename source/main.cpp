@@ -24,6 +24,7 @@
 #include "init/screen_init.h"
 #include "init/ppu_init.h"
 #include "init/cpu_init.h"
+#include "init/apu_init.h"
 
 #include "h/memory.h"
 #include "h/mainbus.h"
@@ -31,6 +32,7 @@
 #include "h/screen.h"
 #include "h/ppu.h"
 #include "h/cpu.h"
+#include "h/apu.h"
 
 static bool vsync = false;
 int main(int _argc, char **_argv) {
@@ -86,7 +88,7 @@ int main(int _argc, char **_argv) {
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Burger Time (USA).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Challenger (Japan).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Lunar Pool (USA).nes");
-	MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Super Mario Bros. (World).nes"); 
+	MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Super Mario Bros. (World).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Devil World.nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Sky Destroyer (Japan).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Hudson's Adventure Island (USA).nes");
