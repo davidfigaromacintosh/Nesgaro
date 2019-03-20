@@ -149,7 +149,7 @@ namespace PPU {
 			if (scanline == 241 && dot == 1) {
 
 				for (int i = 0; i < 64; i++) {
-					if (MEM::OAM[4 * i] < 239 && SPRenable) scr->put(MEM::OAM[4 * i + 3], MEM::OAM[4 * i], 0x30);
+					if (MEM::OAM[4 * i] < 239 && SPRenable) scr->put(MEM::OAM[4 * i + 3], MEM::OAM[4 * i], MEM::VRAM[0x3f13 + 4 * (MEM::OAM[4 * i + 2] & 0b11)]);
 				}
 
 				vblank = 1;
@@ -230,7 +230,7 @@ namespace PPU {
 		} else {
 			isOpaque[dot - 1][scanline] = true;
 		}
-		return liteColor ? (MEM::VRAM[0x3f00 + ((pixel + 4 * attribute) * !!(pixel)) * renderingEnabled()]) : ((V)+((X + ((dot - 1) % 8)) >> 3));
+		return liteColor ? (MEM::VRAM[0x3f00 + ((pixel + 4 * attribute) * !!(pixel)) * BGenable]) : ((V)+((X + ((dot - 1) % 8)) >> 3));
 	}
 
 	u8 fetchColor() {
@@ -240,6 +240,26 @@ namespace PPU {
 		return ((V) + ((X + ((dot - 1) % 8)) >> 3));
 		//return MEM::VRAM[0x3f0d];
 	
+	}
+
+	void loadPalette(const char* filename) {
+		FILE *f;
+		f = fopen(filename, "rb");
+
+		u8 buff;
+
+		for (int i = 0; i < 64; i++) 
+		{
+			colors[i] = 0x000000ff;
+
+			for (int j = 0; j < 3; j++) {
+				fread_s(&buff,1, 1, 1, f);
+				colors[i] |= buff << (24 - 8 * j);
+			}
+
+		}
+
+		fclose(f);
 	}
 
 	// ### Szyna danych PPU (odczyt) ###

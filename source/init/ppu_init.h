@@ -163,7 +163,7 @@ namespace PPU {
 
 	//Szyna danych PPU (zapis)
 	void writebus(u16 regno, u8 value);
-
+	void loadPalette(const char* filename);
 	//Szyna danych PPU (odczyt)
 	u8 readbus(u16 regno);
 	b renderingEnabled();

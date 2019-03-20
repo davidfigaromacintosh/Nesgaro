@@ -45,6 +45,9 @@ int main(int _argc, char **_argv) {
 
 	sf::Image windowIcon;
 
+	sf::Sound snd;
+	sf::SoundBuffer sbuff;
+
 	sf::RenderWindow window{ sf::VideoMode{(unsigned int)windowScale * 256, (unsigned int)windowScale * 240}, "NESgaro v0.1 alpha", sf::Style::Close | sf::Style::Fullscreen}; //= ⬤ ᆺ ⬤ =
 	sf::Event wEvent;
 	
@@ -68,6 +71,7 @@ int main(int _argc, char **_argv) {
 	windowIcon.loadFromFile("icon.png");
 	window.setIcon(16, 16, windowIcon.getPixelsPtr());
 
+	window.clear(sf::Color(0));
 	window.display();
 
 
@@ -88,7 +92,11 @@ int main(int _argc, char **_argv) {
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Burger Time (USA).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Challenger (Japan).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Lunar Pool (USA).nes");
-	MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Super Mario Bros. (World).nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Alter_Ego.nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Inversion.nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Dr Mario.nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Super Mario Bros. (World).nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Super Mario Bros. (Pirate).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Devil World.nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Sky Destroyer (Japan).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Hudson's Adventure Island (USA).nes");
@@ -96,23 +104,51 @@ int main(int _argc, char **_argv) {
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Bomberman.nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Magic Jewelry.nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Tetris (USA) (Unl).nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Galaxian.nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Galaga (Europe).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Choujikuu Yousai - Macross (Japan).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Duck Maze (Australia) (Unl).nes");
-	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Mario Bros. (World).nes");
+	MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Mario Bros. (World).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Excitebike.nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Gyromite (World).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Duck Hunt (World).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Wild Gunman (Japan, USA).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Balloon Fight (USA).nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Family BASIC (Japan) (v1.0).nes");
 
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\testroms\\instr_test_v5\\03-immediate.nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\testroms\\instr_timing\\branch_timing.nes");
 
 	screen.resize(windowScale);
+	PPU::loadPalette("palette.pal");
 	PPU::init();
 	PPU::connectScreen(screen);
 	CPU::init();
 	PAD::init();
+
+	sf::Int16 samp[] = {
+		-0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff,
+		-0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff,
+		+0x7fff, +0x7fff, +0x7fff, +0x7fff, +0x7fff, +0x7fff, +0x7fff, +0x7fff,
+		+0x7fff, +0x7fff, +0x7fff, +0x7fff, +0x7fff, +0x7fff, +0x7fff, +0x7fff,
+		+0x7fff, +0x7fff, +0x7fff, +0x7fff, +0x7fff, +0x7fff, +0x7fff, +0x7fff,
+		+0x7fff, +0x7fff, +0x7fff, +0x7fff, +0x7fff, +0x7fff, +0x7fff, +0x7fff,
+		-0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff,
+		-0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff,
+		-0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff,
+		-0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff,
+		-0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff,
+		-0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff,
+		-0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff,
+		-0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff,
+		-0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff,
+		-0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff,
+	};
+
+	sbuff.loadFromSamples(samp, 8*16, 1, 44100);
+	snd.setBuffer(sbuff);
+	snd.setLoop(true);
+	//snd.play();
 
 	while (1) {
 
@@ -136,7 +172,7 @@ int main(int _argc, char **_argv) {
 			
 			}
 
-			window.clear(sf::Color(PPU::colors[MEM::VRAM[0x3f00]]));
+			//window.clear(sf::Color(PPU::colors[MEM::VRAM[0x3f00]]));
 			window.draw(screen);
 			window.display();
 		}
