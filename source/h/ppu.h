@@ -151,7 +151,7 @@ namespace PPU {
 			if (scanline == 241 && dot == 1) {
 
 				for (int i = 0; i < 64; i++) {
-					if (MEM::OAM[4 * i] < 239 && SPRenable) scr->put(MEM::OAM[4 * i + 3], MEM::OAM[4 * i], MEM::VRAM[0x3f12 + 4 * (MEM::OAM[4 * i + 2] & 0b11)]);
+					if (MEM::OAM[4 * i] < 239 && SPRenable) scr->put(MEM::OAM[4 * i + 3], MEM::OAM[4 * i], MEM::VRAM[0x3f13 + 4 * (MEM::OAM[4 * i + 2] & 0b11)]);
 				}
 
 				vblank = 1;

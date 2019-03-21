@@ -39,7 +39,7 @@ int main(int _argc, char **_argv) {
 
 	srand(static_cast<unsigned int>(time(NULL)));
 
-	float windowScale = 3;
+	float windowScale = 4;
 
 	SCREEN::Screen screen;
 
@@ -48,7 +48,7 @@ int main(int _argc, char **_argv) {
 	sf::Sound snd;
 	sf::SoundBuffer sbuff;
 
-	sf::RenderWindow window{ sf::VideoMode{(unsigned int)windowScale * 256, (unsigned int)windowScale * 240}, "NESgaro v0.1 alpha"}; //= ⬤ ᆺ ⬤ =
+	sf::RenderWindow window{ sf::VideoMode{(unsigned int)windowScale * 256, (unsigned int)windowScale * 240}, "NESgaro v0.1 alpha", sf::Style::Close | sf::Style::Fullscreen}; //= ⬤ ᆺ ⬤ =
 	sf::Event wEvent;
 	
 	#ifdef DEBUG_MODE
@@ -97,7 +97,7 @@ int main(int _argc, char **_argv) {
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Alter_Ego.nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Inversion.nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Dr Mario.nes");
-	MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Super Mario Bros. (World).nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Super Mario Bros. (World).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Super Mario Bros. (Pirate).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Circus Charlie (USA).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Devil World.nes");
@@ -121,6 +121,8 @@ int main(int _argc, char **_argv) {
 
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\testroms\\instr_test_v5\\03-immediate.nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\testroms\\instr_timing\\branch_timing.nes");
+
+	MEM::loadROM("C:\\Users\\David Macintosh\\Desktop\\Duck Maze (Australia) (Unl).nes");
 
 	screen.resize(windowScale);
 	PPU::loadPalette("palette.pal");
