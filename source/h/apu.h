@@ -1,3 +1,6 @@
 namespace APU {
 
+	void init() {
+	
+	}
 }

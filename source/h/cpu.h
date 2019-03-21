@@ -684,6 +684,7 @@ namespace CPU {
 			}
 		}
 		
+		return pointer;
 	}
 
 
@@ -1231,7 +1232,7 @@ namespace CPU {
 				NMIoccured = 0;
 				interrupt(INT_NMI);
 				#ifdef DEBUG_MODE
-				printf(" NMI occured!");
+				printf(" NMI occured @ Dot=%d Scanline=%d", PPU::dot, PPU::scanline);
 				#endif
 
 			} else {

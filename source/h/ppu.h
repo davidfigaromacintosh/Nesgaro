@@ -3,9 +3,9 @@
 namespace PPU {
 
 	void init() {
-		dot = 0;
-		scanline = -1;
-		oddframe = 0;
+		dot = 30;
+		scanline = 0;
+		oddframe = 1;
 
 		//Flagi
 		spr0 = 1;
@@ -59,7 +59,7 @@ namespace PPU {
 			}
 
 			//dot 257: scroll update
-			if (dot == 258 && renderingEnabled()) {
+			if (dot == 257 && renderingEnabled()) {
 				V = (V & 0b111101111100000) | (T & 0b000010000011111);
 			}
 
@@ -68,7 +68,7 @@ namespace PPU {
 				V = (V & 0b000010000011111) | (T & 0b111101111100000);
 			}
 
-			if (dot == 340 - oddframe && renderingEnabled()) {
+			if (dot == 340 - oddframe) {
 				dot = 0;
 				scanline++;
 			}
@@ -87,6 +87,8 @@ namespace PPU {
 			//USUN¥Æ ZARAZ PO TESTACH!!!
 			if (scanline == 30 && dot == 91) {
 			//if (scanline == 110 && dot == 1) {
+			//if (scanline == 204 && dot == 218) {
+			//if (scanline == 41 && dot == 237) {
 				spr0 = 1;
 			}
 
@@ -149,7 +151,7 @@ namespace PPU {
 			if (scanline == 241 && dot == 1) {
 
 				for (int i = 0; i < 64; i++) {
-					if (MEM::OAM[4 * i] < 239 && SPRenable) scr->put(MEM::OAM[4 * i + 3], MEM::OAM[4 * i], MEM::VRAM[0x3f13 + 4 * (MEM::OAM[4 * i + 2] & 0b11)]);
+					if (MEM::OAM[4 * i] < 239 && SPRenable) scr->put(MEM::OAM[4 * i + 3], MEM::OAM[4 * i], MEM::VRAM[0x3f12 + 4 * (MEM::OAM[4 * i + 2] & 0b11)]);
 				}
 
 				vblank = 1;

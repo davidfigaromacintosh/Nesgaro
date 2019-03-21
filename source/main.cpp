@@ -39,7 +39,7 @@ int main(int _argc, char **_argv) {
 
 	srand(static_cast<unsigned int>(time(NULL)));
 
-	float windowScale = 4;
+	float windowScale = 3;
 
 	SCREEN::Screen screen;
 
@@ -48,7 +48,7 @@ int main(int _argc, char **_argv) {
 	sf::Sound snd;
 	sf::SoundBuffer sbuff;
 
-	sf::RenderWindow window{ sf::VideoMode{(unsigned int)windowScale * 256, (unsigned int)windowScale * 240}, "NESgaro v0.1 alpha", sf::Style::Close | sf::Style::Fullscreen}; //= ⬤ ᆺ ⬤ =
+	sf::RenderWindow window{ sf::VideoMode{(unsigned int)windowScale * 256, (unsigned int)windowScale * 240}, "NESgaro v0.1 alpha"}; //= ⬤ ᆺ ⬤ =
 	sf::Event wEvent;
 	
 	#ifdef DEBUG_MODE
@@ -65,7 +65,7 @@ int main(int _argc, char **_argv) {
 	}
 	#endif
 
-	window.setVerticalSyncEnabled(false);
+	window.setVerticalSyncEnabled(true);
 	window.setFramerateLimit(60);
 
 	windowIcon.loadFromFile("icon.png");
@@ -79,6 +79,7 @@ int main(int _argc, char **_argv) {
 
 	//ROMy do testowania
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\nespeccy.nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Palette-Generator.nes");
 	//MEM::loadROM("D:\\NESASM\\nes_asm6502_test2.nes");
 	//MEM::loadROM("D:\\NESASM\\mcpong\\mcpong.nes");
 	//MEM::loadROM("D:\\NESASM\\mcpong\\McPong (dev 0.1).nes");
@@ -88,6 +89,7 @@ int main(int _argc, char **_argv) {
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Mappy.nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\F-1 Race.nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\donkey kong.nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Donkey Kong 3 (World).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Battle City (Japan).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Burger Time (USA).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Challenger (Japan).nes");
@@ -95,8 +97,9 @@ int main(int _argc, char **_argv) {
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Alter_Ego.nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Inversion.nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Dr Mario.nes");
-	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Super Mario Bros. (World).nes");
+	MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Super Mario Bros. (World).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Super Mario Bros. (Pirate).nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Circus Charlie (USA).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Devil World.nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Sky Destroyer (Japan).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Hudson's Adventure Island (USA).nes");
@@ -108,7 +111,7 @@ int main(int _argc, char **_argv) {
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Galaga (Europe).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Choujikuu Yousai - Macross (Japan).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Duck Maze (Australia) (Unl).nes");
-	MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Mario Bros. (World).nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Mario Bros. (World).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Excitebike.nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Gyromite (World).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Duck Hunt (World).nes");
@@ -124,6 +127,7 @@ int main(int _argc, char **_argv) {
 	PPU::init();
 	PPU::connectScreen(screen);
 	CPU::init();
+	APU::init();
 	PAD::init();
 
 	sf::Int16 samp[] = {
@@ -144,11 +148,11 @@ int main(int _argc, char **_argv) {
 		-0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff,
 		-0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff,
 	};
-
-	sbuff.loadFromSamples(samp, 8*16, 1, 44100);
+	sbuff.loadFromSamples(samp, 8*16, 1, 88200);
 	snd.setBuffer(sbuff);
 	snd.setLoop(true);
 	//snd.play();
+	snd.setVolume(50);
 
 	while (1) {
 
@@ -170,6 +174,12 @@ int main(int _argc, char **_argv) {
 					return 0xF19A20;
 				}
 			
+			}
+
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::X)) {
+				snd.setPitch(7);
+			} else {
+				snd.setPitch(1);
 			}
 
 			//window.clear(sf::Color(PPU::colors[MEM::VRAM[0x3f00]]));
