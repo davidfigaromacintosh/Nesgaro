@@ -197,10 +197,6 @@ namespace CPU {
 		//TODO gdy napiszê menedzera pamiêci
 	}
 
-	void NMI() {
-		//TODO -||-
-	}
-
 	//Zwraca ile cykli zajmuje wykonanie danej instrukcji
 	u8 getOpcodeCycle(u8 opcode) {
 		return opcodeCycle[opcode];
@@ -622,7 +618,7 @@ namespace CPU {
 		}
 
 		}
-		cyclesLeft += 7;
+		if (int_type != INT_BRK) cyclesLeft += 7;
 	}
 
 	//Jak na podstawie typu opokdu pobraæ dane z operandu?
@@ -732,7 +728,7 @@ namespace CPU {
 			cyclesLeft++;
 
 			u16 PC2 = PC + off;
-			checkPageCross(PC, PC2, 2);
+			checkPageCross(PC, PC2, 1);
 			PC = PC2;
 		}
 	}

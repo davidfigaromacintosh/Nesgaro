@@ -8,6 +8,9 @@ namespace MEM {
 	u8 PRGRAM[0x2000];	//Od $6000 do $7FFF
 	u8 PRGROM[0x8000];	//Od $8000 do $FFFF
 
+	u8 PRGBANKS[];		//Banki danych PRG
+	u8 CHRBANKS[];		//Banki danych CHR
+
 	//PPU
 	u8 VRAM[0x4000];	//16 kb VRAM
 	u8 OAM[0x100];		//64*4 bajtów OAM

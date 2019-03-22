@@ -145,7 +145,7 @@ namespace PPU {
 
 
 		// === Post scan (od 240 do 260) ===
-		else if (scanline >= 240 && scanline <= 260) { 
+		else if (scanline >= 240) { 
 
 			//Pocz¹tek VBlank oraz NMI
 			if (scanline == 241 && dot == 1) {

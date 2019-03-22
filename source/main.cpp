@@ -86,7 +86,7 @@ int main(int _argc, char **_argv) {
 	//MEM::loadROM("D:\\NESASM\\mcpong\\McPong (dev 0.1).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Pac-Man.nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Pinball.nes");
-	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Mappy.nes");
+	MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Mappy.nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\F-1 Race.nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\donkey kong.nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Donkey Kong 3 (World).nes");
@@ -122,7 +122,7 @@ int main(int _argc, char **_argv) {
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\testroms\\instr_test_v5\\03-immediate.nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\testroms\\instr_timing\\branch_timing.nes");
 
-	MEM::loadROM("C:\\Users\\David Macintosh\\Desktop\\Duck Maze (Australia) (Unl).nes");
+	//MEM::loadROM("C:\\Users\\David Macintosh\\Desktop\\Duck Maze (Australia) (Unl).nes");
 
 	screen.resize(windowScale);
 	PPU::loadPalette("palette.pal");

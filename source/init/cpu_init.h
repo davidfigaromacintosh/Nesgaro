@@ -302,10 +302,7 @@ namespace CPU {
 	u16 getOpcodeMnemonicCode(u8 opcode);
 
 	void init();
-
 	void reset();
-
-	void NMI();
 	
 	//Zwraca wartoœæ flagi
 	b getC();
