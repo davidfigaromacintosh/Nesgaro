@@ -377,6 +377,7 @@ namespace CPU {
 			return 2;
 		}
 		case IMPLIED: {
+			if (opcode == BRK) return 2;
 			return 1;
 		}
 		case RELATIVE: {
@@ -594,12 +595,12 @@ namespace CPU {
 		if (int_type == INT_BRK) PC++;
 
 		// Wepchnij aktualny wskaŸnik programu do stosu
-		MAINBUS::pushStack((0xff00 & PC) >> 8);
-		MAINBUS::pushStack(0xff & PC);
+		MAINBUS::pushStack(PC >> 8);
+		MAINBUS::pushStack(PC);
 
 		// Je¿eli BRK, ustawiamy pozorn¹ flagê B na 1
 		u8 tempP = P;
-		tempP = (tempP & 0b11101111) | ((int_type == INT_BRK) << 4) ;
+		tempP = (tempP & 0b11101111) | ((int_type == INT_BRK) << 4) | 0b00100000;
 
 		// Wpychamy status procka do stosu
 		MAINBUS::pushStack(tempP);
@@ -1224,13 +1225,12 @@ namespace CPU {
 
 		if (cyclesLeft == 0) {
 
-			if (NMIoccured) {
+			if (NMIoccured == 1) {
 				NMIoccured = 0;
 				interrupt(INT_NMI);
 				#ifdef DEBUG_MODE
 				printf(" NMI occured @ Dot=%d Scanline=%d", PPU::dot, PPU::scanline);
 				#endif
-
 			} else {
 
 				u8 op = MAINBUS::read(PC);
@@ -1426,7 +1426,7 @@ namespace CPU {
 				}
 
 				
-				if (opcode != JSR && opcode != JMP) { PC += getOpcodeLength(op) - 1; }
+				if (opcode != JSR && opcode != JMP && opcode != BRK) { PC += getOpcodeLength(op) - 1; }
 				#ifdef DEBUG_MODE
 				printf(" A=%02x X=%02x Y=%02x S=%02x C=%x Z=%x I=%x D=%x B=%x V=%x N=%x", A, X, Y, S, (P & 1) >> 0, (P & 2) >> 1, (P & 4) >> 2, (P & 8) >> 3, (P & 16) >> 4, (P & 64) >> 6, (P & 128) >> 7);
 

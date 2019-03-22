@@ -3,9 +3,9 @@
 namespace PPU {
 
 	void init() {
-		dot = 30;
+		dot = 0;
 		scanline = 0;
-		oddframe = 1;
+		oddframe = 0;
 
 		//Flagi
 		spr0 = 1;
@@ -66,11 +66,6 @@ namespace PPU {
 			// dot od 280 do 304: scroll update
 			if (dot > 280 && dot <= 304 && renderingEnabled()) {
 				V = (V & 0b000010000011111) | (T & 0b111101111100000);
-			}
-
-			if (dot == 340 - oddframe) {
-				dot = 0;
-				scanline++;
 			}
 
 		}
@@ -193,6 +188,11 @@ namespace PPU {
 			scanline = -1;
 			oddframe = !oddframe;
 
+		}
+
+		if (oddframe && scanline == -1 && dot == 340 && BGenable) {
+			dot = 0;
+			scanline++;
 		}
 
 	}
