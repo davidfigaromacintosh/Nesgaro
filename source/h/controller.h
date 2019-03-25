@@ -12,15 +12,19 @@ namespace PAD {
 		if (isStrobing) {
 			for (int i = 0; i < 8; i++) {
 				status = status << 1;
-				status = status | sf::Keyboard::isKeyPressed(keys[i]);
+				status = status | (sf::Keyboard::isKeyPressed(keys[i]) && win->hasFocus());
 			}
 		}
+	}
+
+	void focus(sf::Window &wind) {
+		win = &wind;
 	}
 
 	u8 read() {
 		u8 retvalue = status & 0b00000001;
 		status = status >> 1;
-		return retvalue;
+		return retvalue | 0x40;
 	}
 
 }

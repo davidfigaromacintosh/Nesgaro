@@ -4,13 +4,14 @@ namespace PPU {
 
 	void init() {
 		dot = 0;
-		scanline = 0;
-		oddframe = 0;
+		scanline = -1;
+		oddframe = 1;
+		frame = 1;
 
 		//Flagi
-		spr0 = 1;
+		spr0 = 0;
 		sproverflow = 0;
-		vblank = 1;
+		vblank = 0;
 
 		//Wewnêtrzne rejestry PPU
 		T = 0;
@@ -38,6 +39,9 @@ namespace PPU {
 		emphasisR = 0;
 		emphasisG = 0;
 		emphasisB = 0;
+
+		//$2002
+		lsbWrite = 0;
 	}
 
 	void step() {
@@ -54,6 +58,7 @@ namespace PPU {
 			//Zawsze na docie 1 pre-linii flagi VBlank, SPR0 oraz SPROV s¹ czyszczone
 			if (dot == 1) {
 				vblank = 0;
+				CPU::NMIoccured = 0;
 				spr0 = 0;
 				sproverflow = 0;
 			}
@@ -64,7 +69,7 @@ namespace PPU {
 			}
 
 			// dot od 280 do 304: scroll update
-			if (dot > 280 && dot <= 304 && renderingEnabled()) {
+			if (dot >= 280 && dot <= 304 && renderingEnabled()) {
 				V = (V & 0b000010000011111) | (T & 0b111101111100000);
 			}
 
@@ -84,6 +89,7 @@ namespace PPU {
 			//if (scanline == 110 && dot == 1) {
 			//if (scanline == 204 && dot == 218) {
 			//if (scanline == 41 && dot == 237) {
+			//if (scanline == 15 && dot == 2) {
 				spr0 = 1;
 			}
 
@@ -146,11 +152,11 @@ namespace PPU {
 			if (scanline == 241 && dot == 1) {
 
 				for (int i = 0; i < 64; i++) {
-					if (MEM::OAM[4 * i] < 239 && SPRenable) scr->put(MEM::OAM[4 * i + 3], MEM::OAM[4 * i], MEM::VRAM[0x3f13 + 4 * (MEM::OAM[4 * i + 2] & 0b11)]);
+					if (MEM::OAM[4 * i] < 239 && SPRenable) scr->put(MEM::OAM[4 * i + 3], MEM::OAM[4 * i], MEM::VRAM[0x3f12 + 4 * (MEM::OAM[4 * i + 2] & 0b11)]);
 				}
 
 				vblank = 1;
-				if (NMIenabled) {
+				if (NMIenabled == 1) {
 					CPU::NMIoccured = 1;
 				}
 			}
@@ -169,7 +175,7 @@ namespace PPU {
 			u8 coordX = (dot - 1) & 0xff;
 			u8 coordY = scanline & 0xff;
 
-			scr->put(coordX, coordY, fetchTile(1));
+			scr->put(coordX, coordY, fetchTile(0));
 
 		}
 
@@ -187,10 +193,11 @@ namespace PPU {
 		if (scanline > 260) {
 			scanline = -1;
 			oddframe = !oddframe;
-
+			frame++;
+			//exit(CPU::cycles);
 		}
 
-		if (oddframe && scanline == -1 && dot == 340 && BGenable) {
+		if (oddframe && scanline == -1 && dot > 339 && BGenable) { //
 			dot = 0;
 			scanline++;
 		}
@@ -201,7 +208,7 @@ namespace PPU {
 		return BGenable || SPRenable;
 	}
 
-	u8 fetchTile(bool liteColor) {
+	u8 fetchTile(u8 liteColor) {
 		fineX = X;
 		coarseX = V & 0b11111;
 		fineY = (V & 0b111000000000000) >> 12;
@@ -232,7 +239,20 @@ namespace PPU {
 		} else {
 			isOpaque[dot - 1][scanline] = true;
 		}
-		return liteColor ? (MEM::VRAM[0x3f00 + ((pixel + 4 * attribute) * !!(pixel)) * BGenable]) : ((V)+((X + ((dot - 1) % 8)) >> 3));
+
+		switch (liteColor) {
+			case 1: {
+				return ((V)+((X + ((dot - 1) % 8)) >> 3));
+			}
+			case 2: {
+				return isOpaque[dot - 1][scanline];
+			}
+			default: {
+				return (MEM::VRAM[0x3f00 + ((pixel + 4 * attribute) * !!(pixel)) * BGenable]);
+			}
+		}
+
+		//return liteColor ? (MEM::VRAM[0x3f00 + ((pixel + 4 * attribute) * !!(pixel)) * BGenable]) : ((V)+((X + ((dot - 1) % 8)) >> 3));
 	}
 
 	u8 fetchColor() {
@@ -272,8 +292,9 @@ namespace PPU {
 				W = 0;
 				u8 tempvblank = vblank;
 				vblank = 0;
+				CPU::NMIoccured = 0;
 
-				return ((tempvblank << 2) | (spr0 << 1) | (sproverflow)) << 5;
+				return (tempvblank << 7) | (spr0 << 6) | (sproverflow << 5) | (lsbWrite & 0b00011111);
 			}
 			case OAM_DATA: {	//Read $2004 R W
 				return MEM::OAM[OAMV];
@@ -324,6 +345,9 @@ namespace PPU {
 
 	// ###Szyna danych PPU (zapis) ###
 	void writebus(u16 regno, u8 value) {
+
+		lsbWrite = value;
+
 		switch (regno) {
 			case PPU_CTRL: {	//Write $2000 W
 

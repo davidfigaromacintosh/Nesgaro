@@ -186,10 +186,11 @@ namespace CPU {
 		Y = 0;
 
 		PC = MAINBUS::readAddr(MEM::reset);
-		oddCycle = 0;
+		oddCycle = 1;
 		S = 0xfd;
-		P = 0b00110100;
+		P = 0b00000100;
 		NMIoccured = 0;
+		cycles = 0;
 
 	}
 
@@ -199,7 +200,14 @@ namespace CPU {
 
 	//Zwraca ile cykli zajmuje wykonanie danej instrukcji
 	u8 getOpcodeCycle(u8 opcode) {
-		return opcodeCycle[opcode];
+		
+		switch (opcode) {
+
+			default: {
+				return 2;
+			}
+
+		}
 	}
 
 	/* Wartoœci zwracane przez funkcje:
@@ -599,8 +607,7 @@ namespace CPU {
 		MAINBUS::pushStack(PC);
 
 		// Je¿eli BRK, ustawiamy pozorn¹ flagê B na 1
-		u8 tempP = P;
-		tempP = (tempP & 0b11101111) | ((int_type == INT_BRK) << 4) | 0b00100000;
+		u8 tempP = (P & 0b11101111) | ((int_type == INT_BRK) << 4) | 0b00100000;
 
 		// Wpychamy status procka do stosu
 		MAINBUS::pushStack(tempP);
@@ -619,12 +626,12 @@ namespace CPU {
 		}
 
 		}
-		if (int_type != INT_BRK) cyclesLeft += 7;
+		//if (int_type != INT_BRK) cyclesLeft += 7;
 	}
 
 	//Jak na podstawie typu opokdu pobraæ dane z operandu?
 	//Na podstawie typu adresowania oraz danego operandu, zwraca adres danej wartoœci w pamiêci
-	u16 getAddressFromType(u8 addrmode, u16 pointer) {
+	u16 getAddressFromType(u8 addrmode, u16 pointer, u8 addCycleOnBoundCross) {
 
 		switch (addrmode) {
 
@@ -633,13 +640,13 @@ namespace CPU {
 			}
 			case ABSOLUTE_X: {
 				u16 address = (MAINBUS::read(pointer) | (MAINBUS::read(pointer + 1) << 8));
-				checkPageCross(address, address + X, 1);
-				return address + X;
+				checkPageCross(address, address + X, addCycleOnBoundCross);
+				return (address + X);
 			}
 			case ABSOLUTE_Y: {
 				u16 address = (MAINBUS::read(pointer) | (MAINBUS::read(pointer + 1) << 8));
-				checkPageCross(address, address + Y, 1);
-				return address + Y;
+				checkPageCross(address, address + Y, addCycleOnBoundCross);
+				return (address + Y);
 			}
 			case IMMEDIATE: {
 				return pointer;
@@ -675,9 +682,9 @@ namespace CPU {
 			}
 			case INDIRECT_Y: {
 				u8 val = MAINBUS::read(pointer);
-				u16 address = (MAINBUS::read(val & 0xff) | (MAINBUS::read((val + 1) & 0xff) << 8)) ;
-				checkPageCross(address, address + Y, 1);
-				return address + Y;
+				u16 address = MAINBUS::read(val & 0xff) | (MAINBUS::read((val + 1) & 0xff) << 8) ;
+				checkPageCross(address, address + Y, addCycleOnBoundCross);
+				return (address + Y);
 			}
 		}
 		
@@ -687,7 +694,7 @@ namespace CPU {
 
 
 	void executeBranch(u8 branch_type) {
-		bool br = false;
+		u8 br = 0;
 		
 		switch (branch_type) {
 			case BPL: {
@@ -724,12 +731,15 @@ namespace CPU {
 			}
 		}
 
+
+
 		if (br) {
 			s8 off = MAINBUS::read(PC);
-			cyclesLeft++;
-
 			u16 PC2 = PC + off;
+
 			checkPageCross(PC, PC2, 1);
+
+			cyclesLeft++;
 			PC = PC2;
 		}
 	}
@@ -739,7 +749,7 @@ namespace CPU {
 	//1A - 8 typów adresacji
 	void executeADC(u8 addrmode) {	//ADC
 		
-		u8 operand = MAINBUS::read(getAddressFromType(addrmode, PC));
+		u8 operand = MAINBUS::read(getAddressFromType(addrmode, PC, 1));
 
 		u16 sum = A + operand + getC();
 		setC(!!(sum & 0x100));
@@ -749,29 +759,29 @@ namespace CPU {
 		setFlagsZN(A);
 	}
 	void executeAND(u8 addrmode) { //AND
-		A &= MAINBUS::read(getAddressFromType(addrmode, PC));
+		A &= MAINBUS::read(getAddressFromType(addrmode, PC, 1));
 		setFlagsZN(A);
 	}
 	void executeCMP(u8 addrmode) { //CMP
-		u16 diff = A - MAINBUS::read(getAddressFromType(addrmode, PC));
+		u16 diff = A - MAINBUS::read(getAddressFromType(addrmode, PC, 1));
 		setC(!(diff & 0x100));
 		setFlagsZN(diff);
 	}
 	void executeEOR(u8 addrmode) { //EOR
-		A ^= MAINBUS::read(getAddressFromType(addrmode, PC));
+		A ^= MAINBUS::read(getAddressFromType(addrmode, PC, 1));
 		setFlagsZN(A);
 	}
 	void executeLDA(u8 addrmode) { //LDA
-		A = MAINBUS::read(getAddressFromType(addrmode, PC));
+		A = MAINBUS::read(getAddressFromType(addrmode, PC, 1));
 		setFlagsZN(A);
 	}
 	void executeORA(u8 addrmode) { //ORA
-		A |= MAINBUS::read(getAddressFromType(addrmode, PC));
+		A |= MAINBUS::read(getAddressFromType(addrmode, PC, 1));
 		setFlagsZN(A);
 	}
 	void executeSBC(u8 addrmode) { //SBC
 
-		u16 operand = MAINBUS::read(getAddressFromType(addrmode, PC));
+		u16 operand = MAINBUS::read(getAddressFromType(addrmode, PC, 1));
 
 		u16 diff = A - operand - !getC();
 
@@ -782,7 +792,7 @@ namespace CPU {
 		setFlagsZN(A);
 	}
 	void executeSTA(u8 addrmode) { //STA
-		MAINBUS::write(getAddressFromType(addrmode, PC), A);
+		MAINBUS::write(getAddressFromType(addrmode, PC, 0), A);
 	}
 
 	//1B - 6 typów adresacji
@@ -793,7 +803,7 @@ namespace CPU {
 			A <<= 1;
 			setFlagsZN(A);
 		} else {
-			u16 address = getAddressFromType(addrmode, PC);
+			u16 address = getAddressFromType(addrmode, PC, 0);
 			u8 operand = MAINBUS::read(address);
 			setC(!!(operand & 0x80));
 			operand = operand << 1;
@@ -803,11 +813,11 @@ namespace CPU {
 		
 	}
 	void executeLDX(u8 addrmode) { //LDX
-		X = MAINBUS::read(getAddressFromType(addrmode, PC));
+		X = MAINBUS::read(getAddressFromType(addrmode, PC, 1));
 		setFlagsZN(X);
 	}
 	void executeLDY(u8 addrmode) { //LDY
-		Y = MAINBUS::read(getAddressFromType(addrmode, PC));
+		Y = MAINBUS::read(getAddressFromType(addrmode, PC, 1));
 		setFlagsZN(Y);
 	}
 	void executeLSR(u8 addrmode) {	//LSR
@@ -817,7 +827,7 @@ namespace CPU {
 			A = A >> 1;
 			setFlagsZN(A);
 		} else {
-			u16 address = getAddressFromType(addrmode, PC);
+			u16 address = getAddressFromType(addrmode, PC, 0);
 			u8 operand = MAINBUS::read(address);
 			setC(!!(operand & 0x01));
 			operand = operand >> 1;
@@ -835,7 +845,7 @@ namespace CPU {
 			setFlagsZN(A);
 		} else {
 			u8 tempC = getC();
-			u16 address = getAddressFromType(addrmode, PC);
+			u16 address = getAddressFromType(addrmode, PC, 0);
 			u8 operand = MAINBUS::read(address);
 			setC(!!(operand & 0x80));
 			operand = (operand << 1) | tempC;
@@ -854,7 +864,7 @@ namespace CPU {
 			setFlagsZN(A);
 		} else {
 			u8 tempC = getC();
-			u16 address = getAddressFromType(addrmode, PC);
+			u16 address = getAddressFromType(addrmode, PC, 0);
 			u8 operand = MAINBUS::read(address);
 			setC(!!(operand & 0x01));
 			operand = (operand >> 1) | (tempC << 7);
@@ -866,31 +876,31 @@ namespace CPU {
 
 	//2A - 4 typów adresacji
 	void executeDEC(u8 addrmode) {	//DEC
-		u16 addr = getAddressFromType(addrmode, PC);
+		u16 addr = getAddressFromType(addrmode, PC, 0);
 		u8 temp = MAINBUS::read(addr) - 0x01;
 		setFlagsZN(temp);
 		MAINBUS::write(addr, temp);
 	}
 	void executeINC(u8 addrmode) {	//INC
-		u16 addr = getAddressFromType(addrmode, PC);
+		u16 addr = getAddressFromType(addrmode, PC, 0);
 		u8 temp = MAINBUS::read(addr) + 0x01;
 		setFlagsZN(temp);
 		MAINBUS::write(addr, temp);
 	}
 	void executeSTX(u8 addrmode) {	//STX
-		u16 addr = getAddressFromType(addrmode, PC);
+		u16 addr = getAddressFromType(addrmode, PC, 0);
 		MAINBUS::write(addr, X);
 		return;
 	}
 	void executeSTY(u8 addrmode) {	//STY
-		u16 addr = getAddressFromType(addrmode, PC);
+		u16 addr = getAddressFromType(addrmode, PC, 0);
 		MAINBUS::write(addr, Y);
 		return;
 	}
 
 	//2B - 3 typów adresacji
 	void executeCPX(u8 addrmode) {	//CPX
-		u8 operand = MAINBUS::read(getAddressFromType(addrmode, PC));
+		u8 operand = MAINBUS::read(getAddressFromType(addrmode, PC, 0));
 
 		u16 result = X - operand;
 		//Flagi C Z i N
@@ -899,7 +909,7 @@ namespace CPU {
 		return;
 	}
 	void executeCPY(u8 addrmode) {	//CPY
-		u8 operand = MAINBUS::read(getAddressFromType(addrmode, PC));
+		u8 operand = MAINBUS::read(getAddressFromType(addrmode, PC, 0));
 
 		u16 result = Y - operand;
 		//Flagi C Z i N
@@ -910,7 +920,7 @@ namespace CPU {
 
 	//3A - 2 typów adresacji
 	void executeBIT(u8 addrmode) {	//BIT
-		u8 operand = MAINBUS::read(getAddressFromType(addrmode, PC));
+		u8 operand = MAINBUS::read(getAddressFromType(addrmode, PC, 0));
 
 		//Na podstawie wartoœci otrzymanej z "operand" ustaw flagi Z V i N
 		setZ(!(A & operand));
@@ -922,7 +932,7 @@ namespace CPU {
 	//3B - 2 typów adresacji
 	void executeJMP(u8 addrmode) {	//JMP
 
-		u16 address = getAddressFromType(addrmode, PC);
+		u16 address = getAddressFromType(addrmode, PC, 0);
 		PC = address;
 		
 	}
@@ -1219,6 +1229,8 @@ namespace CPU {
 
 	void step() {
 
+		cycles++;
+
 		#ifdef DEBUG_MODE
 		printf("\nCPU Cycle!");
 		#endif
@@ -1228,6 +1240,7 @@ namespace CPU {
 			if (NMIoccured == 1) {
 				NMIoccured = 0;
 				interrupt(INT_NMI);
+				cyclesLeft += 7;
 				#ifdef DEBUG_MODE
 				printf(" NMI occured @ Dot=%d Scanline=%d", PPU::dot, PPU::scanline);
 				#endif
@@ -1256,7 +1269,7 @@ namespace CPU {
 				printf(" (%s %s, %d length, %d cycles) @ PC=%04x (pointing at %04x)", getOpcodeMnemonic(op), getOpcodeAddressingModeName(op), getOpcodeLength(op), opcodeCycle[op], PC, getAddressFromType(addrmode, PC+1));
 				#endif
 
-				cyclesLeft = opcodeCycle[op];
+				cyclesLeft += opcodeCycle[op];
 				PC++;
 
 				//Wertujesz listê 
@@ -1345,7 +1358,7 @@ namespace CPU {
 						executeBranch(opcode); break;
 					}
 					case BRK: {
-						interrupt(BRK); break;
+						interrupt(INT_BRK); break;
 					}
 					case CLC: {
 						executeCLC(); break;
@@ -1430,24 +1443,27 @@ namespace CPU {
 				#ifdef DEBUG_MODE
 				printf(" A=%02x X=%02x Y=%02x S=%02x C=%x Z=%x I=%x D=%x B=%x V=%x N=%x", A, X, Y, S, (P & 1) >> 0, (P & 2) >> 1, (P & 4) >> 2, (P & 8) >> 3, (P & 16) >> 4, (P & 64) >> 6, (P & 128) >> 7);
 
-				puts("\nSTACK:");
+				/*puts("\nSTACK:");
 				for (int i = 0; i < 0x10; i++) {
 					for (int j = 0; j < 0x10; j++) {
 						printf("%02x  ", MEM::RAM[0x0100 + 0x10 * i + j]);
 					}
 					putchar('\n');
-				}
+				}*/
 				#endif
 			}
 
-		} 
+			
+		} else {
+
+		
 
 		#ifdef DEBUG_MODE
-		else {
-			printf(" Still executing...");
-		}
+		printf(" Still executing...");
 		#endif
 
+		}
+		
 		if (cyclesLeft > 0) cyclesLeft--;
 		oddCycle = !oddCycle;
 

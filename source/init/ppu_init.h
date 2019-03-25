@@ -9,6 +9,7 @@ http://nesdev.com/NES%20emulation%20discussion.txt						Ogólny poradnik jak rend
 https://wiki.nesdev.com/w/index.php/PPU_power_up_state					Status PPU zaraz po w³¹czeniu konsoli
 https://wiki.nesdev.com/w/index.php/PPU_pattern_tables					Jak dane kafelków s¹ przechowywane w CHR
 https://wiki.nesdev.com/w/index.php/PPU_attribute_tables				Wszystko o tzw. "tabeli atrybutów"
+https://wiki.nesdev.com/w/index.php/PPU_sprite_evaluation				O rysowaniu sprite'ów na ekranie
 https://wiki.nesdev.com/w/index.php/PPU_programmer_reference			Wszystko
 http://thealmightyguru.com/Games/Hacking/Wiki/index.php/NES_Palette		Paleta kolorów
 
@@ -34,6 +35,7 @@ namespace PPU {
 	u16 dot;		//Okreœla numer piksela od pocz¹tku linii
 	s16 scanline;	//Numer linii na ekranie: -1 = prescan, od 0 do 239 = widzialne linie, od 240 do 260 = postscan
 	u8 oddframe;	//Okreœla, czy numer klatki video jest parzysty czy nie
+	u64 frame;		//Numer klatki
 
 	//Flagi
 	u8 spr0;			//Flaga okreœla, czy nast¹pi³o zdarzenie Sprite 0 Hit
@@ -82,6 +84,9 @@ namespace PPU {
 	u8 emphasisR;
 	u8 emphasisG;
 	u8 emphasisB;
+
+	//$2002
+	u8 lsbWrite;
 
 	b isOpaque[256][240] = { 0 };
 
@@ -159,7 +164,7 @@ namespace PPU {
 		scr = &_scr;
 	}
 	u8 fetchColor();
-	u8 fetchTile(bool liteColor);
+	u8 fetchTile(u8 liteColor);
 
 	//Szyna danych PPU (zapis)
 	void writebus(u16 regno, u8 value);

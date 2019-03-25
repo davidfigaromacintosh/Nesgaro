@@ -3,18 +3,18 @@
 namespace MEM {
 
 	//CPU
-	u8 RAM[0x800];		//2 kb RAM of $0000 do $07FF
+	u8 RAM[0x800];			//2 kb RAM of $0000 do $07FF
 
-	u8 PRGRAM[0x2000];	//Od $6000 do $7FFF
-	u8 PRGROM[0x8000];	//Od $8000 do $FFFF
+	u8 PRGRAM[0x2000];		//Od $6000 do $7FFF
+	u8 PRGROM[0x8000];		//Od $8000 do $FFFF
 
-	u8 PRGBANKS[];		//Banki danych PRG
-	u8 CHRBANKS[];		//Banki danych CHR
+	u8 PRGBANKS[0x800000];	//Banki danych PRG
+	u8 CHRBANKS[0x200000];	//Banki danych CHR
 
 	//PPU
-	u8 VRAM[0x4000];	//16 kb VRAM
-	u8 OAM[0x100];		//64*4 bajtów OAM
-	u8 OAM2[0x20];		//8*4 bajty OAM2
+	u8 VRAM[0x4000];		//16 kb VRAM
+	u8 OAM[0x100];			//64*4 bajtów OAM
+	u8 OAM2[0x20];			//8*4 bajty OAM2
 
 	//WEKTORY
 	u16 NMI = 0xfffa;

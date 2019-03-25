@@ -39,7 +39,7 @@ int main(int _argc, char **_argv) {
 
 	srand(static_cast<unsigned int>(time(NULL)));
 
-	float windowScale = 4;
+	float windowScale = 3;
 
 	SCREEN::Screen screen;
 
@@ -48,7 +48,7 @@ int main(int _argc, char **_argv) {
 	sf::Sound snd;
 	sf::SoundBuffer sbuff;
 
-	sf::RenderWindow window{ sf::VideoMode{(unsigned int)windowScale * 256, (unsigned int)windowScale * 240}, "NESgaro v0.1 alpha", sf::Style::Close | sf::Style::Fullscreen}; //= ⬤ ᆺ ⬤ =
+	sf::RenderWindow window{ sf::VideoMode{(unsigned int)windowScale * 256, (unsigned int)windowScale * 240}, "NESgaro v0.1 alpha", sf::Style::Close}; //= ⬤ ᆺ ⬤ =
 	sf::Event wEvent;
 	
 	#ifdef DEBUG_MODE
@@ -80,50 +80,64 @@ int main(int _argc, char **_argv) {
 	//ROMy do testowania
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\nespeccy.nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Palette-Generator.nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\350 in 1.nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\54-in-1 (Game Star - GK-54) (Menu) (Unl) [!].nes");
 	//MEM::loadROM("D:\\NESASM\\nes_asm6502_test2.nes");
 	//MEM::loadROM("D:\\NESASM\\mcpong\\mcpong.nes");
 	//MEM::loadROM("D:\\NESASM\\mcpong\\McPong (dev 0.1).nes");
-	//MEM::loadROM("D:\\NESASM\\mcpong\\McPong (dev 0.1).nes");
+	//MEM::loadROM("D:\\NESASM\\Splitscreens\\dest.nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Pac-Man.nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Pinball.nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Mappy.nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\F-1 Race.nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\donkey kong.nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Donkey Kong Jr. Math (USA, Europe).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Donkey Kong 3 (World).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Battle City (Japan).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Burger Time (USA).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Challenger (Japan).nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Paperboy (USA).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Lunar Pool (USA).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Alter_Ego.nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Inversion.nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Dr Mario.nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Super Mario Bros. (World).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Super Mario Bros. (Pirate).nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\smb.nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Circus Charlie (USA).nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Track & Field.nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Devil World.nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Sky Destroyer (Japan).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Hudson's Adventure Island (USA).nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Hokuto no Ken.nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Ice Climber.nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Bomberman.nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Soccer (World).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Magic Jewelry.nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Tetris (USA) (Unl).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Galaxian.nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Galaga (Europe).nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Road Fighter (USA).nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Spy Hunter (USA).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Choujikuu Yousai - Macross (Japan).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Duck Maze (Australia) (Unl).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Mario Bros. (World).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Excitebike.nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Gyromite (World).nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Stack-Up (World).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Duck Hunt (World).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Wild Gunman (Japan, USA).nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Hogan's Alley (World).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Balloon Fight (USA).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Family BASIC (Japan) (v1.0).nes");
 
-	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\testroms\\instr_test_v5\\03-immediate.nes");
-	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\testroms\\instr_timing\\branch_timing.nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\testroms\\instr_timing\\2-branch_timing.nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\testroms\\cpu_dummy_reads.nes");
 
 	//MEM::loadROM("C:\\Users\\David Macintosh\\Desktop\\testroms\\instr_test-v3\\rom_singles\\11-jmp_jsr.nes");
-	MEM::loadROM("C:\\Users\\David Macintosh\\Desktop\\Magic Jewelry.nes");
+	//MEM::loadROM("C:\\Users\\David Macintosh\\Desktop\\Magic Jewelry.nes");
+
+	MEM::loadROM("C:\\Figorrupter\\temp.rom");
 
 	screen.resize(windowScale);
 	PPU::loadPalette("palette.pal");
@@ -132,6 +146,7 @@ int main(int _argc, char **_argv) {
 	CPU::init();
 	APU::init();
 	PAD::init();
+	PAD::focus(window);
 
 	sf::Int16 samp[] = {
 		-0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff,
@@ -159,24 +174,26 @@ int main(int _argc, char **_argv) {
 
 	while (1) {
 
-		PPU::step();
-		PPU::step();
+		
 		PPU::step();
 		CPU::step();
+		PPU::step();
+		PPU::step();
 
 		//SFML Poll
 		if (PPU::vblank && !vsync) {
 
 			vsync = true;
-			window.pollEvent(wEvent);
+			while (window.pollEvent(wEvent)) {
 
-			switch (wEvent.type) {
+				switch (wEvent.type) {
 
-				case sf::Event::Closed: {
-					window.close();
-					return 0xF19A20;
+					case sf::Event::Closed: {
+						window.close();
+						return 0xF19A20;
+					}
+
 				}
-			
 			}
 
 			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::X)) {

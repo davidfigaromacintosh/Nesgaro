@@ -12,36 +12,36 @@ namespace MAINBUS {
 	// ### ZAPIS ###
 	void write(u16 address, u8 value) {
 
-
+		u16 addr = address;
 
 		//  === MIRRORING ===
 		//Mirroring 2kb pamiêci RAM
-		while (address >= 0x0800 && address < 0x2000) {
-			address -= 0x0800;
+		while (addr >= 0x0800 && addr < 0x2000) {
+			addr -= 0x0800;
 		}
 
 		//Mirroring rejestrów wejœcia/wyjœcia PPU
-		while (address >= 0x2008 && address < 0x4000) {
-			address -= 0x0008;
+		while (addr >= 0x2008 && addr < 0x4000) {
+			addr -= 0x0008;
 		}
 
 
 
 		//  === DANE ===
 		//Je¿eli robimy odczyt z pamiêci RAM
-		if (address >= 0x0000 && address < 0x0800) {
-			MEM::RAM[address] = value;
+		if (addr >= 0x0000 && addr < 0x0800) {
+			MEM::RAM[addr] = value;
 		}
 		//Wpis z rejestrów PPU
-		if (address >= 0x2000 && address < 0x2008) {
-			PPU::writebus(address, value);
+		if (addr >= 0x2000 && addr < 0x2008) {
+			PPU::writebus(addr, value);
 		}
 		//DMA
-		if (address == 0x4014) {
+		if (addr == 0x4014) {
 			MEM::DMA(value);
 		}
 		//Kontroler
-		if (address == 0x4016) {
+		if (addr == 0x4016) {
 			PAD::strobe(value);
 		}
 
@@ -51,42 +51,42 @@ namespace MAINBUS {
 	// ### ODCZYT ###
 	u8 read(u16 address) {
 	
-
+		u16 addr = address;
 
 		//  === MIRRORING ===
 		//Mirroring 2kb pamiêci RAM
-		while (address >= 0x0800 && address < 0x2000) {
-			address -= 0x0800;
+		while (addr >= 0x0800 && addr < 0x2000) {
+			addr -= 0x0800;
 		}
 		//Mirroring rejestrów wejœcia/wyjœcia PPU
-		while (address >= 0x2008 && address < 0x4000) {
-			address -= 0x0008;
+		while (addr >= 0x2008 && addr < 0x4000) {
+			addr -= 0x0008;
 		}
 
 
 
 		//  === DANE ===
 		//Je¿eli robimy odczyt z pamiêci RAM
-		if (address >= 0x0000 && address < 0x0800) {
-			return MEM::RAM[address];
+		if (addr >= 0x0000 && addr < 0x0800) {
+			return MEM::RAM[addr];
 
 		}
 		//Odczyt z rejestrów PPU
-		if (address >= 0x2000 && address < 0x2008) {
-			return PPU::readbus(address);
+		if (addr >= 0x2000 && addr < 0x2008) {
+			return PPU::readbus(addr);
 		}
 
 		//Je¿eli robimy odczyt z PRGRAM
-		if (address >= 0x6000 && address < 0x8000) {
-			return MEM::PRGRAM[address - 0x6000];
+		if (addr >= 0x6000 && addr < 0x8000) {
+			return MEM::PRGRAM[addr - 0x6000];
 		}
 
 		//Je¿eli robimy odczyt z PRGROM
-		if (address >= 0x8000 && address <= 0xffff) {
-			return MEM::PRGROM[address - 0x8000];
+		if (addr >= 0x8000 && addr <= 0xffff) {
+			return MEM::PRGROM[addr - 0x8000];
 		}
 		//Kontroler
-		if (address == 0x4016) {
+		if (addr == 0x4016) {
 			return PAD::read();
 		}
 
