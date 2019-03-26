@@ -35,7 +35,7 @@
 #include "h/apu.h"
 
 static bool vsync = false;
-int main(int _argc, char **_argv) {
+int main(int argc, char **argv) {
 
 	srand(static_cast<unsigned int>(time(NULL)));
 
@@ -79,6 +79,9 @@ int main(int _argc, char **_argv) {
 	MEM::init();
 
 	//ROMy do testowania
+
+	if (argc > 1) { if (MEM::loadROM(argv[1]) == 0) { window.setTitle(argv[1]); } }
+
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\nespeccy.nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Palette-Generator.nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\350 in 1.nes");
@@ -103,7 +106,7 @@ int main(int _argc, char **_argv) {
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Inversion.nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Dr Mario.nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Tennis (Japan, USA).nes");
-	MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Super Mario Bros. (World).nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Super Mario Bros. (World).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Super Mario Bros. (Pirate).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\smb.nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Circus Charlie (USA).nes");
@@ -137,7 +140,7 @@ int main(int _argc, char **_argv) {
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\testroms\\instr_timing\\2-branch_timing.nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\testroms\\ppu_vbl_nmi\\nmi_off_timing.nes");
 
-	//MEM::loadROM("C:\\Users\\David Macintosh\\Desktop\\testroms\\instr_test-v3\\rom_singles\\11-jmp_jsr.nes");
+	//MEM::loadROM("C:\\Users\\David Macintosh\\Desktop\\testroms\\other\\RasterChromaLuma.nes");
 	//MEM::loadROM("C:\\Users\\David Macintosh\\Desktop\\Magic Jewelry.nes");
 
 	//MEM::loadROM("C:\\Figorrupter\\temp.rom");

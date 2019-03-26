@@ -65,9 +65,16 @@ namespace MEM {
 	}
 
 	int loadROM(const char* filename) {
+
+		if (strlen(filename) == 0) return 1;
+
 		char header[16];
 		FILE* f;
-		fopen_s(&f, filename, "rb");
+		int ferror = fopen_s(&f, filename, "rb");
+
+		if (ferror != 0) {
+			return 1;
+		}
 
 		puts(filename);
 
