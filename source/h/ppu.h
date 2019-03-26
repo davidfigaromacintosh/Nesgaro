@@ -302,16 +302,21 @@ namespace PPU {
 			case PPU_DATA: {	//Read $2007 R W
 
 				u8 tempvalue;
+				u16 tempv = V;
 
-				if (V < 0x3f00) {
+				if (tempv < 0x3f00) {
 					
-					tempvalue = readbuffer;
-					readbuffer = MEM::VRAM[V];
+					//Nametable mirroring
+					while (tempv >= 0x3000 && tempv < 0x3f00) {
+						tempv -= 0x1000;
+					}
 
-					//tempvalue = MEM::VRAM[V];
+					tempvalue = readbuffer;
+					readbuffer = MEM::VRAM[tempv];
+
+					//tempvalue = MEM::VRAM[tempv];
 				}
 				else {
-					u16 tempv = V;
 
 					//mirroring koloru t³a
 					switch (tempv) {
@@ -322,6 +327,7 @@ namespace PPU {
 						tempv -= 0x10;
 					}
 
+					//Mirroring palety kolorów
 					while (tempv >= 0x3f20 && tempv < 0x4000) {
 						tempv -= 0x20;
 					}
@@ -427,6 +433,7 @@ namespace PPU {
 					tempv -= 0x10;
 				}
 
+				//Mirroring palety kolorów
 				while (tempv >= 0x3f20 && tempv < 0x4000) {
 					tempv -= 0x20;
 				}
@@ -450,10 +457,10 @@ namespace PPU {
 				if (tempv >= 0x2000) { MEM::VRAM[tempv] = value; }
 
 				if (VRAMincrement == 0) {
-					V = (V + 1) & 0x3fff;
+					V = (V + 1) % 0x4000;
 				}
 				else {
-					V = (V + 32) & 0x3fff;
+					V = (V + 32) % 0x4000;
 				}
 				break;
 			}

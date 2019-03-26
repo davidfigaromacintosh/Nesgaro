@@ -336,7 +336,7 @@ namespace CPU {
 	void clrV();
 	void clrN();
 
-	u8 opcodeCycle[256] = {
+	u8 opcodeCycle[] = {
 	
 		7, 6, 0, 0, 0, 3, 5, 0, 3, 2, 2, 0, 0, 4, 6, 0,
 		2, 5, 0, 0, 0, 4, 6, 0, 2, 4, 0, 0, 0, 4, 7, 0,
