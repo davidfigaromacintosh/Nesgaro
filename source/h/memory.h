@@ -140,7 +140,7 @@ namespace MEM {
 
 	void DMA(u8 page) {
 		
-		CPU::cyclesLeft += 513 + CPU::oddCycle;
+		CPU::cyclesLeft = CPU::cyclesLeft + 513 + CPU::oddCycle;
 		for (int i = 0; i < 0x100; i++) {
 			OAM[i] = MAINBUS::read((page << 8) + i);
 		}

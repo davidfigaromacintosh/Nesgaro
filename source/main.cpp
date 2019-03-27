@@ -141,7 +141,7 @@ int main(int argc, char **argv) {
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\testroms\\ppu_vbl_nmi\\nmi_off_timing.nes");
 
 	//MEM::loadROM("C:\\Users\\David Macintosh\\Desktop\\testroms\\other\\RasterChromaLuma.nes");
-	//MEM::loadROM("C:\\Users\\David Macintosh\\Desktop\\Magic Jewelry.nes");
+	//MEM::loadROM("C:\\Users\\David Macintosh\\Desktop\\Challenger (Japan).nes");
 
 	//MEM::loadROM("C:\\Figorrupter\\temp.rom");
 
@@ -182,9 +182,9 @@ int main(int argc, char **argv) {
 
 		
 		PPU::step();
+		PPU::step();
+		PPU::step();
 		CPU::step();
-		PPU::step();
-		PPU::step();
 
 		//SFML Poll
 		if (PPU::vblank && !vsync) {

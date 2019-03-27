@@ -454,7 +454,7 @@ namespace PPU {
 					}
 				}
 
-				if (tempv >= 0x2000) { MEM::VRAM[tempv] = value; }
+				if (tempv >= 0x2000 * !!(MEM::chrsize) ) { MEM::VRAM[tempv] = value; }
 
 				if (VRAMincrement == 0) {
 					V = (V + 1) % 0x4000;

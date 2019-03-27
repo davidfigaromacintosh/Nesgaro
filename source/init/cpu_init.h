@@ -266,7 +266,7 @@ namespace CPU {
 	u8 oddCycle;
 	u8 NMIoccured;	//Czy wystapi³o NMI
 
-	u8 cyclesLeft = 0;
+	u16 cyclesLeft = 0;
 
 	//Zawiera mnemoniki wszystkich 256 instrukcji (nielegalne instrukcje zosta³y nazwane "ILL")
 	u16 opcodeMnemonic[256] = { /*

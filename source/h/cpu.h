@@ -957,7 +957,7 @@ namespace CPU {
 		executeBranch(BPL);
 	}
 	void executeBRK() {	//BRK
-		interrupt(BRK);
+		interrupt(INT_BRK);
 	}
 	void executeBVC() {	//BVC
 		executeBranch(BVC);
@@ -1240,7 +1240,7 @@ namespace CPU {
 			if (NMIoccured == 1) {
 				NMIoccured = 0;
 				interrupt(INT_NMI);
-				cyclesLeft += 7;
+				cyclesLeft = 7;
 				#ifdef DEBUG_MODE
 				printf(" NMI occured @ Dot=%d Scanline=%d", PPU::dot, PPU::scanline);
 				#endif
@@ -1266,10 +1266,10 @@ namespace CPU {
 					}
 				}
 			
-				printf(" (%s %s, %d length, %d cycles) @ PC=%04x (pointing at %04x)", getOpcodeMnemonic(op), getOpcodeAddressingModeName(op), getOpcodeLength(op), opcodeCycle[op], PC, getAddressFromType(addrmode, PC+1));
+				printf(" (%s %s, %d length, %d cycles) @ PC=%04x (pointing at %04x)", getOpcodeMnemonic(op), getOpcodeAddressingModeName(op), getOpcodeLength(op), opcodeCycle[op], PC, getAddressFromType(addrmode, PC+1, 0));
 				#endif
 
-				cyclesLeft += opcodeCycle[op];
+				//cyclesLeft = opcodeCycle[op];
 				PC++;
 
 				//Wertujesz listê 
@@ -1440,6 +1440,8 @@ namespace CPU {
 
 				
 				if (opcode != JSR && opcode != JMP && opcode != BRK) { PC += getOpcodeLength(op) - 1; }
+
+				cyclesLeft += opcodeCycle[op];
 				#ifdef DEBUG_MODE
 				printf(" A=%02x X=%02x Y=%02x S=%02x C=%x Z=%x I=%x D=%x B=%x V=%x N=%x", A, X, Y, S, (P & 1) >> 0, (P & 2) >> 1, (P & 4) >> 2, (P & 8) >> 3, (P & 16) >> 4, (P & 64) >> 6, (P & 128) >> 7);
 
