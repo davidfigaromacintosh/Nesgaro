@@ -14,7 +14,6 @@ namespace MEM {
 	//PPU
 	u8 VRAM[0x4000];		//16 kb VRAM
 	u8 OAM[0x100];			//64*4 bajtów OAM
-	u8 OAM2[0x20];			//8*4 bajty OAM2
 
 	//WEKTORY
 	u16 NMI = 0xfffa;
@@ -147,4 +146,7 @@ namespace MEM {
 
 	}
 	
+	int dmc_read(void*, cpu_addr_t addr) {
+		return MAINBUS::read(addr);
+	}
 }

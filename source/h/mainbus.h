@@ -36,6 +36,10 @@ namespace MAINBUS {
 		if (addr >= 0x2000 && addr < 0x2008) {
 			PPU::writebus(addr, value);
 		}
+		//APU
+		if ((addr >= 0x4000 && addr <= 0x4013) || addr == 0x4015 || addr == 0x4017) {
+			APU::writebus(CPU::APUcycles(), addr, value);
+		}
 		//DMA
 		if (addr == 0x4014) {
 			MEM::DMA(value);
@@ -75,7 +79,10 @@ namespace MAINBUS {
 		if (addr >= 0x2000 && addr < 0x2008) {
 			return PPU::readbus(addr);
 		}
-
+		//Status APU
+		if (addr == 0x4015) {
+			APU::readbus(CPU::APUcycles(), addr);
+		}
 		//Je¿eli robimy odczyt z PRGRAM
 		if (addr >= 0x6000 && addr < 0x8000) {
 			return MEM::PRGRAM[addr - 0x6000];

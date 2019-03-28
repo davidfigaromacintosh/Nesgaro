@@ -191,23 +191,12 @@ namespace CPU {
 		P = 0b00000100;
 		NMIoccured = 0;
 		cycles = 0;
+		APUelapsed = 0;
 
 	}
 
 	void reset() {
 		//TODO gdy napiszê menedzera pamiêci
-	}
-
-	//Zwraca ile cykli zajmuje wykonanie danej instrukcji
-	u8 getOpcodeCycle(u8 opcode) {
-		
-		switch (opcode) {
-
-			default: {
-				return 2;
-			}
-
-		}
 	}
 
 	/* Wartoœci zwracane przez funkcje:
@@ -604,7 +593,7 @@ namespace CPU {
 
 		// Wepchnij aktualny wskaŸnik programu do stosu
 		MAINBUS::pushStack(PC >> 8);
-		MAINBUS::pushStack(PC);
+		MAINBUS::pushStack(0xff & PC);
 
 		// Je¿eli BRK, ustawiamy pozorn¹ flagê B na 1
 		u8 tempP = (P & 0b11101111) | ((int_type == INT_BRK) << 4) | 0b00100000;
@@ -754,7 +743,7 @@ namespace CPU {
 		u16 sum = A + operand + getC();
 		setC(!!(sum & 0x100));
 		setV(!!((A ^ sum) & (operand ^ sum) & 0x80));
-		A = sum;
+		A = 0xff & sum;
 
 		setFlagsZN(A);
 	}
@@ -765,7 +754,7 @@ namespace CPU {
 	void executeCMP(u8 addrmode) { //CMP
 		u16 diff = A - MAINBUS::read(getAddressFromType(addrmode, PC, 1));
 		setC(!(diff & 0x100));
-		setFlagsZN(diff);
+		setFlagsZN(0xff & diff);
 	}
 	void executeEOR(u8 addrmode) { //EOR
 		A ^= MAINBUS::read(getAddressFromType(addrmode, PC, 1));
@@ -787,7 +776,7 @@ namespace CPU {
 
 		setC( !(diff & 0x100) );
 		setV( !!((A ^ diff) & (~operand ^ diff) & 0x80) );
-		A = diff;
+		A = 0xff & diff;
 
 		setFlagsZN(A);
 	}
@@ -1355,7 +1344,7 @@ namespace CPU {
 
 					//4 - 1 typ adresacji
 					case BCC: case BCS: case BEQ: case BMI: case BNE: case BPL: case BVC: case BVS: {
-						executeBranch(opcode); break;
+						executeBranch(0xff & opcode); break;
 					}
 					case BRK: {
 						interrupt(INT_BRK); break;
@@ -1469,6 +1458,11 @@ namespace CPU {
 		if (cyclesLeft > 0) cyclesLeft--;
 		oddCycle = !oddCycle;
 
+	}
+
+	int APUcycles() {
+	
+		return (APUelapsed);
 	}
 
 }

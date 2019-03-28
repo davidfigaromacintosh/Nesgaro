@@ -266,6 +266,8 @@ namespace CPU {
 	u8 oddCycle;
 	u8 NMIoccured;	//Czy wystapi³o NMI
 
+	int APUelapsed;
+
 	u16 cyclesLeft = 0;
 
 	//Zawiera mnemoniki wszystkich 256 instrukcji (nielegalne instrukcje zosta³y nazwane "ILL")
@@ -359,9 +361,6 @@ namespace CPU {
 	//WskaŸnik do ³añcucha znaków zaawieraj¹cego d³ugoœci cyklów wszystkich 256 instrukcji (nielegalne zwróc¹ 0)
 	//u8 *opcodeCycle = (u8*)
 	//"7600035032200460250004602400047066003350422044602500046024000470660003503220346025000460240004706600035042205460250004602400047006003330202044402600444025200500262033302220444025004440242044402600335022204460250004602400047026003350222244602500046024000470";
-
-	//Zwraca ile cykli zajmuje wykonanie danej instrukcji
-	u8 getOpcodeCycle(u8 opcode);
 
 	/* Wartoœci zwracane przez funkcje:
 	0 = Accumulator
@@ -470,5 +469,5 @@ namespace CPU {
 
 	//Tutaj zaczyna siê wykonywanie instrukcji
 	void step();
-	
+	int APUcycles();
 }

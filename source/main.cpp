@@ -16,8 +16,13 @@
 #include <SFML/Audio.hpp>
 
 #include <stdio.h>
-
+#include <iostream>
+#include <new>
+#include <cstdlib>
 #include "types.h"
+
+#include "include/Nes_Apu.h"
+#include "include/Sound_Queue.h"
 
 #include "init/mainbus_init.h"
 #include "init/controller_init.h"
@@ -35,23 +40,22 @@
 #include "h/apu.h"
 
 static bool vsync = false;
+
+#undef main
+
 int main(int argc, char **argv) {
 
 	srand(static_cast<unsigned int>(time(NULL)));
 
-	float windowScale = 3;
-	bool fullScreen = false;
+	float windowScale = 4;
+	bool fullScreen = true;
 
 	SCREEN::Screen screen;
 	sf::Event wEvent;
 	sf::Image windowIcon;
 
-	sf::Sound snd;
-	sf::SoundBuffer sbuff;
-
 	sf::RenderWindow window{ sf::VideoMode{(unsigned int)windowScale * 256, (unsigned int)windowScale * 240}, "NESgaro v0.1 alpha", sf::Style::Close | (sf::Uint32)(sf::Style::Fullscreen * fullScreen) }; //= ⬤ ᆺ ⬤ =
 	
-
 	#ifdef DEBUG_MODE
 	system("title NESgaro mini debugger");
 	//system("color 5f");
@@ -67,7 +71,7 @@ int main(int argc, char **argv) {
 	#endif
 
 	window.setVerticalSyncEnabled(true);
-	window.setFramerateLimit(60);
+	window.setFramerateLimit(61);
 
 	windowIcon.loadFromFile("icon.png");
 	window.setIcon(16, 16, windowIcon.getPixelsPtr());
@@ -137,8 +141,8 @@ int main(int argc, char **argv) {
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Balloon Fight (USA).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Family BASIC (Japan) (v1.0) 2.nes");
 
-	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\testroms\\instr_timing\\2-branch_timing.nes");
-	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\testroms\\ppu_vbl_nmi\\nmi_off_timing.nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\demoscene\\other\\RasterDemo.NES");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Palette-Generator.nes");
 
 	//MEM::loadROM("C:\\Users\\David Macintosh\\Desktop\\testroms\\other\\RasterChromaLuma.nes");
 	//MEM::loadROM("C:\\Users\\David Macintosh\\Desktop\\Challenger (Japan).nes");
@@ -154,37 +158,18 @@ int main(int argc, char **argv) {
 	PAD::init();
 	PAD::focus(window);
 
-	sf::Int16 samp[] = {
-		-0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff,
-		-0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff,
-		+0x7fff, +0x7fff, +0x7fff, +0x7fff, +0x7fff, +0x7fff, +0x7fff, +0x7fff,
-		+0x7fff, +0x7fff, +0x7fff, +0x7fff, +0x7fff, +0x7fff, +0x7fff, +0x7fff,
-		+0x7fff, +0x7fff, +0x7fff, +0x7fff, +0x7fff, +0x7fff, +0x7fff, +0x7fff,
-		+0x7fff, +0x7fff, +0x7fff, +0x7fff, +0x7fff, +0x7fff, +0x7fff, +0x7fff,
-		-0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff,
-		-0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff,
-		-0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff,
-		-0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff,
-		-0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff,
-		-0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff,
-		-0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff,
-		-0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff,
-		-0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff,
-		-0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff, -0x7fff,
-	};
-	sbuff.loadFromSamples(samp, 8*16, 1, 88200);
-	snd.setBuffer(sbuff);
-	snd.setLoop(true);
-	//snd.play();
-	snd.setVolume(50);
-
+	
+	int const buf_size = 2048;
+	static blip_sample_t buf[buf_size];
+	bool apuframe = false;
+	//Klatka video
 	while (1) {
 
-		
 		PPU::step();
 		PPU::step();
 		PPU::step();
 		CPU::step();
+		CPU::APUelapsed++;
 
 		//SFML Poll
 		if (PPU::vblank && !vsync) {
@@ -202,18 +187,22 @@ int main(int argc, char **argv) {
 				}
 			}
 
-			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::X)) {
-				snd.setPitch(7);
-			} else {
-				snd.setPitch(1);
-			}
-
 			//window.clear(sf::Color(PPU::colors[MEM::VRAM[0x3f00]]));
+
+			
 			window.draw(screen);
 			window.display();
+
+			if (apuframe == true) {
+				APU::run_frame(CPU::APUcycles());
+				CPU::APUelapsed = 0;
+			}
+			apuframe = false;
+
 		}
 		if (!PPU::vblank && vsync) {
 			vsync = false;
+			apuframe = true;
 		}
 		
 	}

@@ -58,6 +58,10 @@ namespace PPU {
 	u8 OAMV;
 	u8 readbuffer;
 
+	u8 OAM2[0x20];			//8*4 bajty OAM2
+	u8 OAMFinal[0x20];		//OAMFinal
+	b OAMPriority[0x20];	//Priorytet rysowania (czy za t³em czy przed t³em)
+	
 	// Zwi¹zane z VRAM...
 	u8 fineX;
 	u8 fineY;
@@ -163,8 +167,8 @@ namespace PPU {
 	void connectScreen(SCREEN::Screen &_scr) {
 		scr = &_scr;
 	}
-	u8 fetchColor();
-	u8 fetchTile(u8 liteColor);
+
+	u8 fetchPixel(u8 liteColor);
 
 	//Szyna danych PPU (zapis)
 	void writebus(u16 regno, u8 value);

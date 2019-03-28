@@ -90,6 +90,8 @@ namespace PPU {
 			//if (scanline == 204 && dot == 218) {
 			//if (scanline == 41 && dot == 237) {
 			//if (scanline == 15 && dot == 2) {
+			//if (scanline == 55 && dot == 249) {
+			//if (scanline == 31 && dot == 249) {
 				spr0 = 1;
 			}
 
@@ -141,6 +143,12 @@ namespace PPU {
 				V = (V & 0b111101111100000) | (T & 0b000010000011111);
 			}
 
+			//SPRITE EVALUATION
+			if (dot >= 1 && dot <= 64) {
+				OAM2[(dot - 1) >> 1] = 0xff;
+				OAMPriority[(dot - 1) >> 1] = false;
+			}
+
 		}
 
 
@@ -175,7 +183,7 @@ namespace PPU {
 			u8 coordX = (dot - 1) & 0xff;
 			u8 coordY = scanline & 0xff;
 
-			scr->put(coordX, coordY, fetchTile(0));
+			scr->put(coordX, coordY, fetchPixel(0));
 
 		}
 
@@ -208,7 +216,7 @@ namespace PPU {
 		return BGenable || SPRenable;
 	}
 
-	u8 fetchTile(u8 liteColor) {
+	u8 fetchPixel(u8 liteColor) {
 		fineX = X;
 		coarseX = V & 0b11111;
 		fineY = (V & 0b111000000000000) >> 12;
@@ -255,18 +263,9 @@ namespace PPU {
 		//return liteColor ? (MEM::VRAM[0x3f00 + ((pixel + 4 * attribute) * !!(pixel)) * BGenable]) : ((V)+((X + ((dot - 1) % 8)) >> 3));
 	}
 
-	u8 fetchColor() {
-		//u16 vram = V;
-
-
-		return ((V) + ((X + ((dot - 1) % 8)) >> 3));
-		//return MEM::VRAM[0x3f0d];
-	
-	}
-
 	void loadPalette(const char* filename) {
 		FILE *f;
-		f = fopen(filename, "rb");
+		if((f = fopen(filename, "rb")) == nullptr) return;
 
 		u8 buff;
 
