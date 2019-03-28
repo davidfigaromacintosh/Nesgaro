@@ -158,9 +158,6 @@ int main(int argc, char **argv) {
 	PAD::init();
 	PAD::focus(window);
 
-	
-	int const buf_size = 2048;
-	static blip_sample_t buf[buf_size];
 	bool apuframe = false;
 	//Klatka video
 	while (1) {
