@@ -67,6 +67,8 @@ namespace MEM {
 
 		if (strlen(filename) == 0) return 1;
 
+		printf("ROM FIlename: %s\n", filename); _getch();
+
 		char header[16];
 		FILE* f;
 		int ferror = fopen_s(&f, filename, "rb");

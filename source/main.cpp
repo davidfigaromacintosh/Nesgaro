@@ -16,6 +16,7 @@
 #include <SFML/Audio.hpp>
 
 #include <stdio.h>
+#include <conio.h>
 #include <iostream>
 #include <new>
 #include <cstdlib>
@@ -65,7 +66,7 @@ int main(int argc, char **argv) {
 	for (int i = 0; i < 256; i++) {
 		
 		printf("Opcode: 0x%02x    Mnemonic: %s    Cycles: %d    Length: %d    Mode: %s\n",
-			i, CPU::getOpcodeMnemonic(i), CPU::getOpcodeCycle(i), CPU::getOpcodeLength(i), CPU::getOpcodeAddressingModeName(i) );
+			i, CPU::getOpcodeMnemonic(i), CPU::opcodeCycle[i], CPU::getOpcodeLength(i), CPU::getOpcodeAddressingModeName(i) );
 
 	}
 	#endif
@@ -73,8 +74,9 @@ int main(int argc, char **argv) {
 	window.setVerticalSyncEnabled(true);
 	window.setFramerateLimit(61);
 
-	windowIcon.loadFromFile("icon.png");
-	window.setIcon(16, 16, windowIcon.getPixelsPtr());
+	if (windowIcon.loadFromFile("icon.png")) {
+		window.setIcon(16, 16, windowIcon.getPixelsPtr());
+	}
 
 	window.clear(sf::Color(0));
 	window.display();
