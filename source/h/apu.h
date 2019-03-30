@@ -1,3 +1,6 @@
+#define NTSC_CLOCK	1789773
+#define PAL_CLOCK	1662607
+
 namespace APU {
 	
 	const int samplerate = 88200;
@@ -13,8 +16,7 @@ namespace APU {
 		soundQueue->init(samplerate);
 
 		buff.sample_rate(samplerate);
-		buff.clock_rate(1789773);
-
+		buff.clock_rate(NTSC_CLOCK);
 		apu.output(&buff);
 		apu.dmc_reader(MEM::dmc_read);
 
@@ -26,6 +28,10 @@ namespace APU {
 
 	u8 readbus(int elapsed, u16 address) {
 		return apu.read_status(elapsed);
+	}
+
+	void setVolume(double vol) {
+		apu.volume(vol);
 	}
 
 	void output_samples(const blip_sample_t* samples, size_t count) {

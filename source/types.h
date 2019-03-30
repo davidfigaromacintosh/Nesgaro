@@ -1,5 +1,8 @@
 #pragma once
 
+#undef main
+#define _NESGARO main
+
 //Boolean value
 typedef bool b;
 

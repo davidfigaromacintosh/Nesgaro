@@ -8,7 +8,9 @@
 #endif
 
 #define _CRT_SECURE_NO_WARNINGS
-#define MASTER_CLOCK 21477272
+
+#define NTSC_FPS 61
+#define PAL_FPS 51
 
 //LIBy: https://www.sfml-dev.org/tutorials/2.5/start-vc.php
 #include <SFML/Graphics.hpp>
@@ -16,16 +18,14 @@
 #include <SFML/Audio.hpp>
 
 #include <stdio.h>
-#include <conio.h>
-#include <iostream>
-#include <new>
-#include <cstdlib>
-#include "types.h"
 
 #include "include/Nes_Apu.h"
 #include "include/Sound_Queue.h"
 
+#include "types.h"
+
 #include "init/mainbus_init.h"
+#include "init/mapper_init.h"
 #include "init/controller_init.h"
 #include "init/screen_init.h"
 #include "init/ppu_init.h"
@@ -34,6 +34,7 @@
 
 #include "h/memory.h"
 #include "h/mainbus.h"
+#include "h/mapper.h"
 #include "h/controller.h"
 #include "h/screen.h"
 #include "h/ppu.h"
@@ -42,9 +43,7 @@
 
 static bool vsync = false;
 
-#undef main
-
-int main(int argc, char **argv) {
+int _NESGARO(int argc, char **argv) {
 
 	srand(static_cast<unsigned int>(time(NULL)));
 
@@ -72,7 +71,7 @@ int main(int argc, char **argv) {
 	#endif
 
 	window.setVerticalSyncEnabled(true);
-	window.setFramerateLimit(61);
+	window.setFramerateLimit(NTSC_FPS);
 
 	if (windowIcon.loadFromFile("icon.png")) {
 		window.setIcon(16, 16, windowIcon.getPixelsPtr());
@@ -83,27 +82,35 @@ int main(int argc, char **argv) {
 
 
 	MEM::init();
+	MAPPER::init();
 
 	//ROMy do testowania
 
 	if (argc > 1) { if (MEM::loadROM(argv[1]) == 0) { window.setTitle(argv[1]); } }
 
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\nespeccy.nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Higurashi.nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\PCM.demo.wgraphics.nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\demo(1).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Palette-Generator.nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\350 in 1.nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\54-in-1 (Game Star - GK-54) (Menu) (Unl) [!].nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\3-D Battles of World Runner, The (USA).nes");
 	//MEM::loadROM("D:\\NESASM\\nes_asm6502_test2.nes");
 	//MEM::loadROM("D:\\NESASM\\mcpong\\mcpong.nes");
 	//MEM::loadROM("D:\\NESASM\\mcpong\\McPong (dev 0.1).nes");
-	//MEM::loadROM("D:\\NESASM\\Splitscreens\\dest.nes");
+	//MEM::loadROM("D:\\NESASM\\Splitscreens\\dest — kopia.nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Pac-Man.nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Pinball.nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Golf (USA).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Mappy.nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\F-1 Race.nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Yie Ar Kung-Fu (Japan) (Rev 1.4).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\donkey kong.nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Donkey Kong Jr. Math (USA, Europe).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Donkey Kong 3 (World).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Battle City (Japan).nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Popeye.nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Burger Time (USA).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Challenger (Japan).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Paperboy (USA).nes");
@@ -112,7 +119,8 @@ int main(int argc, char **argv) {
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Inversion.nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Dr Mario.nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Tennis (Japan, USA).nes");
-	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Super Mario Bros. (World).nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Double Dribble (USA) (Rev A).nes");
+	MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Super Mario Bros. (World).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Super Mario Bros. (Pirate).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\smb.nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Circus Charlie (USA).nes");
@@ -120,18 +128,36 @@ int main(int argc, char **argv) {
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Devil World.nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Sky Destroyer (Japan).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Hudson's Adventure Island (USA).nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Adventure Island PL.nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Castlevania II - Simon's Quest (U).nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Legend of Zelda, The (USA).nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Zelda II - The Adventure of Link (USA).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Hokuto no Ken.nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Ice Climber.nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Bomberman.nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Micro Machines (U).nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Lode Runner.nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Soccer (World).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Magic Jewelry.nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Tetris (USA) (Unl).nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Contra.nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Metroid.nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Mega Man (USA).nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Mega Man 2 (USA).nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Chip 'n Dale Rescue Rangers 2 (USA).nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Bugs Bunny Crazy Castle, The (USA).nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Yo! Noid (USA).nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Ghosts'n Goblins (USA).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Galaxian.nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Galaga (Europe).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Road Fighter (USA).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Spy Hunter (USA).nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Super Spy Hunter (USA).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Legend of Kage, The (USA).nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Kid Icarus (USA, Europe).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Choujikuu Yousai - Macross (Japan).nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Battletoads.nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Wizards & Warriors (USA) (Rev A).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Duck Maze (Australia) (Unl).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Mario Bros. (World).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Excitebike.nes");
@@ -143,7 +169,7 @@ int main(int argc, char **argv) {
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Balloon Fight (USA).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Family BASIC (Japan) (v1.0) 2.nes");
 
-	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\demoscene\\other\\RasterDemo.NES");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\demoscene\\other\\Retrocoders - Years behind.NES");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Palette-Generator.nes");
 
 	//MEM::loadROM("C:\\Users\\David Macintosh\\Desktop\\testroms\\other\\RasterChromaLuma.nes");
@@ -157,6 +183,7 @@ int main(int argc, char **argv) {
 	PPU::connectScreen(screen);
 	CPU::init();
 	APU::init();
+	APU::setVolume(0.5);
 	PAD::init();
 	PAD::focus(window);
 
@@ -193,7 +220,7 @@ int main(int argc, char **argv) {
 			window.display();
 
 			if (apuframe == true) {
-				APU::run_frame(CPU::APUcycles());
+				APU::run_frame(CPU::APUelapsed);
 				CPU::APUelapsed = 0;
 			}
 			apuframe = false;

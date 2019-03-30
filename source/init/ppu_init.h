@@ -29,6 +29,14 @@ http://thealmightyguru.com/Games/Hacking/Wiki/index.php/NES_Palette		Paleta kolo
 #define PPU_BG_PALETTE	0x3f00
 #define PPU_SPR_PALETTE	0x3f10
 
+#define MIRR_HORIZONTAL		0
+#define MIRR_VERTICAL		1
+#define MIRR_SINGLE1		2
+#define MIRR_SINGLE2		3
+#define MIRR_SINGLE3		4
+#define MIRR_SINGLE4		5
+#define MIRR_4SCREEN		6
+
 namespace PPU {
 
 	//Ekran
@@ -57,11 +65,13 @@ namespace PPU {
 	u8	W;			//Pierwszy lub drugi odczyt
 	u8 OAMV;
 	u8 readbuffer;
+	u16 mirroring;
 
-	u8 OAM2[0x20];			//8*4 bajty OAM2
-	u8 OAMFinal[0x20];		//OAMFinal
-	b OAMPriority[0x20];	//Priorytet rysowania (czy za t³em czy przed t³em)
-	
+	u8	OAM2[0x20];			//8*4 bajty OAM2
+	u8	OAM2Final[256];		//Koñcowa scanlinia ze sprite'ami
+	b	OAMPriority[256];	//Priorytet rysowania (czy za t³em czy przed t³em)
+	b	OAMIsSpr0[256];
+	u8	OAMIndex[8];		//Index sprite'u
 	// Zwi¹zane z VRAM...
 	u8 fineX;
 	u8 fineY;

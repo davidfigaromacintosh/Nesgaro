@@ -92,6 +92,7 @@ namespace PPU {
 			//if (scanline == 15 && dot == 2) {
 			//if (scanline == 55 && dot == 249) {
 			//if (scanline == 31 && dot == 249) {
+			//if (scanline == 128 && dot == 105) {
 				spr0 = 1;
 			}
 
@@ -144,9 +145,36 @@ namespace PPU {
 			}
 
 			//SPRITE EVALUATION
-			if (dot >= 1 && dot <= 64) {
-				OAM2[(dot - 1) >> 1] = 0xff;
-				OAMPriority[(dot - 1) >> 1] = false;
+			if (dot == 257) {
+
+				//Czyszczenie OAM2
+				for (int i = 0; i < 32; i++) {
+					OAM2[i] = 0xff;
+					OAMIndex[i>>2] = i;
+				}
+
+				//Wype³niamy OAM2 na podstawie danych zawartych w OAM
+				int sprindex = 0;
+				for (int i = 0; i < 64; i++) {
+					
+					//Na jednej scanlinii nie mo¿e byæ wiêcej ni¿ 8 sprite'ów
+					if (sprindex == 8) break;
+
+					//Sprite evaluation
+					u8 spry = scanline - MEM::OAM[4 * i];
+					if (spry >= 0 && spry < 8) {
+
+						OAM2[4 * sprindex] = spry;
+						OAM2[4 * sprindex + 1] = MEM::OAM[4 * i + 1];
+						OAM2[4 * sprindex + 2] = MEM::OAM[4 * i + 2];
+						OAM2[4 * sprindex + 3] = MEM::OAM[4 * i + 3];
+
+						OAMIndex[sprindex] = i;
+
+						sprindex++;
+					}
+				}
+
 			}
 
 		}
@@ -160,7 +188,7 @@ namespace PPU {
 			if (scanline == 241 && dot == 1) {
 
 				for (int i = 0; i < 64; i++) {
-					if (MEM::OAM[4 * i] < 239 && SPRenable) scr->put(MEM::OAM[4 * i + 3], MEM::OAM[4 * i], MEM::VRAM[0x3f12 + 4 * (MEM::OAM[4 * i + 2] & 0b11)]);
+					if (MEM::OAM[4 * i] < 239 && SPRenable) scr->put(MEM::OAM[4 * i + 3], MEM::OAM[4 * i], MEM::VRAM[0x3f13 + 4 * (MEM::OAM[4 * i + 2] & 0b11)]);
 				}
 
 				vblank = 1;
@@ -241,6 +269,8 @@ namespace PPU {
 			;
 
 		u8 attribute = ( MEM::VRAM[0x23c0 + (((tempD >> 2) + 8 * (coarseY >> 2) + 0x400 * nt) % mirr + 0x800 * ((nt & 0b10) && (MEM::mirroring == 0)))] & (0b11 << ((tempD & 0b10) + 2 * (coarseY & 0b10))) ) >> ((tempD & 0b10) + 2 * (coarseY & 0b10)); // & (0b00000011 << (((tempD & 0b10)/2) + (coarseY & 0b10)))
+
+		if (!BGenable8 && (dot >= 1 && dot <= 8)) pixel = 0;
 
 		if (pixel == 0) {
 			isOpaque[dot - 1][scanline] = false;
@@ -442,6 +472,7 @@ namespace PPU {
 					tempv -= 0x1000;
 				}
 
+				///*
 				//Horizontal mirroring
 				if (MEM::mirroring == 0) {
 					while ( (tempv >= 0x2400 && tempv < 0x2800) || (tempv >= 0x2c00 && tempv < 0x3000) ) {
@@ -452,6 +483,7 @@ namespace PPU {
 						tempv -= 0x0800;
 					}
 				}
+				//*/
 
 				if (tempv >= 0x2000 * !!(MEM::chrsize) ) { MEM::VRAM[tempv] = value; }
 

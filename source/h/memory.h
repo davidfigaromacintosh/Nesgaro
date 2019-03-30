@@ -21,14 +21,14 @@ namespace MEM {
 	u16 IRQ = 0xfffe;
 
 	// byte 4
-	u16 prgsize = 0;
+	u32 prgsize = 0;
 
 	// byte 5
-	u16 chrsize = 0;
+	u32 chrsize = 0;
 
 	// byte 6
 	u16 mapper = 0;
-	u8 mirroring = 0;	//0 = hor, 1 = vert, 2 or 3 = four-screen
+	u8 mirroring = 0;	//0 = hor, 1 = vert, 2 or 3 = four-screen (or 4 = no mirroring, for mappers only)
 	u8 battery = 0;
 	u8 trainer = 0;
 
@@ -40,7 +40,7 @@ namespace MEM {
 	
 		//Sekcja RAM
 		for (int i = 0; i < 0x800; i++) {
-			RAM[i] = rand();
+			RAM[i] = 0x00;
 		}
 
 		//Sekcja PRGRAM
@@ -50,7 +50,7 @@ namespace MEM {
 
 		//Sekcja PRGROM
 		for (int i = 0; i < 0x8000; i++) {
-			PRGROM[i] = 0xff;
+			PRGROM[i] = 0x00;
 		}
 
 		//Sekcja VRAM
@@ -59,7 +59,7 @@ namespace MEM {
 		}
 		//Sekcja OAM
 		for (int i = 0; i < 0x100; i++) {
-			OAM[i] = rand();
+			OAM[i] = 0x00;
 		}
 	}
 
@@ -67,7 +67,7 @@ namespace MEM {
 
 		if (strlen(filename) == 0) return 1;
 
-		printf("ROM FIlename: %s\n", filename); _getch();
+		printf("ROM FIlename: %s\n", filename);
 
 		char header[16];
 		FILE* f;
@@ -101,36 +101,33 @@ namespace MEM {
 		mapper = (header[6] & 0b11110000) >> 4;
 
 		mapper |= (header[7] & 0b11110000);
+		MAPPER::setMapper(mapper);
 
 		printf("Mapper %d\n", mapper);
 		printf("Mirroring %d\n", mirroring);
 
-		char buff[0x4000] = { 0 };
+		//Je¿eli wystêpuj¹ banki PRG, za³aduj je
+		if (prgsize > 0) {
 
+			// £adujemy wszystkie banki PRG do bufora
+			fread_s(PRGBANKS, sizeof(PRGBANKS), 1, prgsize, f);
 
-		// £adujemy pierwszy bank PRG
-		fread_s(buff, sizeof(buff), 1, 0x4000, f);
-		for (int i = 0; i < 0x4000; i++) {
-			//fread_s(buff, sizeof(buff), 1, 1, f);
-			PRGROM[i] = buff[i];
-			PRGROM[i + 0x4000] = buff[i];
-		}
-
-		// £adujemy pierwszy ostatni bank PRG
-		if (header[4] > 1) {
-			fread_s(buff, sizeof(buff), 1, 0x4000, f);
+			// Kopiujemy pierwszy i ostatni bank PRG do pamiêci
 			for (int i = 0; i < 0x4000; i++) {
-				//fread_s(buff, sizeof(buff), 1, 1, f);
-				PRGROM[i + 0x4000] = buff[i];
+				PRGROM[i] = PRGBANKS[i];
+				PRGROM[i + 0x4000] = PRGBANKS[i + prgsize - 0x4000];
 			}
 		}
 
-		//£adujemy bank CHR
-		if (header[5] > 0) {
-			fread_s(buff, sizeof(buff), 1, 0x2000, f);
+		//Je¿eli wystêpuj¹ banki CHR, za³aduj je
+		if (chrsize > 0) {
+
+			// £adujemy wszystkie banki CHR do bufora
+			fread_s(CHRBANKS, sizeof(CHRBANKS), 1, chrsize, f);
+
+			// Kopiujemy pierwszy i drugi bank PRG do pamiêci
 			for (int i = 0; i < 0x2000; i++) {
-				//fread_s(buff, sizeof(buff), 1, 1, f);
-				VRAM[i] = buff[i];
+				VRAM[i] = CHRBANKS[i];
 			}
 		}
 

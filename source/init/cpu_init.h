@@ -469,5 +469,4 @@ namespace CPU {
 
 	//Tutaj zaczyna siê wykonywanie instrukcji
 	void step();
-	int APUcycles();
 }

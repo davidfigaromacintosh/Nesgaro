@@ -6,4 +6,5 @@ namespace APU {
 
 	void writebus(int elapsed, u16 address, u8 value = 0x00);
 	u8 readbus(int elapsed, u16 address);
+	void setVolume(double vol);
 }

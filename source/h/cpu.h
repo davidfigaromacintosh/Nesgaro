@@ -1460,9 +1460,4 @@ namespace CPU {
 
 	}
 
-	int APUcycles() {
-	
-		return (APUelapsed);
-	}
-
 }
