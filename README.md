@@ -2,6 +2,6 @@
 
 ![alt text][logo]
 
-# **A simple NES emulator written in C++**
+# **A portable NES emulator written in C++**
 
 ###### Work in progress...
