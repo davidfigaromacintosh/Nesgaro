@@ -1,3 +1,6 @@
+#undef main
+#define _NESGARO main
+
 namespace GUI {
 
 	static char buff[MAX_PATH];

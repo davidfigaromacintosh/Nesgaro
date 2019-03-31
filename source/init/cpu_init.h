@@ -1,5 +1,8 @@
 #pragma once
 
+#undef RELATIVE
+#undef ABSOLUTE
+
 // Wszystkie "legalne" instrukcje mikroprocesora Ricol 2A03
 #define	ADC_IMM		0x69	//Add With Carry Immediate
 #define	ADC_ZP		0x65	//Add With Carry Zero-Page

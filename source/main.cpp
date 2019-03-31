@@ -81,8 +81,6 @@ int _NESGARO(int argc, char **argv) {
 	#endif
 
 	window.setVerticalSyncEnabled(true);
-
-
 	window.setFramerateLimit(fps[tvregion]);
 
 	if (windowIcon.loadFromFile(GUI::getCurPath("\\icon.png"))) {
@@ -198,7 +196,7 @@ int _NESGARO(int argc, char **argv) {
 	PPU::connectScreen(screen);
 	CPU::init();
 	APU::init();
-	APU::setVolume(1);
+	APU::setVolume(0.75);
 	PAD::init();
 	PAD::focus(window);
 
@@ -228,9 +226,7 @@ int _NESGARO(int argc, char **argv) {
 				}
 			}
 
-			//window.clear(sf::Color(PPU::colors[MEM::VRAM[0x3f00]]));
-
-			
+			window.clear(sf::Color(PPU::colors[MEM::VRAM[0x3f00]]));
 			window.draw(screen);
 			window.display();
 
