@@ -63,6 +63,18 @@ namespace PPU {
 				sproverflow = 0;
 			}
 
+
+			//Wyczyszczam OAM2
+			if (dot == 257) {
+				for (int i = 0; i < 256; i++) {
+					OAM2[i >> 3] = 0xff;
+					OAMIndex[i >> 5] = i;
+					OAM2Final[i] = 0;
+					OAMIsSpr0[i] = false;
+					OAMPriority[i] = false;
+				}
+			}
+
 			//dot 257: scroll update
 			if (dot == 257 && renderingEnabled()) {
 				V = (V & 0b111101111100000) | (T & 0b000010000011111);
@@ -85,7 +97,7 @@ namespace PPU {
 			//	dot = 1;
 
 			//USUN¥Æ ZARAZ PO TESTACH!!!
-			if (scanline == 30 && dot == 91) {
+			//if (scanline == 30 && dot == 91) {
 			//if (scanline == 110 && dot == 1) {
 			//if (scanline == 204 && dot == 218) {
 			//if (scanline == 41 && dot == 237) {
@@ -93,8 +105,8 @@ namespace PPU {
 			//if (scanline == 55 && dot == 249) {
 			//if (scanline == 31 && dot == 249) {
 			//if (scanline == 128 && dot == 105) {
-				spr0 = 1;
-			}
+				//spr0 = 1;
+			//}
 
 			//VRAM zwiêkszenie X dla dot od 1 do 256 oraz Y gdy dot = 256
 			if ((dot >= 2) && (dot <= 257) && renderingEnabled()) {
@@ -147,22 +159,32 @@ namespace PPU {
 			//SPRITE EVALUATION
 			if (dot == 257) {
 
-				//Czyszczenie OAM2
-				for (int i = 0; i < 32; i++) {
-					OAM2[i] = 0xff;
-					OAMIndex[i>>2] = i;
+				//Czyszczenie OAM2 i OAM2Final
+				for (int i = 0; i < 256; i++) {
+					OAM2[i>>3] = 0xff;
+					OAMIndex[i>>5] = i;
+					OAM2Final[i] = 0;
+					OAMIsSpr0[i] = false;
+					OAMPriority[i] = false;
 				}
 
 				//Wype³niamy OAM2 na podstawie danych zawartych w OAM
 				int sprindex = 0;
 				for (int i = 0; i < 64; i++) {
 					
-					//Na jednej scanlinii nie mo¿e byæ wiêcej ni¿ 8 sprite'ów
-					if (sprindex == 8) break;
+					if (MEM::OAM[4 * i] > 0xef) continue;
+
+
 
 					//Sprite evaluation
 					u8 spry = scanline - MEM::OAM[4 * i];
-					if (spry >= 0 && spry < 8) {
+					if (spry >= 0 && spry < 8 + 8*SPRsize) {
+
+						//Na jednej scanlinii nie mo¿e byæ wiêcej ni¿ 8 sprite'ów
+						if (sprindex == 8) {
+							sproverflow = 1;
+							break;
+						}
 
 						OAM2[4 * sprindex] = spry;
 						OAM2[4 * sprindex + 1] = MEM::OAM[4 * i + 1];
@@ -172,6 +194,38 @@ namespace PPU {
 						OAMIndex[sprindex] = i;
 
 						sprindex++;
+					}
+				}
+
+				//Printowanie sprite'ów na jednej scanlinii
+				for (int i = 7; i >= 0; i--) {	//Sprite (s¹ rysowane od ostatniego do pierwszego)
+					for (int j = 0; j < 8; j++) {	//8 pixeli (szerokoœæ sprite'u)
+						if ( ((OAM2[4 * i + 3] + j) < 256) && (OAM2[4 * i] < 8) ) {
+
+							//Scanlinia z gotowymi sprite'ami
+							b flipX = (OAM2[4 * i + 2] & 0b01000000) >> 6;
+							b flipY = (OAM2[4 * i + 2] & 0b10000000) >> 7;
+							u8 sprpxl;
+
+							sprpxl = SPRsize ? (
+								4 * (OAM2[4 * i + 2] & 0b11) +
+								!!(MEM::VRAM[		0x1000 * (OAM2[4 * i + 1] & 1) + 16 * (OAM2[4 * i + 1] & 0b11111110) + (flipY ? 15 - OAM2[4 * i] : OAM2[4 * i])] & (0b10000000 >> (flipX ? 7 - j : j)))
+								+
+							2 *	!!(MEM::VRAM[8 +	0x1000 * (OAM2[4 * i + 1] & 1) + 16 * (OAM2[4 * i + 1] & 0b11111110) + (flipY ? 15 - OAM2[4 * i] : OAM2[4 * i])] & (0b10000000 >> (flipX ? 7 - j : j)))
+								):(
+								4 * (OAM2[4 * i + 2] & 0b11) +
+								!!(MEM::VRAM[		0x1000 * SPRpattern + 16 * OAM2[4 * i + 1] + (flipY ? 7 - OAM2[4 * i] : OAM2[4 * i])] & (0b10000000 >> (flipX ? 7 - j : j)))
+								+
+							2 *	!!(MEM::VRAM[8 +	0x1000 * SPRpattern + 16 * OAM2[4 * i + 1] + (flipY ? 7 - OAM2[4 * i] : OAM2[4 * i])] & (0b10000000 >> (flipX ? 7 - j : j)))
+								);
+							
+							if (sprpxl % 4 != 0) {
+								OAM2Final[OAM2[4 * i + 3] + j] = sprpxl;
+
+								OAMIsSpr0[OAM2[4 * i + 3] + j] = (OAMIndex[i] == 0);
+								OAMPriority[OAM2[4 * i + 3] + j] = (OAM2[4 * i + 2] & 0b00100000) >> 5;
+							}
+						}
 					}
 				}
 
@@ -186,10 +240,6 @@ namespace PPU {
 
 			//Pocz¹tek VBlank oraz NMI
 			if (scanline == 241 && dot == 1) {
-
-				for (int i = 0; i < 64; i++) {
-					if (MEM::OAM[4 * i] < 239 && SPRenable) scr->put(MEM::OAM[4 * i + 3], MEM::OAM[4 * i], MEM::VRAM[0x3f13 + 4 * (MEM::OAM[4 * i + 2] & 0b11)]);
-				}
 
 				vblank = 1;
 				if (NMIenabled == 1) {
@@ -210,8 +260,23 @@ namespace PPU {
 		if ( (scanline >= 0 && scanline <= 239) && ( dot >= 1 && dot <= 256)) {
 			u8 coordX = (dot - 1) & 0xff;
 			u8 coordY = scanline & 0xff;
+			u8 pxl = fetchPixel(0);
 
-			scr->put(coordX, coordY, fetchPixel(0));
+			scr->put(coordX, coordY, pxl);
+			if (SPRenable) {
+
+				//Spr0 hit
+				if (OAM2Final[coordX]%4 != 0 && isOpaque[coordX][coordY] && OAMIsSpr0[coordX]) spr0 = 1;
+
+				//Rysowanie sprite'ów na ekranie
+				if (OAM2Final[coordX]%4 != 0 && !(!SPRenable8 && coordX < 8)) {
+					if (!OAMPriority[coordX] || (OAMPriority[coordX] && !isOpaque[coordX][coordY])) {
+						scr->put(coordX, coordY, MEM::VRAM[0x3f10 + OAM2Final[coordX]] );
+					}
+				}
+
+			}
+
 
 		}
 
@@ -226,7 +291,7 @@ namespace PPU {
 			dot = 0;
 			scanline++;
 		}
-		if (scanline > 260) {
+		if (scanline >= scanlines[tvregion]) {
 			scanline = -1;
 			oddframe = !oddframe;
 			frame++;

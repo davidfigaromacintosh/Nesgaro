@@ -9,8 +9,11 @@
 
 #define _CRT_SECURE_NO_WARNINGS
 
-#define NTSC_FPS 61
-#define PAL_FPS 51
+#define NTSC		0
+#define PAL			1
+#define DENDY		2
+
+static int tvregion = NTSC;
 
 //LIBy: https://www.sfml-dev.org/tutorials/2.5/start-vc.php
 #include <SFML/Graphics.hpp>
@@ -50,6 +53,8 @@ int _NESGARO(int argc, char **argv) {
 	float windowScale = 4;
 	bool fullScreen = true;
 
+	unsigned int fps[] = {61, 51};
+
 	SCREEN::Screen screen;
 	sf::Event wEvent;
 	sf::Image windowIcon;
@@ -71,7 +76,9 @@ int _NESGARO(int argc, char **argv) {
 	#endif
 
 	window.setVerticalSyncEnabled(true);
-	window.setFramerateLimit(NTSC_FPS);
+
+
+	window.setFramerateLimit(fps[tvregion]);
 
 	if (windowIcon.loadFromFile("icon.png")) {
 		window.setIcon(16, 16, windowIcon.getPixelsPtr());
@@ -120,8 +127,9 @@ int _NESGARO(int argc, char **argv) {
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Dr Mario.nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Tennis (Japan, USA).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Double Dribble (USA) (Rev A).nes");
-	MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Super Mario Bros. (World).nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Super Mario Bros. (World).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Super Mario Bros. (Pirate).nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Super Mario Bros pl.nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\smb.nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Circus Charlie (USA).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Track & Field.nes");
@@ -129,6 +137,7 @@ int _NESGARO(int argc, char **argv) {
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Sky Destroyer (Japan).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Hudson's Adventure Island (USA).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Adventure Island PL.nes");
+	MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Castlevania (USA).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Castlevania II - Simon's Quest (U).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Legend of Zelda, The (USA).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Zelda II - The Adventure of Link (USA).nes");
@@ -183,7 +192,7 @@ int _NESGARO(int argc, char **argv) {
 	PPU::connectScreen(screen);
 	CPU::init();
 	APU::init();
-	APU::setVolume(0.5);
+	APU::setVolume(0.7);
 	PAD::init();
 	PAD::focus(window);
 

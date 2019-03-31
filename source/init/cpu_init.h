@@ -265,6 +265,7 @@ namespace CPU {
 	u64 cycles;		//Licznik cykli
 	u8 oddCycle;
 	u8 NMIoccured;	//Czy wystapi³o NMI
+	u8 IRQoccured;	//Czy wystapi³o rz¹danie przerwania
 
 	int APUelapsed;
 

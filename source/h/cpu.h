@@ -615,7 +615,7 @@ namespace CPU {
 		}
 
 		}
-		//if (int_type != INT_BRK) cyclesLeft += 7;
+		if (int_type != INT_BRK) cyclesLeft += 7;
 	}
 
 	//Jak na podstawie typu opokdu pobraæ dane z operandu?
@@ -1229,11 +1229,18 @@ namespace CPU {
 			if (NMIoccured == 1) {
 				NMIoccured = 0;
 				interrupt(INT_NMI);
-				cyclesLeft = 7;
 				#ifdef DEBUG_MODE
 				printf(" NMI occured @ Dot=%d Scanline=%d", PPU::dot, PPU::scanline);
 				#endif
-			} else {
+			}
+			else if (IRQoccured == 1) {
+				IRQoccured = 0;
+				interrupt(INT_IRQ);
+				#ifdef DEBUG_MODE
+				printf(" IRQ occured @ Dot=%d Scanline=%d", PPU::dot, PPU::scanline);
+				#endif
+			}
+			else {
 
 				u8 op = MAINBUS::read(PC);
 

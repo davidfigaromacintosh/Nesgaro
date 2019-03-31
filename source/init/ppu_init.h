@@ -37,6 +37,7 @@ http://thealmightyguru.com/Games/Hacking/Wiki/index.php/NES_Palette		Paleta kolo
 #define MIRR_SINGLE4		5
 #define MIRR_4SCREEN		6
 
+
 namespace PPU {
 
 	//Ekran
@@ -79,6 +80,8 @@ namespace PPU {
 	u16 coarseY;
 
 	SCREEN::Screen *scr;
+
+	u16 scanlines[] = { 261, 312 };
 
 	//Bity $2000
 	u8 NMIenabled;

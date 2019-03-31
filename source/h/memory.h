@@ -59,7 +59,7 @@ namespace MEM {
 		}
 		//Sekcja OAM
 		for (int i = 0; i < 0x100; i++) {
-			OAM[i] = 0x00;
+			OAM[i] = 0xff;
 		}
 	}
 

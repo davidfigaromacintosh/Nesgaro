@@ -1,6 +1,3 @@
-#define NTSC_CLOCK	1789773
-#define PAL_CLOCK	1662607
-
 namespace APU {
 	
 	const int samplerate = 88200;
@@ -16,7 +13,7 @@ namespace APU {
 		soundQueue->init(samplerate);
 
 		buff.sample_rate(samplerate);
-		buff.clock_rate(NTSC_CLOCK);
+		buff.clock_rate(clock[tvregion]);
 		apu.output(&buff);
 		apu.dmc_reader(MEM::dmc_read);
 

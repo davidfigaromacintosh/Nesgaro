@@ -1,5 +1,7 @@
 namespace APU {
 	
+	unsigned int clock[] = { 1789773, 1662607 };
+
 	void init();
 	void run_frame(int elapsed);
 	void output_samples(const blip_sample_t* samples, size_t count);
