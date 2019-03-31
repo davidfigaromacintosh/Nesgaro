@@ -21,10 +21,13 @@ static int tvregion = NTSC;
 #include <SFML/Audio.hpp>
 
 #include <stdio.h>
+#include <string>
+#include <iostream>
 
 #include "include/Nes_Apu.h"
 #include "include/Sound_Queue.h"
 
+#include <Windows.h>
 #include "types.h"
 
 #include "init/mainbus_init.h"
@@ -34,6 +37,7 @@ static int tvregion = NTSC;
 #include "init/ppu_init.h"
 #include "init/cpu_init.h"
 #include "init/apu_init.h"
+#include "init/gui_init.h"
 
 #include "h/memory.h"
 #include "h/mainbus.h"
@@ -43,6 +47,7 @@ static int tvregion = NTSC;
 #include "h/ppu.h"
 #include "h/cpu.h"
 #include "h/apu.h"
+#include "h/gui.h"
 
 static bool vsync = false;
 
@@ -50,8 +55,8 @@ int _NESGARO(int argc, char **argv) {
 
 	srand(static_cast<unsigned int>(time(NULL)));
 
-	float windowScale = 4;
-	bool fullScreen = true;
+	float windowScale = 3;
+	bool fullScreen = false;
 
 	unsigned int fps[] = {61, 51};
 
@@ -80,7 +85,7 @@ int _NESGARO(int argc, char **argv) {
 
 	window.setFramerateLimit(fps[tvregion]);
 
-	if (windowIcon.loadFromFile("icon.png")) {
+	if (windowIcon.loadFromFile(GUI::getCurPath("\\icon.png"))) {
 		window.setIcon(16, 16, windowIcon.getPixelsPtr());
 	}
 
@@ -137,7 +142,7 @@ int _NESGARO(int argc, char **argv) {
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Sky Destroyer (Japan).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Hudson's Adventure Island (USA).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Adventure Island PL.nes");
-	MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Castlevania (USA).nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Castlevania (USA).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Castlevania II - Simon's Quest (U).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Legend of Zelda, The (USA).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Zelda II - The Adventure of Link (USA).nes");
@@ -145,6 +150,7 @@ int _NESGARO(int argc, char **argv) {
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Ice Climber.nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Bomberman.nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Micro Machines (U).nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Bee 52 (USA) (Unl) [2].nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Lode Runner.nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Soccer (World).nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Magic Jewelry.nes");
@@ -179,7 +185,7 @@ int _NESGARO(int argc, char **argv) {
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Family BASIC (Japan) (v1.0) 2.nes");
 
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\demoscene\\other\\Retrocoders - Years behind.NES");
-	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Palette-Generator.nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\demoscene\\other\\RasterDemo.NES");
 
 	//MEM::loadROM("C:\\Users\\David Macintosh\\Desktop\\testroms\\other\\RasterChromaLuma.nes");
 	//MEM::loadROM("C:\\Users\\David Macintosh\\Desktop\\Challenger (Japan).nes");
@@ -187,12 +193,12 @@ int _NESGARO(int argc, char **argv) {
 	//MEM::loadROM("C:\\Figorrupter\\temp.rom");
 
 	screen.resize(windowScale);
-	PPU::loadPalette("palette.pal");
+	PPU::loadPalette( GUI::getCurPath("\\palette.pal") );
 	PPU::init();
 	PPU::connectScreen(screen);
 	CPU::init();
 	APU::init();
-	APU::setVolume(0.7);
+	APU::setVolume(1);
 	PAD::init();
 	PAD::focus(window);
 

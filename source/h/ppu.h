@@ -359,6 +359,11 @@ namespace PPU {
 	}
 
 	void loadPalette(const char* filename) {
+
+		#ifdef DEBUG_MODE
+		puts(filename);
+		#endif
+
 		FILE *f;
 		if((f = fopen(filename, "rb")) == nullptr) return;
 
