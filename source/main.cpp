@@ -214,10 +214,6 @@ int _NESGARO(int argc, char **argv) {
 			PPU::step();
 			PPU::step();
 			PPU::step();
-			CPU::step();
-
-			PPU::step();
-			PPU::step();
 			PPU::step();
 			CPU::step();
 
@@ -232,6 +228,10 @@ int _NESGARO(int argc, char **argv) {
 			CPU::step();
 
 			PPU::step();
+			PPU::step();
+			PPU::step();
+			CPU::step();
+
 			PPU::step();
 			PPU::step();
 			PPU::step();
