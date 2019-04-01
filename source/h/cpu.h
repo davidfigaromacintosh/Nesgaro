@@ -1465,6 +1465,8 @@ namespace CPU {
 		if (cyclesLeft > 0) cyclesLeft--;
 		oddCycle = !oddCycle;
 
+		APUelapsed++;
+
 	}
 
 }

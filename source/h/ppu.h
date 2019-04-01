@@ -80,6 +80,11 @@ namespace PPU {
 				V = (V & 0b111101111100000) | (T & 0b000010000011111);
 			}
 
+			//OAMADDR jest równe 0 w tym obszarze
+			if (dot == 257 && dot < 320) {
+				OAMV = 0;
+			}
+
 			// dot od 280 do 304: scroll update
 			if (dot >= 280 && dot <= 304 && renderingEnabled()) {
 				V = (V & 0b000010000011111) | (T & 0b111101111100000);
@@ -91,22 +96,6 @@ namespace PPU {
 
 		// === Widzialne linie (od 0 do 239) ===
 		else if (scanline >= 0 && scanline <= 239) {
-
-			//Pierwszy pixel jest pomijany na linii 0 gdy klatka video jest nieparzysta
-			//if ((scanline == 0) && (dot == 0) && oddframe && renderingEnabled())
-			//	dot = 1;
-
-			//USUN¥Æ ZARAZ PO TESTACH!!!
-			//if (scanline == 30 && dot == 91) {
-			//if (scanline == 110 && dot == 1) {
-			//if (scanline == 204 && dot == 218) {
-			//if (scanline == 41 && dot == 237) {
-			//if (scanline == 15 && dot == 2) {
-			//if (scanline == 55 && dot == 249) {
-			//if (scanline == 31 && dot == 249) {
-			//if (scanline == 128 && dot == 105) {
-				//spr0 = 1;
-			//}
 
 			//VRAM zwiêkszenie X dla dot od 1 do 256 oraz Y gdy dot = 256
 			if ((dot >= 2) && (dot <= 257) && renderingEnabled()) {
@@ -146,6 +135,11 @@ namespace PPU {
 						
 					}
 					V = (V & 0b000110000011111) | ((tempY & 0b00000111) << 12) | ((tempY & 0b11111000) << 2);
+				}
+
+				//OAMADDR jest równe 0 w tym obszarze
+				if (dot == 257 && dot < 320) {
+					OAMV = 0;
 				}
 				
 			}
@@ -200,7 +194,7 @@ namespace PPU {
 				//Printowanie sprite'ów na jednej scanlinii
 				for (int i = 7; i >= 0; i--) {	//Sprite (s¹ rysowane od ostatniego do pierwszego)
 					for (int j = 0; j < 8; j++) {	//8 pixeli (szerokoœæ sprite'u)
-						if ( ((OAM2[4 * i + 3] + j) < 256) && (OAM2[4 * i] < 8) ) {
+						if ( ((OAM2[4 * i + 3] + j) < 256) && (OAM2[4 * i] < (8 + 8*SPRsize)) ) {
 
 							//Scanlinia z gotowymi sprite'ami
 							b flipX = (OAM2[4 * i + 2] & 0b01000000) >> 6;
@@ -209,9 +203,9 @@ namespace PPU {
 
 							sprpxl = SPRsize ? (
 								4 * (OAM2[4 * i + 2] & 0b11) +
-								!!(MEM::VRAM[		0x1000 * (OAM2[4 * i + 1] & 1) + 16 * (OAM2[4 * i + 1] & 0b11111110) + (flipY ? 15 - OAM2[4 * i] : OAM2[4 * i])] & (0b10000000 >> (flipX ? 7 - j : j)))
+								!!(MEM::VRAM[(flipY ? 8 * (OAM2[4 * i] < 8) : 8 * (OAM2[4 * i] >= 8)) +		0x1000 * (OAM2[4 * i + 1] & 1) + 16 * (OAM2[4 * i + 1] & 0b11111110) + (flipY ? 15 - OAM2[4 * i] : OAM2[4 * i])] & (0b10000000 >> (flipX ? 7 - j : j)))
 								+
-							2 *	!!(MEM::VRAM[8 +	0x1000 * (OAM2[4 * i + 1] & 1) + 16 * (OAM2[4 * i + 1] & 0b11111110) + (flipY ? 15 - OAM2[4 * i] : OAM2[4 * i])] & (0b10000000 >> (flipX ? 7 - j : j)))
+							2 *	!!(MEM::VRAM[(flipY ? 8 * (OAM2[4 * i] < 8) : 8 * (OAM2[4 * i] >= 8)) + 8 +	0x1000 * (OAM2[4 * i + 1] & 1) + 16 * (OAM2[4 * i + 1] & 0b11111110) + (flipY ? 15 - OAM2[4 * i] : OAM2[4 * i])] & (0b10000000 >> (flipX ? 7 - j : j)))
 								):(
 								4 * (OAM2[4 * i + 2] & 0b11) +
 								!!(MEM::VRAM[		0x1000 * SPRpattern + 16 * OAM2[4 * i + 1] + (flipY ? 7 - OAM2[4 * i] : OAM2[4 * i])] & (0b10000000 >> (flipX ? 7 - j : j)))
@@ -298,7 +292,8 @@ namespace PPU {
 			//exit(CPU::cycles);
 		}
 
-		if (oddframe && scanline == -1 && dot > 339 && BGenable) { //
+		//Co drug¹ klatkê video, prescan jest o 1 dot krótszy
+		if (oddframe && scanline == -1 && dot > 339 && BGenable && (tvregion == NTSC)) {
 			dot = 0;
 			scanline++;
 		}
@@ -351,7 +346,19 @@ namespace PPU {
 				return isOpaque[dot - 1][scanline];
 			}
 			default: {
-				return (MEM::VRAM[0x3f00 + ((pixel + 4 * attribute) * !!(pixel)) * BGenable]);
+
+				//return (MEM::VRAM[0x3f00 + ((pixel + 4 * attribute) * !!(pixel)) * BGenable]);
+				if (renderingEnabled()) {
+					if (BGenable) {
+						return (MEM::VRAM[0x3f00 + ((pixel + 4 * attribute) * !!(pixel))]);
+					} else {
+						return MEM::VRAM[0x3f00];
+					}
+				} else {
+					if (V >= 0x3f00 && V <= 0x3fff) return MEM::VRAM[0x3f00 + V % 0x10];
+					return MEM::VRAM[0x3f00];
+				}
+
 			}
 		}
 
@@ -396,7 +403,16 @@ namespace PPU {
 				return (tempvblank << 7) | (spr0 << 6) | (sproverflow << 5) | (lsbWrite & 0b00011111);
 			}
 			case OAM_DATA: {	//Read $2004 R W
-				return MEM::OAM[OAMV];
+
+				//http://wiki.nesdev.com/w/index.php/PPU_sprite_evaluation
+				if (scanline >= 0 && scanline <= 239 && renderingEnabled()) {
+					if (dot < 64) return 0xff;
+					if (dot < 256) return 0x00;
+					if (dot < 320) return 0xff;
+					return OAM2[0]; 
+				} else { 
+					return MEM::OAM[OAMV];
+				}
 			}
 			case PPU_DATA: {	//Read $2007 R W
 
@@ -418,6 +434,10 @@ namespace PPU {
 				else {
 
 					//mirroring koloru t³a
+					while (tempv >= 0x3f04 && tempv < 0x3f10 && renderingEnabled()) {
+						tempv -= 0x04;
+					}
+
 					switch (tempv) {
 					case 0x3f10:
 					case 0x3f14:

@@ -196,7 +196,7 @@ int _NESGARO(int argc, char **argv) {
 	PPU::connectScreen(screen);
 	CPU::init();
 	APU::init();
-	APU::setVolume(0.75);
+	APU::setVolume(0.1);
 	PAD::init();
 	PAD::focus(window);
 
@@ -204,11 +204,39 @@ int _NESGARO(int argc, char **argv) {
 	//Klatka video
 	while (1) {
 
-		PPU::step();
-		PPU::step();
-		PPU::step();
-		CPU::step();
-		CPU::APUelapsed++;
+		if (tvregion == NTSC) {
+			PPU::step();
+			PPU::step();
+			PPU::step();
+			CPU::step();
+		}
+		if (tvregion == PAL) {
+			PPU::step();
+			PPU::step();
+			PPU::step();
+			CPU::step();
+
+			PPU::step();
+			PPU::step();
+			PPU::step();
+			CPU::step();
+
+			PPU::step();
+			PPU::step();
+			PPU::step();
+			CPU::step();
+
+			PPU::step();
+			PPU::step();
+			PPU::step();
+			CPU::step();
+
+			PPU::step();
+			PPU::step();
+			PPU::step();
+			PPU::step();
+			CPU::step();
+		}
 
 		//SFML Poll
 		if (PPU::vblank && !vsync) {
@@ -226,7 +254,7 @@ int _NESGARO(int argc, char **argv) {
 				}
 			}
 
-			window.clear(sf::Color(PPU::colors[MEM::VRAM[0x3f00]]));
+			window.clear(sf::Color(PPU::colors[0x0f]));
 			window.draw(screen);
 			window.display();
 
