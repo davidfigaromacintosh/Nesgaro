@@ -55,8 +55,8 @@ int _NESGARO(int argc, char **argv) {
 
 	srand(static_cast<unsigned int>(time(NULL)));
 
-	float windowScale = 3;
-	bool fullScreen = false;
+	float windowScale = 4;
+	bool fullScreen = true;
 
 	unsigned int fps[] = {61, 51};
 

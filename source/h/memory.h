@@ -116,6 +116,7 @@ namespace MEM {
 			for (int i = 0; i < 0x4000; i++) {
 				PRGROM[i] = PRGBANKS[i];
 				PRGROM[i + 0x4000] = PRGBANKS[i + prgsize - 0x4000];
+				//PRGROM[i + 0x4000] = PRGBANKS[i + 0x4000];
 			}
 		}
 
