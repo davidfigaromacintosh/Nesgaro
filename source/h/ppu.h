@@ -98,7 +98,7 @@ namespace PPU {
 		else if (scanline >= 0 && scanline <= 239) {
 
 			//VRAM zwiêkszenie X dla dot od 1 do 256 oraz Y gdy dot = 256
-			if ((dot >= 2) && (dot <= 257) && BGenable) {
+			if ((dot >= 2) && (dot <= 257) && renderingEnabled()) {
 				
 				
 				u16 temp = (((V & 0b11111) << 3) + (X + (dot - 1) % 8));
@@ -123,7 +123,7 @@ namespace PPU {
 					V = V & 0b111111111100000 | tempX;
 				}
 
-				if (dot == 257 && BGenable) {
+				if (dot == 257 && renderingEnabled()) {
 					u16 tempY = (V & 0b111000000000000) >> 12 | (V & 0b000001111100000) >> 2;
 					tempY++;
 					if ((tempY) >= 62) {
@@ -145,7 +145,7 @@ namespace PPU {
 			}
 
 			//dot 257: scroll update
-			if (dot == 257 && BGenable) {
+			if (dot == 257 && renderingEnabled()) {
 
 				V = (V & 0b111101111100000) | (T & 0b000010000011111);
 			}
