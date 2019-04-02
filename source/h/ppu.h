@@ -98,7 +98,7 @@ namespace PPU {
 		else if (scanline >= 0 && scanline <= 239) {
 
 			//VRAM zwiêkszenie X dla dot od 1 do 256 oraz Y gdy dot = 256
-			if ((dot >= 2) && (dot <= 257) && renderingEnabled()) {
+			if ((dot >= 2) && (dot <= 257) && BGenable) {
 				
 				
 				u16 temp = (((V & 0b11111) << 3) + (X + (dot - 1) % 8));
@@ -123,7 +123,7 @@ namespace PPU {
 					V = V & 0b111111111100000 | tempX;
 				}
 
-				if (dot == 257 && renderingEnabled()) {
+				if (dot == 257 && BGenable) {
 					u16 tempY = (V & 0b111000000000000) >> 12 | (V & 0b000001111100000) >> 2;
 					tempY++;
 					if ((tempY) >= 62) {
@@ -145,7 +145,7 @@ namespace PPU {
 			}
 
 			//dot 257: scroll update
-			if (dot == 257 && renderingEnabled()) {
+			if (dot == 257 && BGenable) {
 
 				V = (V & 0b111101111100000) | (T & 0b000010000011111);
 			}
@@ -355,7 +355,7 @@ namespace PPU {
 						return MEM::VRAM[0x3f00];
 					}
 				} else {
-					if (V >= 0x3f00 && V <= 0x3fff) return MEM::VRAM[0x3f00 + V % 0x10];
+					if (V >= 0x3f00 && V <= 0x3fff) return MEM::VRAM[(0x3f00 + V % 0x10)]; // & (((V % 4) << 4) | 0xff0f)
 					return MEM::VRAM[0x3f00];
 				}
 
