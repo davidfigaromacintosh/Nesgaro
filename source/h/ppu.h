@@ -355,8 +355,11 @@ namespace PPU {
 						return MEM::VRAM[0x3f00];
 					}
 				} else {
-					if (V >= 0x3f00 && V <= 0x3fff) return MEM::VRAM[(0x3f00 + V % 0x10)]; // & (((V % 4) << 4) | 0xff0f)
-					return MEM::VRAM[0x3f00];
+					if (V >= 0x3f00 && V <= 0x3fff) {
+						return MEM::VRAM[0x3f00 + (((V % 0x20)) & (((!!(V % 4)) << 4) | 0xff0f))];
+					} else {
+						return MEM::VRAM[0x3f00];
+					}
 				}
 
 			}
@@ -506,7 +509,9 @@ namespace PPU {
 				break;
 			}
 			case OAM_DATA: {	//Write $2004 W R
-				MEM::OAM[OAMV++] = value;
+				if (!(scanline >= -1 && scanline <= 239 && renderingEnabled())){
+					MEM::OAM[OAMV++] = value;
+				}
 				break;
 			}
 			case PPU_SCROLL: {	//Write $2005 W W
