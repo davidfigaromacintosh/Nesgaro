@@ -145,10 +145,16 @@ namespace PPU {
 			}
 
 			//dot 257: scroll update
-			if (dot == 257 && renderingEnabled()) {
+			if ((dot == 257) && renderingEnabled()) {
 
 				V = (V & 0b111101111100000) | (T & 0b000010000011111);
 			}
+			/* 
+			if ((dot == 320 || dot == 334) && renderingEnabled()) {
+
+				V = (V & 0b111111111100000) | ((V+1) & 0b000000000011111);
+			}
+			*/
 
 			//SPRITE EVALUATION
 			if (dot == 257) {

@@ -64,10 +64,10 @@ int _NESGARO(int argc, char **argv) {
 	sf::Event wEvent;
 	sf::Image windowIcon;
 
-	sf::RenderWindow window{ sf::VideoMode{(unsigned int)windowScale * 256, (unsigned int)windowScale * 240}, "NESgaro v0.1 alpha", sf::Style::Close | (sf::Uint32)(sf::Style::Fullscreen * fullScreen) }; //= ⬤ ᆺ ⬤ =
+	sf::RenderWindow window{ sf::VideoMode{(unsigned int)windowScale * 256, (unsigned int)windowScale * 240}, "Nesgaro v0.22 alpha", sf::Style::Close | (sf::Uint32)(sf::Style::Fullscreen * fullScreen) }; //= ⬤ ᆺ ⬤ =
 	
 	#ifdef DEBUG_MODE
-	system("title NESgaro mini debugger");
+	system("title Nesgaro mini debugger");
 	//system("color 5f");
 	
 	puts("Preparing, please wait...");
@@ -96,7 +96,7 @@ int _NESGARO(int argc, char **argv) {
 
 	//ROMy do testowania
 
-	if (argc > 1) { if (MEM::loadROM(argv[1]) == 0) { window.setTitle(argv[1]); } }
+	if (argc > 1) { MEM::loadROM(argv[1]); }
 
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\nespeccy.nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Higurashi.nes");
