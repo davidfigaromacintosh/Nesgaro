@@ -58,7 +58,7 @@ int _NESGARO(int argc, char **argv) {
 	float windowScale = 3;
 	bool fullScreen = false;
 
-	unsigned int fps[] = {61, 51};
+	unsigned int fps[] = {61, 51, 59};
 
 	SCREEN::Screen screen;
 	sf::Event wEvent;
@@ -200,48 +200,31 @@ int _NESGARO(int argc, char **argv) {
 	PAD::init();
 	PAD::focus(window);
 
-	bool apuframe = false;
+	u16 masterclock = 1;
 	//Klatka video
 	while (1) {
 
-		if (tvregion == NTSC) {
-			PPU::step();
-			PPU::step();
-			PPU::step();
-			CPU::step();
+		if (tvregion == NTSC || tvregion == DENDY) {
+
+			if (masterclock % 3 == 0)		CPU::step();	//Cykl CPU dla standardu NTSC
+			if (masterclock % 1 == 0)		PPU::step();	//Cykl PPU dla standardu NTSC
 		}
+
 		if (tvregion == PAL) {
-			PPU::step();
-			PPU::step();
-			PPU::step();
-			PPU::step();
-			CPU::step();
 
-			PPU::step();
-			PPU::step();
-			PPU::step();
-			CPU::step();
+			if (masterclock % 16 == 0)		CPU::step();	//Cykl CPU dla standardu PAL
+			if (masterclock % 5 == 0)		PPU::step();	//Cykl PPU dla standardu PAL
 
-			PPU::step();
-			PPU::step();
-			PPU::step();
-			CPU::step();
-
-			PPU::step();
-			PPU::step();
-			PPU::step();
-			CPU::step();
-
-			PPU::step();
-			PPU::step();
-			PPU::step();
-			CPU::step();
 		}
+
+		masterclock = (masterclock + 1) % 3840;
 
 		//SFML Poll
-		if (PPU::vblank && !vsync) {
+		if (PPU::scanline == 241 && PPU::dot == 1) {
 
-			vsync = true;
+			APU::run_frame(CPU::APUelapsed);
+			CPU::APUelapsed = 0;
+
 			while (window.pollEvent(wEvent)) {
 
 				switch (wEvent.type) {
@@ -258,18 +241,7 @@ int _NESGARO(int argc, char **argv) {
 			window.draw(screen);
 			window.display();
 
-			if (apuframe == true) {
-				APU::run_frame(CPU::APUelapsed);
-				CPU::APUelapsed = 0;
-			}
-			apuframe = false;
-
 		}
-		if (!PPU::vblank && vsync) {
-			vsync = false;
-			apuframe = true;
-		}
-		
 	}
 
 	return 0xF19A20;

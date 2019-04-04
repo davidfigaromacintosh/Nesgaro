@@ -1,6 +1,6 @@
 namespace APU {
 	
-	unsigned int clock[] = { 1789773, 1662607 };
+	unsigned int clock[] = { 1789773, 1662607, 1773448 };
 
 	void init();
 	void run_frame(int elapsed);

@@ -82,7 +82,7 @@ namespace PPU {
 
 	SCREEN::Screen *scr;
 
-	u16 scanlines[] = { 261, 312 };
+	u16 scanlines[] = { 261, 311, 311};
 
 	//Bity $2000
 	u8 NMIenabled;

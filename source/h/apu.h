@@ -5,7 +5,7 @@ namespace APU {
 	Blip_Buffer buff;
 	Sound_Queue* soundQueue;
 
-	const int out_size = 4096;
+	const int out_size = 2048;
 	blip_sample_t output[out_size];
 
 	void init() {
@@ -23,7 +23,7 @@ namespace APU {
 	}
 
 	void writebus(int elapsed, u16 address, u8 value) {
-		apu.write_register(elapsed, address, value);
+		apu.write_register(elapsed, address, ((address == 0x4000 || address == 0x4004) && tvregion == DENDY) ? (((value & 0b01000000) << 1) | ((value & 0b10000000) >> 1) | value & 0b00111111) : value);
 	}
 
 	u8 readbus(int elapsed, u16 address) {

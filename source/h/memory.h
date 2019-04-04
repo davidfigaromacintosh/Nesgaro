@@ -40,17 +40,17 @@ namespace MEM {
 	
 		//Sekcja RAM
 		for (int i = 0; i < 0x800; i++) {
-			RAM[i] = 0x00;
+			RAM[i] = rand();
 		}
 
 		//Sekcja PRGRAM
 		for (int i = 0; i < 0x2000; i++) {
-			PRGRAM[i] = 0x00;
+			PRGRAM[i] = rand();
 		}
 
 		//Sekcja PRGROM
 		for (int i = 0; i < 0x8000; i++) {
-			PRGROM[i] = 0x00;
+			PRGROM[i] = 0xff;
 		}
 
 		//Sekcja VRAM

@@ -1218,7 +1218,7 @@ namespace CPU {
 
 	void step() {
 
-		if (APU::irqBefore() != Nes_Apu::no_irq && APU::irqBefore() == APUelapsed) {
+		if (!getI() && APU::irqBefore() == APUelapsed) {
 			IRQoccured = 1;
 		}
 
@@ -1237,7 +1237,7 @@ namespace CPU {
 				printf(" NMI occured @ Dot=%d Scanline=%d", PPU::dot, PPU::scanline);
 				#endif
 			}
-			if (IRQoccured == 1 && !getI()) {
+			else if (IRQoccured == 1 && !getI()) {
 				IRQoccured = 0;
 				interrupt(INT_IRQ);
 				#ifdef DEBUG_MODE
