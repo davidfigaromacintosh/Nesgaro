@@ -196,7 +196,7 @@ int _NESGARO(int argc, char **argv) {
 	PPU::connectScreen(screen);
 	CPU::init();
 	APU::init();
-	APU::setVolume(0.7);
+	APU::setVolume(0.1);
 	PAD::init();
 	PAD::focus(window);
 

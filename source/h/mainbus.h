@@ -54,7 +54,7 @@ namespace MAINBUS {
 			MEM::PRGRAM[addr - 0x6000] = value;
 		}
 
-		//Je¿eli robimy wpis do PRGROM (mapper)
+		//Je¿eli robimy wpis do regionu PRGROM (mapper)
 		if (addr >= 0x8000 && addr <= 0xffff) {
 			MAPPER::writebus(addr, value);
 		}

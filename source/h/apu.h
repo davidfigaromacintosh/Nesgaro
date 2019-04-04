@@ -16,7 +16,10 @@ namespace APU {
 		buff.clock_rate(clock[tvregion]);
 		apu.output(&buff);
 		apu.dmc_reader(MEM::dmc_read);
+	}
 
+	cpu_time_t irqBefore() {
+			return apu.earliest_irq();
 	}
 
 	void writebus(int elapsed, u16 address, u8 value) {
@@ -29,6 +32,7 @@ namespace APU {
 
 	void setVolume(double vol) {
 		apu.volume(vol);
+		
 	}
 
 	void output_samples(const blip_sample_t* samples, size_t count) {
