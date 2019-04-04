@@ -240,6 +240,7 @@
 /*
 Wszystkie potrzebne informacje znalaz³em tu:
 https://nesdev.com/6502bugs.txt
+http://atarihq.com/danb/files/64doc.txt
 http://www.oxyron.de/html/opcodes02.html
 http://www.emulator101.com/6502-addressing-modes.html
 https://www.cs.otago.ac.nz/cosc243/pdf/6502Poster.pdf

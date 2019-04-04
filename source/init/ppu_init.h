@@ -68,6 +68,7 @@ namespace PPU {
 	u8 readbuffer;
 	u16 mirroring;
 
+	u8	BGBuffer[256];		//Bufor scanlinii t³a
 	u8	OAM2[0x20];			//8*4 bajty OAM2
 	u8	OAM2Final[256];		//Koñcowa scanlinia ze sprite'ami
 	b	OAMPriority[256];	//Priorytet rysowania (czy za t³em czy przed t³em)
