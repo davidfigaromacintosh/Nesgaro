@@ -120,16 +120,25 @@ namespace MAPPER {
 	void mmc1SetPRGBanks() {
 
 		if (mmc1PRGmode <= 1) {
-			memcpy(MEM::PRGROM, MEM::PRGBANKS + ((0x4000 * (mmc1Shift & 0b1110)) % MEM::prgsize), 0x8000);
+			for (u64 i = 0; i < 0x8000; i++) MEM::PRGROM[i] = MEM::PRGBANKS[i + (0x4000 * (mmc1Shift & 0b1110)) % MEM::prgsize];
+			//memcpy(MEM::PRGROM, MEM::PRGBANKS + ((0x4000 * (mmc1Shift & 0b1110)) % MEM::prgsize), 0x8000);
 			//memcpy(MEM::PRGROM + 0x4000,	MEM::PRGBANKS + 0x4000	+ ((0x4000 * (mmc1Shift & 0b1110)) % MEM::prgsize),			0x4000);
 		}
 		else if (mmc1PRGmode == 2) {
-			memcpy(MEM::PRGROM, MEM::PRGBANKS, 0x4000);
-			memcpy(MEM::PRGROM + 0x4000, MEM::PRGBANKS + ((0x4000 * (mmc1Shift & 0b1111)) % MEM::prgsize), 0x4000);
+			for (u64 i = 0; i < 0x4000; i++) {
+				MEM::PRGROM[i] = MEM::PRGBANKS[i];
+				MEM::PRGROM[i + 0x4000] = MEM::PRGBANKS[i + (0x4000 * (mmc1Shift & 0b1111)) % MEM::prgsize];
+			}
+			//memcpy(MEM::PRGROM, MEM::PRGBANKS, 0x4000);
+			//memcpy(MEM::PRGROM + 0x4000, MEM::PRGBANKS + ((0x4000 * (mmc1Shift & 0b1111)) % MEM::prgsize), 0x4000);
 		}
 		else if (mmc1PRGmode == 3) {
-			memcpy(MEM::PRGROM, MEM::PRGBANKS + ((0x4000 * (mmc1Shift & 0b1111)) % MEM::prgsize), 0x4000);
-			memcpy(MEM::PRGROM + 0x4000, MEM::PRGBANKS + MEM::prgsize - 0x4000, 0x4000);
+			for (u64 i = 0; i < 0x4000; i++) {
+				MEM::PRGROM[i] = MEM::PRGBANKS[i + ((0x4000 * (mmc1Shift & 0b1111)) % MEM::prgsize)];
+				MEM::PRGROM[i + 0x4000] = MEM::PRGBANKS[i + MEM::prgsize - 0x4000];
+			}
+			//memcpy(MEM::PRGROM, MEM::PRGBANKS + ((0x4000 * (mmc1Shift & 0b1111)) % MEM::prgsize), 0x4000);
+			//memcpy(MEM::PRGROM + 0x4000, MEM::PRGBANKS + MEM::prgsize - 0x4000, 0x4000);
 		}
 
 	}
