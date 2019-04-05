@@ -200,7 +200,7 @@ int _NESGARO(int argc, char **argv) {
 	PAD::init();
 	PAD::focus(window);
 
-	u16 masterclock = 1;
+	u64 masterclock = 0;
 	//Klatka video
 	while (1) {
 
@@ -217,7 +217,7 @@ int _NESGARO(int argc, char **argv) {
 
 		}
 
-		masterclock = (masterclock + 1) % 3840;
+		masterclock += 1;
 
 		//SFML Poll
 		if (PPU::scanline == 241 && PPU::dot == 1) {

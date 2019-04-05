@@ -1237,7 +1237,7 @@ namespace CPU {
 				printf(" NMI occured @ Dot=%d Scanline=%d", PPU::dot, PPU::scanline);
 				#endif
 			}
-			else if (IRQoccured == 1 && !getI()) {
+			else if (IRQoccured == 1) {
 				IRQoccured = 0;
 				interrupt(INT_IRQ);
 				#ifdef DEBUG_MODE

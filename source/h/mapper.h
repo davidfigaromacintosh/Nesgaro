@@ -102,6 +102,7 @@ namespace MAPPER {
 			#pragma region mapper7
 			case 7: {	
 				memcpy(MEM::PRGROM, MEM::PRGBANKS + ((0x8000 * (value & 0b111)) % MEM::prgsize), 0x8000);
+				break;
 			}
 			#pragma endregion
 
@@ -109,6 +110,7 @@ namespace MAPPER {
 			#pragma region mapper71
 			case 71: {
 				if (address >= 0xc000 && address <= 0xffff)	memcpy(MEM::PRGROM, MEM::PRGBANKS + ((0x4000 * (value & 0b1111)) % MEM::prgsize), 0x4000);
+				break;
 			}
 			#pragma endregion
 
