@@ -92,8 +92,8 @@ namespace MEM {
 			return 1;
 		}
 
-		prgsize = /*(((header[9] & 0b00001111) << 8) |*/ header[4] * 16384; printf("%llu KB of PRGROM\n", prgsize / 1024);
-		chrsize = /*(((header[9] & 0b11110000) << 4) |*/ header[5] * 8192; printf("%llu KB of CHRROM\n", chrsize / 1024);
+		prgsize = (((header[9] & 0b00001111) << 8) | header[4]) * 16384; printf("%llu KB of PRGROM\n", prgsize / 1024);
+		chrsize = (((header[9] & 0b11110000) << 4) | header[5]) * 8192; printf("%llu KB of CHRROM\n", chrsize / 1024);
 
 		mirroring = header[6] & 0b00000001 | ((header[6] & 0b00001000) >> 2);
 		battery = !!(header[6] & 0b00000010);
