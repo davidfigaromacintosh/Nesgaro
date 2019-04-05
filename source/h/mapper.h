@@ -85,7 +85,7 @@ namespace MAPPER {
 			//UxROM
 			#pragma region mapper2
 			case 2: {
-				memcpy(MEM::PRGROM, MEM::PRGBANKS + ((0x4000 * (value & 0b1111)) % MEM::prgsize), 0x4000);
+				memcpy(MEM::PRGROM, MEM::PRGBANKS + ((0x4000 * (value & (MEM::nes2 == 2 ? 0b11111111 : 0b1111))) % MEM::prgsize), 0x4000);
 				break;
 			}
 			#pragma endregion

@@ -58,7 +58,7 @@ int _NESGARO(int argc, char **argv) {
 	float windowScale = 3;
 	bool fullScreen = false;
 
-	unsigned int fps[] = {61, 51, 59};
+	unsigned int fps[] = {60, 51, 59};
 
 	SCREEN::Screen screen;
 	sf::Event wEvent;
