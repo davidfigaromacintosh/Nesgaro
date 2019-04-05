@@ -1,13 +1,26 @@
+//MMC3
+//https://wiki.nesdev.com/w/index.php/MMC3				//Rejestry
+//http://bobrost.com/nes/files/mmc3irqs.txt				//Wszystko o ¿¹daniach przerwania
+
+
 namespace MAPPER {
 
 	void init() {
 		mapper = 0;
 
+		//MMC1
 		mmc1Count = 0;
 		mmc1Control = 0x0c;
 		mmc1CHRmode = 0;
 		mmc1PRGmode = 3;
 		mmc1Shift = 0;
+
+		//MMC3
+		mmc3BankMode = 0;
+		mmc3PRGmode = 0;
+		mmc3CHRinversion = 0;
+		mmc3IRQenable = 0;
+		mmc3IRQcounter = 0;
 	}
 
 	void setMapper(u32 mapperid) {
@@ -98,6 +111,76 @@ namespace MAPPER {
 			}
 			#pragma endregion
 
+			//MMC3
+			#pragma region mapper4
+			case 4: {
+				if (address >= 0x8000 && address <= 0x9fff) {
+					
+					//Bank select (even)
+					if (address % 2 == 0) {	
+						mmc3BankMode = value & 0b111;
+						mmc3PRGmode = !!(value & 0b01000000);
+						mmc3CHRinversion = !!(value & 0b10000000);
+					}
+
+					//Bank data (odd)
+					else {	
+						u8 val = value & 0b00111111;
+						switch (mmc3BankMode) {
+						case 0: {	//Select 2 KB CHR bank at PPU $0000-$07FF (or $1000-$17FF)
+							memcpy(MEM::VRAM + 0x1000 * mmc3CHRinversion, MEM::CHRBANKS + 0x1000 * mmc3CHRinversion + ((0x400 * val) % MEM::chrsize), 0x800);
+							break;
+						}
+						case 1: {	//Select 2 KB CHR bank at PPU $0800-$0FFF (or $1800-$1FFF)
+							memcpy(MEM::VRAM + 0x800 + 0x1000 * mmc3CHRinversion, MEM::CHRBANKS + 0x1000 * mmc3CHRinversion + (0x800 + (0x400 * val) % MEM::chrsize), 0x800);
+							break;
+						}
+						case 2: {	//Select 1 KB CHR bank at PPU $1000-$13FF (or $0000-$03FF)
+							memcpy(MEM::VRAM + 0x1000 * !mmc3CHRinversion, MEM::CHRBANKS + 0x1000 * !mmc3CHRinversion + ((0x400 * val) % MEM::chrsize), 0x400);
+							break;
+						}
+						case 3: {	//Select 1 KB CHR bank at PPU $1400-$17FF (or $0400-$07FF)
+							memcpy(MEM::VRAM + 0x400 + 0x1000 * !mmc3CHRinversion, MEM::CHRBANKS + 0x1000 * !mmc3CHRinversion + (0x400 + (0x400 * val) % MEM::chrsize), 0x400);
+							break;
+						}
+						case 4: {	//Select 1 KB CHR bank at PPU $1800-$1BFF (or $0800-$0BFF)
+							memcpy(MEM::VRAM + 0x800 + 0x1000 * !mmc3CHRinversion, MEM::CHRBANKS + 0x1000 * !mmc3CHRinversion + (0x800 + (0x400 * val) % MEM::chrsize), 0x400);
+							break;
+						}
+						case 5: {	//Select 1 KB CHR bank at PPU $1C00-$1FFF (or $0C00-$0FFF)
+							memcpy(MEM::VRAM + 0xC00 + 0x1000 * !mmc3CHRinversion, MEM::CHRBANKS + 0x1000 * !mmc3CHRinversion + (0xc00 + (0x400 * val) % MEM::chrsize), 0x400);
+							break;
+						}
+						case 6: {	//Select 8 KB PRG ROM bank at $8000-$9FFF (or $C000-$DFFF)
+							memcpy(MEM::PRGROM + 0x4000 * mmc3PRGmode, MEM::PRGBANKS + ((0x2000 * val) % MEM::prgsize), 0x2000);
+							break;
+						}
+						case 7: {	//Select 8 KB PRG ROM bank at $A000-$BFFF
+							memcpy(MEM::PRGROM + 0x2000, MEM::PRGBANKS + ((0x2000 * val) % MEM::prgsize), 0x2000);
+							break;
+						}
+
+
+						}
+					}
+				}
+
+				if (address >= 0xa000 && address <= 0xbfff) {
+					if (address % 2 == 0) {	//Mirroring (even)
+						MEM::mirroring = !(value & 1);
+					}
+
+					else {	//PRGRAM protection (odd)
+					
+					}
+				}
+
+				if (address >= 0xc000 && address <= 0xdfff) {}
+
+				break;
+			}
+			#pragma endregion
+
 			//AxROM
 			#pragma region mapper7
 			case 7: {	
@@ -120,12 +203,14 @@ namespace MAPPER {
 	void mmc1SetPRGBanks() {
 
 		if (mmc1PRGmode <= 1) {
-			for (u64 i = 0; i < 0x8000; i++) MEM::PRGROM[i] = MEM::PRGBANKS[i + (0x4000 * (mmc1Shift & 0b1110)) % MEM::prgsize];
+			for (int i = 0; i < 0x8000; i++) {
+				MEM::PRGROM[i] = MEM::PRGBANKS[i + (0x4000 * (mmc1Shift & 0b1110)) % MEM::prgsize];
+			}
 			//memcpy(MEM::PRGROM, MEM::PRGBANKS + ((0x4000 * (mmc1Shift & 0b1110)) % MEM::prgsize), 0x8000);
 			//memcpy(MEM::PRGROM + 0x4000,	MEM::PRGBANKS + 0x4000	+ ((0x4000 * (mmc1Shift & 0b1110)) % MEM::prgsize),			0x4000);
 		}
 		else if (mmc1PRGmode == 2) {
-			for (u64 i = 0; i < 0x4000; i++) {
+			for (int i = 0; i < 0x4000; i++) {
 				MEM::PRGROM[i] = MEM::PRGBANKS[i];
 				MEM::PRGROM[i + 0x4000] = MEM::PRGBANKS[i + (0x4000 * (mmc1Shift & 0b1111)) % MEM::prgsize];
 			}
@@ -133,7 +218,7 @@ namespace MAPPER {
 			//memcpy(MEM::PRGROM + 0x4000, MEM::PRGBANKS + ((0x4000 * (mmc1Shift & 0b1111)) % MEM::prgsize), 0x4000);
 		}
 		else if (mmc1PRGmode == 3) {
-			for (u64 i = 0; i < 0x4000; i++) {
+			for (int i = 0; i < 0x4000; i++) {
 				MEM::PRGROM[i] = MEM::PRGBANKS[i + ((0x4000 * (mmc1Shift & 0b1111)) % MEM::prgsize)];
 				MEM::PRGROM[i + 0x4000] = MEM::PRGBANKS[i + MEM::prgsize - 0x4000];
 			}

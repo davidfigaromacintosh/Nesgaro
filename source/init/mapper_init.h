@@ -14,5 +14,13 @@ namespace MAPPER {
 	u8 mmc1PRGmode;
 	u8 mmc1Shift;
 	void mmc1SetPRGBanks();
+
+	// MMC3
+	u8 mmc3BankMode;
+	u8 mmc3PRGmode;
+	u8 mmc3CHRinversion;
+	u8 mmc3IRQenable;
+	u8 mmc3IRQcounter;
+
 	
 }

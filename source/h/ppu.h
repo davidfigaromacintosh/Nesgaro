@@ -242,6 +242,7 @@ namespace PPU {
 			if (scanline == 241 && dot == 1) {
 
 				vblank = 1;
+
 				if (NMIenabled == 1) {
 					CPU::NMIoccured = 1;
 				}

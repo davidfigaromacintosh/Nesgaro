@@ -196,31 +196,34 @@ int _NESGARO(int argc, char **argv) {
 	PPU::connectScreen(screen);
 	CPU::init();
 	APU::init();
-	APU::setVolume(0.1);
+	APU::setVolume(0.75);
 	PAD::init();
 	PAD::focus(window);
 
 	u64 masterclock = 0;
+	bool vsync = false;
 	//Klatka video
 	while (1) {
 
 		if (tvregion == NTSC || tvregion == DENDY) {
 
-			if (masterclock % 3 == 0)		CPU::step();	//Cykl CPU dla standardu NTSC
 			if (masterclock % 1 == 0)		PPU::step();	//Cykl PPU dla standardu NTSC
+			if (masterclock % 3 == 0)		CPU::step();	//Cykl CPU dla standardu NTSC
 		}
 
 		if (tvregion == PAL) {
 
-			if (masterclock % 16 == 0)		CPU::step();	//Cykl CPU dla standardu PAL
 			if (masterclock % 5 == 0)		PPU::step();	//Cykl PPU dla standardu PAL
+			if (masterclock % 16 == 0)		CPU::step();	//Cykl CPU dla standardu PAL
 
 		}
 
 		masterclock += 1;
 
 		//SFML Poll
-		if (PPU::scanline == 241 && PPU::dot == 1) {
+		if (PPU::vblank && !vsync) {
+
+			vsync = true;
 
 			APU::run_frame(CPU::APUelapsed);
 			CPU::APUelapsed = 0;
@@ -241,6 +244,10 @@ int _NESGARO(int argc, char **argv) {
 			window.draw(screen);
 			window.display();
 
+		}
+
+		if (!PPU::vblank && vsync) {
+			vsync = false;
 		}
 	}
 
