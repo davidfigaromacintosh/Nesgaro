@@ -61,9 +61,11 @@ namespace PPU {
 			//Zawsze na docie 1 pre-linii flagi VBlank, SPR0 oraz SPROV s¹ czyszczone
 			if (dot == 1) {
 				vblank = 0;
-				//CPU::NMIoccured = 0;
 				spr0 = 0;
 				sproverflow = 0;
+
+				VBLsuppresion = 0;
+				NMIsuppresion = 0;
 			}
 
 
@@ -249,18 +251,14 @@ namespace PPU {
 						vblank = 1;
 					}
 				}
-				if (dot >= 1 && dot <= 250) {
-					if (NMIenabled == 1 && NMIsuppresion == 0) {
-						CPU::NMIoccured = 1;
-						NMIsuppresion = 1;
-					}
-				}
-				if (dot == 256) {
-					VBLsuppresion = 0;
-					NMIsuppresion = 0;
-				}
+				
 			}
-
+			//if (dot >= 1 && dot <= 250) {
+				if (NMIenabled == 1 && vblank == 1 && NMIsuppresion == 0) {
+					CPU::NMIoccured = 1;
+					NMIsuppresion = 1;
+				}
+			//}
 			//dot 257: scroll update
 			if (scanline == 240 && dot == 257 && renderingEnabled()) {
 				V = (V & 0b111101111100000) | (T & 0b000010000011111);
