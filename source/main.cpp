@@ -66,7 +66,7 @@ int _NESGARO(int argc, char **argv) {
 	sf::Event wEvent;
 	sf::Image windowIcon;
 
-	sf::RenderWindow window{ sf::VideoMode{(unsigned int)windowScale * 256, (unsigned int)windowScale * 224}, "Nesgaro v0.22 alpha", sf::Style::Close | (sf::Uint32)(sf::Style::Fullscreen * fullScreen) }; //= ⬤ ᆺ ⬤ =
+	sf::RenderWindow window{ sf::VideoMode{(unsigned int)windowScale * 256, (unsigned int)windowScale * 224}, "Nesgaro v0.32 alpha", sf::Style::Close | (sf::Uint32)(sf::Style::Fullscreen * fullScreen) }; //= ⬤ ᆺ ⬤ =
 	
 	#ifdef DEBUG_MODE
 	system("title Nesgaro mini debugger");
@@ -100,6 +100,7 @@ int _NESGARO(int argc, char **argv) {
 
 	if (argc > 1) { MEM::loadROM(argv[1]); } else { MEM::loadROM(GUI::getCurPath("\\resources\\hello.nes")); }
 	
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\PCM40kHz_URSoFcked.nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\mario 2.nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\BOOBYKDS.NES");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\nespeccy.nes");
@@ -200,7 +201,7 @@ int _NESGARO(int argc, char **argv) {
 	PPU::connectScreen(screen);
 	CPU::init();
 	APU::init();
-	APU::setVolume(0.5);
+	APU::setVolume(0.125);
 	PAD::init();
 	PAD::focus(window);
 
@@ -211,15 +212,15 @@ int _NESGARO(int argc, char **argv) {
 
 		if (tvregion == NTSC || tvregion == DENDY) {
 
-			if (masterclock % 1 == 0)		PPU::step();	//Cykl PPU dla standardu NTSC
 			if (masterclock % 3 == 0)		CPU::step();	//Cykl CPU dla standardu NTSC
+			if (masterclock % 1 == 0)		PPU::step();	//Cykl PPU dla standardu NTSC
 
 		}
 
 		if (tvregion == PAL) {
 
-			if (masterclock % 5 == 0)		PPU::step();	//Cykl PPU dla standardu PAL
 			if (masterclock % 16 == 0)		CPU::step();	//Cykl CPU dla standardu PAL
+			if (masterclock % 5 == 0)		PPU::step();	//Cykl PPU dla standardu PAL
 
 		}
 

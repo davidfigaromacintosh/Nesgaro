@@ -258,6 +258,10 @@ namespace PPU {
 					CPU::NMIoccured = 1;
 					NMIsuppresion = 1;
 				}
+
+				if (NMIenabled == 0) {
+					NMIsuppresion = 0;
+				}
 			//}
 			//dot 257: scroll update
 			if (scanline == 240 && dot == 257 && renderingEnabled()) {
@@ -451,8 +455,7 @@ namespace PPU {
 						VBLsuppresion = 1;
 						NMIsuppresion = 1;
 					}
-					if (dot == 2 || dot == 3) {
-						vblank = 0;
+					if (dot >= 2 && dot <= 3) {
 						NMIsuppresion = 1;
 						CPU::NMIoccured = 0;
 					}

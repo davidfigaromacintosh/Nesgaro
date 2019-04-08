@@ -34,7 +34,7 @@ namespace SCREEN {
 
 				int offx = -2 * 256 + 1920 / 2;
 ;
-				int offy = -2 * 240 + 1080 / 2;
+				int offy = -2 * 224 + 1080 / 2;
 
 				sf::Vector2f origin(scale * i, scale * (j - 8));
 

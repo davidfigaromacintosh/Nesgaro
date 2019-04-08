@@ -94,15 +94,17 @@ namespace MEM {
 
 		nes2 = (header[7] & 0b00001100) >> 2;
 
-		prgsize = header[4] * 16384;
-		chrsize = header[5] * 8192;
+		prgsize = header[4];
+		chrsize = header[5];
 		if (nes2 == 2) {
-			prgsize |= (header[9] & 0b00001111) << 8;
-			chrsize |= (header[9] & 0b11110000) << 4;
+			prgsize += (header[9] & 0b00001111) << 8;
+			chrsize += (header[9] & 0b11110000) << 4;
 		}
+		prgsize *= 16384;
+		chrsize *= 8192;
+
 		printf("%lu KB of PRGROM\n", prgsize / 1024);
 		printf("%lu KB of CHRROM\n", chrsize / 1024);
-
 		//Rezerwacja pamiêci dla PRG i CHR
 		PRGBANKS = (u8*)malloc(prgsize * sizeof(u8));
 		CHRBANKS = (u8*)malloc(chrsize * sizeof(u8));
