@@ -11,7 +11,7 @@ namespace PPU {
 		//Flagi
 		spr0 = 0;
 		sproverflow = 0;
-		vblank = 0;
+		vblank = 1;
 
 		//Wewnêtrzne rejestry PPU
 		T = 0;
@@ -20,6 +20,9 @@ namespace PPU {
 		W = 0;
 		OAMV = 0;
 		readbuffer = 0;
+
+		NMIsuppresion = 0;
+		VBLsuppresion = 0;
 
 		//Bity $2000
 		NMIenabled = 0;
@@ -58,7 +61,7 @@ namespace PPU {
 			//Zawsze na docie 1 pre-linii flagi VBlank, SPR0 oraz SPROV s¹ czyszczone
 			if (dot == 1) {
 				vblank = 0;
-				CPU::NMIoccured = 0;
+				//CPU::NMIoccured = 0;
 				spr0 = 0;
 				sproverflow = 0;
 			}
@@ -145,16 +148,16 @@ namespace PPU {
 			}
 
 			//dot 257: scroll update
-			if ((dot == 257 || dot == 0) && renderingEnabled()) {
+			if ((dot == 257/* || dot == 0*/) && renderingEnabled()) {
 
 				V = (V & 0b111101111100000) | (T & 0b000010000011111);
 			}
-			//* 
+			/* 
 			if ((dot == 320 || dot == 328 || dot == 336) && renderingEnabled()) {
 
 				V = (V & 0b111111111100000) | ((V+1) & 0b000000000011111);
 			}
-			//*/
+			*/
 
 			//SPRITE EVALUATION
 			if (dot == 257) {
@@ -239,12 +242,22 @@ namespace PPU {
 		else if (scanline >= 240) { 
 
 			//Pocz¹tek VBlank oraz NMI
-			if (scanline == 241 && dot == 1) {
+			if (scanline == 241) {
 
-				vblank = 1;
-
-				if (NMIenabled == 1) {
-					CPU::NMIoccured = 1;
+				if (dot == 1) {
+					if (VBLsuppresion == 0) {
+						vblank = 1;
+					}
+				}
+				if (dot >= 1 && dot <= 250) {
+					if (NMIenabled == 1 && NMIsuppresion == 0) {
+						CPU::NMIoccured = 1;
+						NMIsuppresion = 1;
+					}
+				}
+				if (dot == 256) {
+					VBLsuppresion = 0;
+					NMIsuppresion = 0;
 				}
 			}
 
@@ -278,6 +291,31 @@ namespace PPU {
 
 			}
 
+
+		}
+
+		//MMC3
+		if ((scanline >= -1 && scanline <= 239)) {
+		
+			//MMC3
+			if (dot == 297) {
+				//Reload request
+				if (MAPPER::mmc3IRQreloadRequest == 1) {
+					MAPPER::mmc3IRQreloadRequest = 0;
+					MAPPER::mmc3IRQcounter = MAPPER::mmc3IRQlatch;
+					MAPPER::mmc3IRQhalt = 0;
+				}
+			}
+			if (dot == 296) {
+				//Na koñcu scanlinii dekrementujemy licznik
+				if (MAPPER::mmc3IRQcounter > 0) {
+					--MAPPER::mmc3IRQcounter;
+					if (MAPPER::mmc3IRQcounter == 0 && MAPPER::mmc3IRQenable == 1 && MAPPER::mmc3IRQhalt == 0 && !CPU::getI()) {
+						CPU::IRQoccured = 1;
+						MAPPER::mmc3IRQhalt = 1;
+					}
+				}
+			}
 
 		}
 
@@ -408,7 +446,20 @@ namespace PPU {
 				W = 0;
 				u8 tempvblank = vblank;
 				vblank = 0;
-				CPU::NMIoccured = 0;
+
+				if (scanline == 241) {
+					if (dot == 1) {
+						tempvblank = 0;
+						VBLsuppresion = 1;
+						NMIsuppresion = 1;
+					}
+					if (dot == 2 || dot == 3) {
+						vblank = 0;
+						NMIsuppresion = 1;
+						CPU::NMIoccured = 0;
+					}
+					
+				}
 
 				return (tempvblank << 7) | (spr0 << 6) | (sproverflow << 5) | (lsbWrite & 0b00011111);
 			}
@@ -460,6 +511,20 @@ namespace PPU {
 					while (tempv >= 0x3f20 && tempv < 0x4000) {
 						tempv -= 0x20;
 					}
+
+					//*
+					//Horizontal mirroring
+					if (MEM::mirroring == 0) {
+						while ( (tempv >= 0x2400 && tempv < 0x2800) || (tempv >= 0x2c00 && tempv < 0x3000) ) {
+							tempv -= 0x0400;
+						}
+					}
+					else if (MEM::mirroring == 1) {
+						while (tempv >= 0x2800 && tempv < 0x3000) {
+							tempv -= 0x0800;
+						}
+					}
+					//*/
 
 					tempvalue = MEM::VRAM[tempv];
 				}
@@ -574,13 +639,14 @@ namespace PPU {
 					tempv -= 0x1000;
 				}
 
-				///*
+				//*
 				//Horizontal mirroring
 				if (MEM::mirroring == 0) {
 					while ( (tempv >= 0x2400 && tempv < 0x2800) || (tempv >= 0x2c00 && tempv < 0x3000) ) {
 						tempv -= 0x0400;
 					}
-				} else if (MEM::mirroring == 1) {
+				}
+				else if (MEM::mirroring == 1) {
 					while (tempv >= 0x2800 && tempv < 0x3000) {
 						tempv -= 0x0800;
 					}

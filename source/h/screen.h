@@ -6,7 +6,7 @@ namespace SCREEN {
 		pixel.resize(256 * 240 * 6);
 		pixel.setPrimitiveType(sf::Triangles);
 
-		for (int j = 0; j < 240; j++) {
+		for (int j = 8; j < 232; j++) {
 			for (int i = 0; i < 256; i++) {
 
 				int index = 6 * (i + 256 * j);
@@ -27,11 +27,16 @@ namespace SCREEN {
 
 	void Screen::rescale() {
 
-		for (int j = 0; j < 240; j++) {
+		for (int j = 8; j < 232; j++) {
 			for (int i = 0; i < 256; i++) {
 
 				int index = 6 * (i + 256 * j);
-				sf::Vector2f origin(scale * i, scale * j);
+
+				int offx = -2 * 256 + 1920 / 2;
+;
+				int offy = -2 * 240 + 1080 / 2;
+
+				sf::Vector2f origin(scale * i, scale * (j - 8));
 
 				//Jeden piksel jest kwadratem sk³adaj¹cym siê z dwóch trójk¹tów
 

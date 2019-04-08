@@ -8,8 +8,8 @@ namespace MEM {
 	u8 PRGRAM[0x2000];		//Od $6000 do $7FFF
 	u8 PRGROM[0x8000];		//Od $8000 do $FFFF
 
-	u8 PRGBANKS[0x8000 * 256];	//Banki danych PRG
-	u8 CHRBANKS[0x2000 * 256];	//Banki danych CHR
+	u8 *PRGBANKS;	//Banki danych PRG
+	u8 *CHRBANKS;	//Banki danych CHR
 
 	//PPU
 	u8 VRAM[0x4000];		//16 kb VRAM
@@ -21,10 +21,10 @@ namespace MEM {
 	u16 IRQ = 0xfffe;
 
 	// byte 4
-	u64 prgsize = 0;
+	u32 prgsize = 0;
 
 	// byte 5
-	u64 chrsize = 0;
+	u32 chrsize = 0;
 
 	// byte 6
 	u16 mapper = 0;
@@ -40,12 +40,12 @@ namespace MEM {
 	
 		//Sekcja RAM
 		for (int i = 0; i < 0x800; i++) {
-			RAM[i] = 0x00;
+			RAM[i] = rand();
 		}
 
 		//Sekcja PRGRAM
 		for (int i = 0; i < 0x2000; i++) {
-			PRGRAM[i] = rand();
+			PRGRAM[i] = 0x00;
 		}
 
 		//Sekcja PRGROM
@@ -69,7 +69,7 @@ namespace MEM {
 
 		printf("ROM FIlename: %s\n", filename);
 
-		char header[16];
+		u8 header[16];
 		FILE* f;
 		int ferror = fopen_s(&f, filename, "rb");
 
@@ -92,15 +92,25 @@ namespace MEM {
 			return 1;
 		}
 
-		prgsize = (/*((header[9] & 0b00001111) << 8) |*/ header[4]) * 16384; printf("%llu KB of PRGROM\n", prgsize / 1024);
-		chrsize = (/*((header[9] & 0b11110000) << 4) |*/ header[5]) * 8192; printf("%llu KB of CHRROM\n", chrsize / 1024);
+		nes2 = (header[7] & 0b00001100) >> 2;
+
+		prgsize = header[4] * 16384;
+		chrsize = header[5] * 8192;
+		if (nes2 == 2) {
+			prgsize |= (header[9] & 0b00001111) << 8;
+			chrsize |= (header[9] & 0b11110000) << 4;
+		}
+		printf("%lu KB of PRGROM\n", prgsize / 1024);
+		printf("%lu KB of CHRROM\n", chrsize / 1024);
+
+		//Rezerwacja pamiêci dla PRG i CHR
+		PRGBANKS = (u8*)malloc(prgsize * sizeof(u8));
+		CHRBANKS = (u8*)malloc(chrsize * sizeof(u8));
 
 		mirroring = header[6] & 0b00000001 | ((header[6] & 0b00001000) >> 2);
 		battery = !!(header[6] & 0b00000010);
 		trainer = !!(header[6] & 0b00000100);
 		mapper = (header[6] & 0b11110000) >> 4;
-
-		nes2 = (header[7] & 0b00001100) >> 2;
 
 		mapper |= (header[7] & 0b11110000);
 		MAPPER::setMapper(mapper);
@@ -112,11 +122,11 @@ namespace MEM {
 		if (prgsize > 0) {
 
 			// £adujemy wszystkie banki PRG do bufora
-			for (u64 i = 0; i < prgsize; i++)
-			fread_s(&PRGBANKS[i], sizeof(u8), 1, 1, f);
+			//for (u32 i = 0; i < prgsize; i++)
+			fread_s(PRGBANKS, prgsize, sizeof(u8), prgsize, f);
 
 			// Kopiujemy pierwszy i ostatni bank PRG do pamiêci
-			for (u64 i = 0; i < 0x4000; i++) {
+			for (u32 i = 0; i < 0x4000; i++) {
 				PRGROM[i] = PRGBANKS[i];
 				PRGROM[i + 0x4000] = PRGBANKS[i + prgsize - 0x4000];
 				//PRGROM[i + 0x4000] = PRGBANKS[i + 0x4000];
@@ -127,12 +137,12 @@ namespace MEM {
 		if (chrsize > 0) {
 
 			// £adujemy wszystkie banki CHR do bufora
-			for (u64 i = 0; i < chrsize; i++)
-			fread_s(&CHRBANKS[i], sizeof(u8), 1, 1, f);
+			//for (u32 i = 0; i < chrsize; i++)
+			fread_s(CHRBANKS, chrsize, sizeof(u8), chrsize, f);
 
 			// Kopiujemy pierwszy i drugi bank PRG do pamiêci
 			for (int i = 0; i < 0x2000; i++) {
-				VRAM[i] = CHRBANKS[i];
+				if (mapper != 4) VRAM[i] = CHRBANKS[i];
 			}
 		}
 

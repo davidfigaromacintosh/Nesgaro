@@ -20,7 +20,11 @@ namespace MAPPER {
 		mmc3PRGmode = 0;
 		mmc3CHRinversion = 0;
 		mmc3IRQenable = 0;
+		mmc3IRQlatch = 0;
 		mmc3IRQcounter = 0;
+		mmc3IRQreloadRequest = 0;
+		mmc3IRQhalt = 0;
+		mmc3risingEdge = 0;
 	}
 
 	void setMapper(u32 mapperid) {
@@ -59,32 +63,36 @@ namespace MAPPER {
 					//CHR0
 					if (address >= 0xa000 && address <= 0xbfff) {
 
-						if (MEM::chrsize == 0) return;
+						if (MEM::chrsize > 0) {
 
-						if (mmc1CHRmode == 0) {
-							memcpy(MEM::VRAM, MEM::CHRBANKS + ((0x2000 * (mmc1Shift & 0b11110)) % MEM::chrsize), 0x2000);
-						}
-						if (mmc1CHRmode == 1) {
-							memcpy(MEM::VRAM, MEM::CHRBANKS + ((0x1000 * (mmc1Shift & 0b11111)) % MEM::chrsize), 0x1000);
+							if (mmc1CHRmode == 0) {
+								memcpy(MEM::VRAM, MEM::CHRBANKS + ((0x4000 * (mmc1Shift >> 1)) % MEM::chrsize), 0x2000);
+							}
+							if (mmc1CHRmode == 1) {
+								memcpy(MEM::VRAM, MEM::CHRBANKS + ((0x1000 * (mmc1Shift & 0b11111)) % MEM::chrsize), 0x1000);
+							}
+
 						}
 					}
 
 					//CHR1
 					if (address >= 0xc000 && address <= 0xdfff) {
 
-						if (MEM::chrsize == 0) return;
+						if (MEM::chrsize > 0) {
 
-						if (mmc1CHRmode == 1) {
-							memcpy(MEM::VRAM + 0x1000, MEM::CHRBANKS + ((0x1000 * (mmc1Shift & 0b11111)) % MEM::chrsize), 0x1000);
+							if (mmc1CHRmode == 1) {
+								memcpy(MEM::VRAM + 0x1000, MEM::CHRBANKS + ((0x1000 * (mmc1Shift & 0b11111)) % MEM::chrsize), 0x1000);
+							}
+
 						}
 					}
 
 					//PRG
 					if (address >= 0xe000 && address <= 0xffff) {
 
-						if (MEM::prgsize == 0) return;
-
+						if (MEM::prgsize > 0)
 						mmc1SetPRGBanks();
+						
 					}
 
 
@@ -98,6 +106,7 @@ namespace MAPPER {
 			//UxROM
 			#pragma region mapper2
 			case 2: {
+				if (MEM::prgsize > 0)
 				memcpy(MEM::PRGROM, MEM::PRGBANKS + ((0x4000 * (value & (MEM::nes2 == 2 ? 0b11111111 : 0b1111))) % MEM::prgsize), 0x4000);
 				break;
 			}
@@ -106,6 +115,7 @@ namespace MAPPER {
 			//CNROM
 			#pragma region mapper3
 			case 3: {
+				if (MEM::chrsize > 0)
 				memcpy(MEM::VRAM, MEM::CHRBANKS + ((0x2000 * value) % MEM::chrsize), 0x2000);
 				break;
 			}
@@ -125,38 +135,48 @@ namespace MAPPER {
 
 					//Bank data (odd)
 					else {	
-						u8 val = value & 0b00111111;
 						switch (mmc3BankMode) {
 						case 0: {	//Select 2 KB CHR bank at PPU $0000-$07FF (or $1000-$17FF)
-							memcpy(MEM::VRAM + 0x1000 * mmc3CHRinversion, MEM::CHRBANKS + 0x1000 * mmc3CHRinversion + ((0x400 * val) % MEM::chrsize), 0x800);
+							if (MEM::chrsize > 0)
+							memcpy(MEM::VRAM			+ 0x1000 *  mmc3CHRinversion, MEM::CHRBANKS + 0x000 + ((0x800 * (value >> 1)) % MEM::chrsize), 0x800);
 							break;
 						}
 						case 1: {	//Select 2 KB CHR bank at PPU $0800-$0FFF (or $1800-$1FFF)
-							memcpy(MEM::VRAM + 0x800 + 0x1000 * mmc3CHRinversion, MEM::CHRBANKS + 0x1000 * mmc3CHRinversion + (0x800 + (0x400 * val) % MEM::chrsize), 0x800);
+							if (MEM::chrsize > 0)
+							memcpy(MEM::VRAM + 0x800	+ 0x1000 *  mmc3CHRinversion, MEM::CHRBANKS + 0x000 + ((0x800 * (value >> 1)) % MEM::chrsize), 0x800);
 							break;
 						}
 						case 2: {	//Select 1 KB CHR bank at PPU $1000-$13FF (or $0000-$03FF)
-							memcpy(MEM::VRAM + 0x1000 * !mmc3CHRinversion, MEM::CHRBANKS + 0x1000 * !mmc3CHRinversion + ((0x400 * val) % MEM::chrsize), 0x400);
+							if (MEM::chrsize > 0)
+							memcpy(MEM::VRAM			+ 0x1000 * !mmc3CHRinversion, MEM::CHRBANKS + 0x000 + ((0x400 * value) % MEM::chrsize), 0x400);
 							break;
 						}
 						case 3: {	//Select 1 KB CHR bank at PPU $1400-$17FF (or $0400-$07FF)
-							memcpy(MEM::VRAM + 0x400 + 0x1000 * !mmc3CHRinversion, MEM::CHRBANKS + 0x1000 * !mmc3CHRinversion + (0x400 + (0x400 * val) % MEM::chrsize), 0x400);
+							if (MEM::chrsize > 0)
+							memcpy(MEM::VRAM + 0x400	+ 0x1000 * !mmc3CHRinversion, MEM::CHRBANKS + 0x000 + ((0x400 * value) % MEM::chrsize), 0x400);
 							break;
 						}
 						case 4: {	//Select 1 KB CHR bank at PPU $1800-$1BFF (or $0800-$0BFF)
-							memcpy(MEM::VRAM + 0x800 + 0x1000 * !mmc3CHRinversion, MEM::CHRBANKS + 0x1000 * !mmc3CHRinversion + (0x800 + (0x400 * val) % MEM::chrsize), 0x400);
+							if (MEM::chrsize > 0)
+							memcpy(MEM::VRAM + 0x800	+ 0x1000 * !mmc3CHRinversion, MEM::CHRBANKS + 0x000 + ((0x400 * value) % MEM::chrsize), 0x400);
 							break;
 						}
 						case 5: {	//Select 1 KB CHR bank at PPU $1C00-$1FFF (or $0C00-$0FFF)
-							memcpy(MEM::VRAM + 0xC00 + 0x1000 * !mmc3CHRinversion, MEM::CHRBANKS + 0x1000 * !mmc3CHRinversion + (0xc00 + (0x400 * val) % MEM::chrsize), 0x400);
+							if (MEM::chrsize > 0)
+							memcpy(MEM::VRAM + 0xc00	+ 0x1000 * !mmc3CHRinversion, MEM::CHRBANKS + 0x000 + ((0x400 * value) % MEM::chrsize), 0x400);
 							break;
 						}
 						case 6: {	//Select 8 KB PRG ROM bank at $8000-$9FFF (or $C000-$DFFF)
-							memcpy(MEM::PRGROM + 0x4000 * mmc3PRGmode, MEM::PRGBANKS + ((0x2000 * val) % MEM::prgsize), 0x2000);
+							if (MEM::prgsize > 0) {
+								memcpy(MEM::PRGROM + 0x4000 *  mmc3PRGmode, MEM::PRGBANKS + ((0x2000 * (value & 0b00111111)) % MEM::prgsize), 0x2000);
+								memcpy(MEM::PRGROM + 0x4000 * !mmc3PRGmode, MEM::PRGBANKS + MEM::prgsize - 0x4000, 0x2000);
+							}
 							break;
 						}
 						case 7: {	//Select 8 KB PRG ROM bank at $A000-$BFFF
-							memcpy(MEM::PRGROM + 0x2000, MEM::PRGBANKS + ((0x2000 * val) % MEM::prgsize), 0x2000);
+							if (MEM::prgsize > 0) {
+								memcpy(MEM::PRGROM + 0x2000, MEM::PRGBANKS + ((0x2000 * (value & 0b00111111)) % MEM::prgsize), 0x2000);
+							}
 							break;
 						}
 
@@ -175,7 +195,26 @@ namespace MAPPER {
 					}
 				}
 
-				if (address >= 0xc000 && address <= 0xdfff) {}
+				if (address >= 0xc000 && address <= 0xdfff) {
+					if (address % 2 == 0) {	//IRQ latch (even)
+						mmc3IRQlatch = value;
+						if (mmc3IRQcounter == 0) mmc3IRQreloadRequest = 1;
+					}
+
+					else {	//IRQ reload (odd)
+						mmc3IRQreloadRequest = 1;
+					}
+				}
+
+				if (address >= 0xe000 && address <= 0xffff) {
+					if (address % 2 == 0) {	//IRQ disable (even)
+						mmc3IRQenable = 0;
+					}
+
+					else {	//IRQ enable (odd)
+						mmc3IRQenable = 1;
+					}
+				}
 
 				break;
 			}

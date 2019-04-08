@@ -7,6 +7,7 @@
 #pragma comment(linker, "/subsystem:console")
 #endif
 
+//#pragma comment(lib, "ws2_32.lib")
 #define _CRT_SECURE_NO_WARNINGS
 
 #define NTSC		0
@@ -21,6 +22,7 @@ static int tvregion = NTSC;
 #include <SFML/Audio.hpp>
 
 #include <stdio.h>
+//#include <winsock.h>
 #include <string>
 #include <iostream>
 
@@ -64,7 +66,7 @@ int _NESGARO(int argc, char **argv) {
 	sf::Event wEvent;
 	sf::Image windowIcon;
 
-	sf::RenderWindow window{ sf::VideoMode{(unsigned int)windowScale * 256, (unsigned int)windowScale * 240}, "Nesgaro v0.22 alpha", sf::Style::Close | (sf::Uint32)(sf::Style::Fullscreen * fullScreen) }; //= ⬤ ᆺ ⬤ =
+	sf::RenderWindow window{ sf::VideoMode{(unsigned int)windowScale * 256, (unsigned int)windowScale * 224}, "Nesgaro v0.22 alpha", sf::Style::Close | (sf::Uint32)(sf::Style::Fullscreen * fullScreen) }; //= ⬤ ᆺ ⬤ =
 	
 	#ifdef DEBUG_MODE
 	system("title Nesgaro mini debugger");
@@ -83,7 +85,7 @@ int _NESGARO(int argc, char **argv) {
 	window.setVerticalSyncEnabled(true);
 	window.setFramerateLimit(fps[tvregion]);
 
-	if (windowIcon.loadFromFile(GUI::getCurPath("\\icon.png"))) {
+	if (windowIcon.loadFromFile(GUI::getCurPath("\\resources\\icon.png"))) {
 		window.setIcon(16, 16, windowIcon.getPixelsPtr());
 	}
 
@@ -96,8 +98,10 @@ int _NESGARO(int argc, char **argv) {
 
 	//ROMy do testowania
 
-	if (argc > 1) { MEM::loadROM(argv[1]); }
-
+	if (argc > 1) { MEM::loadROM(argv[1]); } else { MEM::loadROM(GUI::getCurPath("\\resources\\hello.nes")); }
+	
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\mario 2.nes");
+	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\BOOBYKDS.NES");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\nespeccy.nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\Higurashi.nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\PCM.demo.wgraphics.nes");
@@ -191,12 +195,12 @@ int _NESGARO(int argc, char **argv) {
 	//MEM::loadROM("C:\\Figorrupter\\temp.rom");
 
 	screen.resize(windowScale);
-	PPU::loadPalette( GUI::getCurPath("\\palette.pal") );
+	PPU::loadPalette( GUI::getCurPath("\\resources\\palette.pal") );
 	PPU::init();
 	PPU::connectScreen(screen);
 	CPU::init();
 	APU::init();
-	APU::setVolume(0.75);
+	APU::setVolume(0.5);
 	PAD::init();
 	PAD::focus(window);
 
@@ -209,6 +213,7 @@ int _NESGARO(int argc, char **argv) {
 
 			if (masterclock % 1 == 0)		PPU::step();	//Cykl PPU dla standardu NTSC
 			if (masterclock % 3 == 0)		CPU::step();	//Cykl CPU dla standardu NTSC
+
 		}
 
 		if (tvregion == PAL) {
@@ -221,7 +226,7 @@ int _NESGARO(int argc, char **argv) {
 		masterclock += 1;
 
 		//SFML Poll
-		if (PPU::vblank && !vsync) {
+		if (PPU::scanline >= 240 && !vsync) {
 
 			vsync = true;
 
@@ -229,12 +234,19 @@ int _NESGARO(int argc, char **argv) {
 			CPU::APUelapsed = 0;
 
 			while (window.pollEvent(wEvent)) {
-
 				switch (wEvent.type) {
 
 					case sf::Event::Closed: {
 						window.close();
 						return 0xF19A20;
+					}
+
+					case sf::Event::KeyPressed: {
+						if (wEvent.key.code == sf::Keyboard::Escape && window.hasFocus()) {
+							window.close();
+							return 0xF19A20;
+						}
+
 					}
 
 				}
@@ -246,7 +258,7 @@ int _NESGARO(int argc, char **argv) {
 
 		}
 
-		if (!PPU::vblank && vsync) {
+		if (PPU::scanline < 240 && vsync) {
 			vsync = false;
 		}
 	}

@@ -80,6 +80,9 @@ namespace PPU {
 	u16 coarseX;
 	u16 coarseY;
 
+	u8 VBLsuppresion;
+	u8 NMIsuppresion;
+
 	SCREEN::Screen *scr;
 
 	u16 scanlines[] = { 261, 311, 311};

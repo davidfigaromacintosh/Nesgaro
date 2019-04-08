@@ -6,6 +6,7 @@ namespace APU {
 	void run_frame(int elapsed);
 	void output_samples(const blip_sample_t* samples, size_t count);
 	cpu_time_t irqBefore();
+	cpu_time_t earliest_irq_before(cpu_time_t end_time);
 
 	void writebus(int elapsed, u16 address, u8 value = 0x00);
 	u8 readbus(int elapsed, u16 address);

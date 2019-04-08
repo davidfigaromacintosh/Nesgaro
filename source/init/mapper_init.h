@@ -20,7 +20,11 @@ namespace MAPPER {
 	u8 mmc3PRGmode;
 	u8 mmc3CHRinversion;
 	u8 mmc3IRQenable;
+	u8 mmc3IRQlatch;
 	u8 mmc3IRQcounter;
+	u8 mmc3IRQreloadRequest;
+	u8 mmc3IRQhalt;
+	u8 mmc3risingEdge;
 
 	
 }

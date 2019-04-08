@@ -22,6 +22,17 @@ namespace APU {
 			return apu.earliest_irq();
 	}
 
+	cpu_time_t earliest_irq_before(cpu_time_t end_time)
+	{
+		if (!CPU::getI())
+		{
+			cpu_time_t irq_time = apu.earliest_irq();
+			if (irq_time < end_time)
+				end_time = irq_time;
+		}
+		return end_time;
+	}
+
 	void writebus(int elapsed, u16 address, u8 value) {
 		apu.write_register(elapsed, address, ((address == 0x4000 || address == 0x4004) && tvregion == DENDY) ? (((value & 0b01000000) << 1) | ((value & 0b10000000) >> 1) | value & 0b00111111) : value);
 	}
@@ -38,6 +49,7 @@ namespace APU {
 	void output_samples(const blip_sample_t* samples, size_t count) {
 		soundQueue->write(samples, count);
 	}
+
 
 	void run_frame(int elapsed) {
 		

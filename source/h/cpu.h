@@ -1218,9 +1218,13 @@ namespace CPU {
 
 	void step() {
 
-		if (!getI() && APU::irqBefore() == APUelapsed) {
+		if (!getI() && (APU::irqBefore() == APUelapsed)) {
 			IRQoccured = 1;
 		}
+
+		//if (!getI() && APU::earliest_irq_before(29781) <= APUelapsed) {
+		//	IRQoccured = 1;
+		//}
 
 		cycles++;
 
