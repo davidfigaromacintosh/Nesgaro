@@ -60,7 +60,7 @@ int _NESGARO(int argc, char **argv) {
 	float windowScale = 3;
 	bool fullScreen = false;
 
-	unsigned int fps[] = {60, 51, 59};
+	unsigned int fps[] = {60, 50, 59};
 
 	SCREEN::Screen screen;
 	sf::Event wEvent;
@@ -201,7 +201,7 @@ int _NESGARO(int argc, char **argv) {
 	PPU::connectScreen(screen);
 	CPU::init();
 	APU::init();
-	APU::setVolume(0.125);
+	APU::setVolume(0.75);
 	PAD::init();
 	PAD::focus(window);
 

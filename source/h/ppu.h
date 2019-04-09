@@ -187,17 +187,19 @@ namespace PPU {
 
 						//Na jednej scanlinii nie mo¿e byæ wiêcej ni¿ 8 sprite'ów
 						if (sprindex == 8) {
-							sproverflow = 1;
-							break;
+							if (SPRenable || BGenable) sproverflow = 1;
 						}
+						else if (sprindex < 8) {
 
-						OAM2[4 * sprindex] = spry;
-						OAM2[4 * sprindex + 1] = MEM::OAM[4 * i + 1];
-						OAM2[4 * sprindex + 2] = MEM::OAM[4 * i + 2];
-						OAM2[4 * sprindex + 3] = MEM::OAM[4 * i + 3];
+							OAM2[4 * sprindex] = spry;
+							OAM2[4 * sprindex + 1] = MEM::OAM[4 * i + 1];
+							OAM2[4 * sprindex + 2] = MEM::OAM[4 * i + 2];
+							OAM2[4 * sprindex + 3] = MEM::OAM[4 * i + 3];
 
-						OAMIndex[sprindex] = i;
+							OAMIndex[sprindex] = i;
 
+							
+						}
 						sprindex++;
 					}
 				}
@@ -278,16 +280,16 @@ namespace PPU {
 			u8 coordY = scanline & 0xff;
 			u8 pxl = fetchPixel(0);
 
-			scr->put(coordX, coordY, pxl);
+			scr->put(coordX, coordY, pxl & (grayscale ? 0x0030 : 0xffff));
 			if (SPRenable) {
 
 				//Spr0 hit
-				if (OAM2Final[coordX]%4 != 0 && isOpaque[coordX][coordY] && OAMIsSpr0[coordX]) spr0 = 1;
+				if ((OAM2Final[coordX]%4) && isOpaque[coordX][coordY] && OAMIsSpr0[coordX] && BGenable && (BGenable8 && SPRenable8 ? true : dot > 8) && dot < 256) spr0 = 1;
 
 				//Rysowanie sprite'ów na ekranie
 				if (OAM2Final[coordX]%4 != 0 && !(!SPRenable8 && coordX < 8)) {
 					if (!OAMPriority[coordX] || (OAMPriority[coordX] && !isOpaque[coordX][coordY])) {
-						scr->put(coordX, coordY, MEM::VRAM[0x3f10 + OAM2Final[coordX]] );
+						scr->put(coordX, coordY, MEM::VRAM[0x3f10 + OAM2Final[coordX]] & (grayscale ? 0x0030 : 0xffff) );
 					}
 				}
 
