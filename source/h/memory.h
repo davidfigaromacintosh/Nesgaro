@@ -20,6 +20,8 @@ namespace MEM {
 	u16 reset = 0xfffc;
 	u16 IRQ = 0xfffe;
 
+	char ROMname[261];
+
 	// byte 4
 	u32 prgsize = 0;
 
@@ -77,7 +79,12 @@ namespace MEM {
 			return 1;
 		}
 
-		puts(filename);
+		int pos = strlen(filename);
+		while (pos--) {
+			if (filename[pos] == '\\') {
+				strcpy(ROMname, &filename[pos]); break;
+			}
+		}
 
 		//Odczytujemy nag³ówek iNES
 		for (int i = 0; i < 0x10; i++) {

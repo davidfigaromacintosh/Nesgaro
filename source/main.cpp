@@ -9,6 +9,7 @@
 
 //#pragma comment(lib, "ws2_32.lib")
 #define _CRT_SECURE_NO_WARNINGS
+#define NESGARO_VERSION "v0.42 alpha"
 
 #define NTSC		0
 #define PAL			1
@@ -22,7 +23,6 @@ static int tvregion = NTSC;
 #include <SFML/Audio.hpp>
 
 #include <stdio.h>
-//#include <winsock.h>
 #include <string>
 #include <iostream>
 
@@ -30,6 +30,7 @@ static int tvregion = NTSC;
 #include "include/Sound_Queue.h"
 
 #include <Windows.h>
+#include <winhttp.h>
 #include "types.h"
 
 #include "init/mainbus_init.h"
@@ -60,27 +61,27 @@ int _NESGARO(int argc, char **argv) {
 	float windowScale = 3;
 	bool fullScreen = false;
 
-	unsigned int fps[] = {60, 50, 59};
+	unsigned int fps[] = { 60, 50, 59 };
 
 	SCREEN::Screen screen;
 	sf::Event wEvent;
 	sf::Image windowIcon;
 
-	sf::RenderWindow window{ sf::VideoMode{(unsigned int)windowScale * 256, (unsigned int)windowScale * 224}, "Nesgaro v0.32 alpha", sf::Style::Close | (sf::Uint32)(sf::Style::Fullscreen * fullScreen) }; //= ⬤ ᆺ ⬤ =
-	
-	#ifdef DEBUG_MODE
+	sf::RenderWindow window{ sf::VideoMode{(unsigned int)windowScale * 256, (unsigned int)windowScale * 224}, GUI::getNesgaroTitle(), sf::Style::Close | (sf::Uint32)(sf::Style::Fullscreen * fullScreen) }; //= ⬤ ᆺ ⬤ =
+
+#ifdef DEBUG_MODE
 	system("title Nesgaro mini debugger");
 	//system("color 5f");
-	
+
 	puts("Preparing, please wait...");
 
 	for (int i = 0; i < 256; i++) {
-		
+
 		printf("Opcode: 0x%02x    Mnemonic: %s    Cycles: %d    Length: %d    Mode: %s\n",
-			i, CPU::getOpcodeMnemonic(i), CPU::opcodeCycle[i], CPU::getOpcodeLength(i), CPU::getOpcodeAddressingModeName(i) );
+			i, CPU::getOpcodeMnemonic(i), CPU::opcodeCycle[i], CPU::getOpcodeLength(i), CPU::getOpcodeAddressingModeName(i));
 
 	}
-	#endif
+#endif
 
 	window.setVerticalSyncEnabled(true);
 	window.setFramerateLimit(fps[tvregion]);
@@ -98,7 +99,16 @@ int _NESGARO(int argc, char **argv) {
 
 	//ROMy do testowania
 
-	if (argc > 1) { MEM::loadROM(argv[1]); } else { MEM::loadROM(GUI::getCurPath("\\resources\\hello.nes")); }
+	if (argc > 1) {
+		MEM::loadROM(argv[1]); window.setTitle(GUI::getNesgaroTitle(GUI::getFileName(argv[1])));
+	}
+	else {
+		MEM::loadROM(GUI::getCurPath("\\resources\\hello.nes"));
+	}
+
+	//if (MessageBoxA(NULL, "A new version of Nesgaro is available. Would you like to download it now?", "An update is available", MB_YESNO) == IDYES) {
+	//	ShellExecuteA(NULL, "open", "https://nes.figaro.ga/download", NULL, NULL, SW_SHOWNORMAL);
+	//}
 	
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\PCM40kHz_URSoFcked.nes");
 	//MEM::loadROM("D:\\PENDRIVE BACKUP (G)\\nes\\mario 2.nes");
@@ -201,7 +211,7 @@ int _NESGARO(int argc, char **argv) {
 	PPU::connectScreen(screen);
 	CPU::init();
 	APU::init();
-	APU::setVolume(0.75);
+	APU::setVolume(0.125);
 	PAD::init();
 	PAD::focus(window);
 

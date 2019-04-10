@@ -190,6 +190,7 @@ namespace CPU {
 		S = 0xfd;
 		P = 0b00000100;
 		NMIoccured = 0;
+		readyForNMI = 0;
 		cycles = 0;
 		APUelapsed = 0;
 
@@ -1234,8 +1235,8 @@ namespace CPU {
 
 		if (cyclesLeft == 0) {
 
-			if (NMIoccured == 1) {
-				NMIoccured = 0;
+			if (readyForNMI == 1) {
+				readyForNMI = 0;
 				interrupt(INT_NMI);
 				#ifdef DEBUG_MODE
 				printf(" NMI occured @ Dot=%d Scanline=%d", PPU::dot, PPU::scanline);
@@ -1459,7 +1460,11 @@ namespace CPU {
 				#endif
 			}
 
-			
+			if (NMIoccured == 1) {
+				readyForNMI = 1;
+				NMIoccured = 0;
+			}
+
 		} else {
 
 		

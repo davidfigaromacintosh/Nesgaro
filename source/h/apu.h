@@ -4,6 +4,7 @@ namespace APU {
 	Nes_Apu apu;
 	Blip_Buffer buff;
 	Sound_Queue* soundQueue;
+	
 
 	const int out_size = 2048;
 	blip_sample_t output[out_size];
@@ -14,8 +15,13 @@ namespace APU {
 
 		buff.sample_rate(samplerate);
 		buff.clock_rate(clock[tvregion]);
+		apu.reset(tvregion == PAL, 0);
 		apu.output(&buff);
 		apu.dmc_reader(MEM::dmc_read);
+	}
+
+	void reset() {
+		apu.reset(false, 0);
 	}
 
 	cpu_time_t irqBefore() {

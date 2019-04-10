@@ -268,6 +268,8 @@ namespace CPU {
 	u8 NMIoccured;	//Czy wystapi³o NMI
 	u8 IRQoccured;	//Czy wystapi³o rz¹danie przerwania
 
+	u8 readyForNMI;
+
 	int APUelapsed;
 
 	u16 cyclesLeft = 0;

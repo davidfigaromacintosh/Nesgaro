@@ -3,8 +3,11 @@
 
 namespace GUI {
 
-	static char buff[MAX_PATH];
+	//static char buff[MAX_PATH];
 
-	char* getCurPath(const char* path);
+	const char* getCurPath(const char* path);
+	const char* getNesgaroTitle();
+	const char* getNesgaroTitle(const char* str);
+	const char* getFileName(const char* str);
 
 }

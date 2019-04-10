@@ -4,7 +4,7 @@ namespace PPU {
 
 	void init() {
 		dot = 0;
-		scanline = -1;
+		scanline = 0;
 		oddframe = 1;
 		frame = 1;
 
@@ -255,16 +255,19 @@ namespace PPU {
 				}
 				
 			}
-			//if (dot >= 1 && dot <= 250) {
-				if (NMIenabled == 1 && vblank == 1 && NMIsuppresion == 0) {
-					CPU::NMIoccured = 1;
-					NMIsuppresion = 1;
-				}
+			if (scanline >= 241) {
 
 				if (NMIenabled == 0) {
 					NMIsuppresion = 0;
 				}
-			//}
+
+				if (((scanline == 241 && dot >= 3) || (scanline > 241)) && NMIenabled == 1 && vblank == 1 && NMIsuppresion == 0) {
+					CPU::NMIoccured = 1;
+					NMIsuppresion = 1;
+				}
+
+			}
+
 			//dot 257: scroll update
 			if (scanline == 240 && dot == 257 && renderingEnabled()) {
 				V = (V & 0b111101111100000) | (T & 0b000010000011111);
@@ -452,11 +455,15 @@ namespace PPU {
 				vblank = 0;
 
 				if (scanline == 241) {
+					//if (dot == 0) {
+					//	VBLsuppresion = 1;
+					//}
 					if (dot == 1) {
 						tempvblank = 0;
 						VBLsuppresion = 1;
 						NMIsuppresion = 1;
 					}
+
 					if (dot >= 2 && dot <= 3) {
 						NMIsuppresion = 1;
 						CPU::NMIoccured = 0;
