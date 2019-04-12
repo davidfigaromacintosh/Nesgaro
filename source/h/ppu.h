@@ -307,19 +307,19 @@ namespace PPU {
 			//MMC3
 			if (dot == 297) {
 				//Reload request
-				if (MAPPER::mmc3IRQreloadRequest == 1) {
-					MAPPER::mmc3IRQreloadRequest = 0;
-					MAPPER::mmc3IRQcounter = MAPPER::mmc3IRQlatch;
-					MAPPER::mmc3IRQhalt = 0;
+				if (MAPPER::MMC3::IRQreloadRequest == 1) {
+					MAPPER::MMC3::IRQreloadRequest = 0;
+					MAPPER::MMC3::IRQcounter = MAPPER::MMC3::IRQlatch;
+					MAPPER::MMC3::IRQhalt = 0;
 				}
 			}
 			if (dot == 296) {
 				//Na koñcu scanlinii dekrementujemy licznik
-				if (MAPPER::mmc3IRQcounter > 0) {
-					--MAPPER::mmc3IRQcounter;
-					if (MAPPER::mmc3IRQcounter == 0 && MAPPER::mmc3IRQenable == 1 && MAPPER::mmc3IRQhalt == 0 && !CPU::getI()) {
+				if (MAPPER::MMC3::IRQcounter > 0) {
+					--MAPPER::MMC3::IRQcounter;
+					if (MAPPER::MMC3::IRQcounter == 0 && MAPPER::MMC3::IRQenable == 1 && MAPPER::MMC3::IRQhalt == 0 && !CPU::getI()) {
 						CPU::IRQoccured = 1;
-						MAPPER::mmc3IRQhalt = 1;
+						MAPPER::MMC3::IRQhalt = 1;
 					}
 				}
 			}
@@ -366,21 +366,21 @@ namespace PPU {
 
 		u16 mirr = 0x1000;
 
-		if (MEM::mirroring == 0) {
+		if (mirroring == MIRR_HORIZONTAL || (mirroring >= MIRR_SINGLE1 && mirroring <= MIRR_SINGLE4)) {
 			mirr = 0x400;
-		} else if (MEM::mirroring == 1) {
+		} else if (mirroring == MIRR_VERTICAL) {
 			mirr = 0x800;
 		}
 
 		u8 tempD = (coarseX + ((fineX + (dot - 1) % 8) >> 3)) % 32;
 
 		//u8 pixel = MEM::VRAM[0x1000 * BGpattern + MEM::VRAM[0x2000 + ((coarseX << 3) + dot % 8) + 0x10 * ((coarseY << 3) + fineY) >> 3]];      + 0x800 * ((nt & 0b01) && (mirr == 0x400))
-		u8 pixel =		!!(MEM::VRAM[0x1000 * BGpattern     + fineY + 16 * MEM::VRAM[0x2000 + (((coarseX + ((fineX + (dot - 1) % 8) >> 3)) % 32) + 32 * coarseY + 0x400 * nt) % mirr + 0x800 * ((nt & 0b10) && (MEM::mirroring == 0))]] & (0b10000000 >> (fineX + (dot - 1)) % 8))
+		u8 pixel =		!!(MEM::VRAM[0x1000 * BGpattern     + fineY + 16 * MEM::VRAM[((mirroring >= MIRR_SINGLE1 && mirroring <= MIRR_SINGLE4) * (mirroring - 2) * 0x400) + 0x2000 + (((coarseX + ((fineX + (dot - 1) % 8) >> 3)) % 32) + 32 * coarseY + 0x400 * nt) % mirr + 0x400/**/ * ((nt & 0b10) && (mirroring == MIRR_HORIZONTAL) && !(mirroring >= MIRR_SINGLE1 && mirroring <= MIRR_SINGLE4) )]] & (0b10000000 >> (fineX + (dot - 1)) % 8))
 			+
-					2 * !!(MEM::VRAM[0x1000 * BGpattern + 8 + fineY + 16 * MEM::VRAM[0x2000 + (((coarseX + ((fineX + (dot - 1) % 8) >> 3)) % 32) + 32 * coarseY + 0x400 * nt) % mirr + 0x800 * ((nt & 0b10) && (MEM::mirroring == 0))]] & (0b10000000 >> (fineX + (dot - 1)) % 8))
+					2 * !!(MEM::VRAM[0x1000 * BGpattern + 8 + fineY + 16 * MEM::VRAM[((mirroring >= MIRR_SINGLE1 && mirroring <= MIRR_SINGLE4) * (mirroring - 2) * 0x400) + 0x2000 + (((coarseX + ((fineX + (dot - 1) % 8) >> 3)) % 32) + 32 * coarseY + 0x400 * nt) % mirr + 0x400/**/ * ((nt & 0b10) && (mirroring == MIRR_HORIZONTAL) && !(mirroring >= MIRR_SINGLE1 && mirroring <= MIRR_SINGLE4) )]] & (0b10000000 >> (fineX + (dot - 1)) % 8))
 			;
 
-		u8 attribute = ( MEM::VRAM[0x23c0 + (((tempD >> 2) + 8 * (coarseY >> 2) + 0x400 * nt) % mirr + 0x800 * ((nt & 0b10) && (MEM::mirroring == 0)))] & (0b11 << ((tempD & 0b10) + 2 * (coarseY & 0b10))) ) >> ((tempD & 0b10) + 2 * (coarseY & 0b10)); // & (0b00000011 << (((tempD & 0b10)/2) + (coarseY & 0b10)))
+		u8 attribute = ( MEM::VRAM[((mirroring >= MIRR_SINGLE1 && mirroring <= MIRR_SINGLE4) * (mirroring - 2) * 0x400) + 0x23c0 + (((tempD >> 2) + 8 * (coarseY >> 2) + 0x400 * nt) % mirr + 0x400/**/ * ((nt & 0b10) && (mirroring == MIRR_HORIZONTAL) && !(mirroring >= MIRR_SINGLE1 && mirroring <= MIRR_SINGLE4) ))] & (0b11 << ((tempD & 0b10) + 2 * (coarseY & 0b10))) ) >> ((tempD & 0b10) + 2 * (coarseY & 0b10)); // & (0b00000011 << (((tempD & 0b10)/2) + (coarseY & 0b10)))
 
 		if (!BGenable8 && (dot >= 1 && dot <= 8)) pixel = 0;
 
@@ -524,16 +524,28 @@ namespace PPU {
 
 					//*
 					//Horizontal mirroring
-					if (MEM::mirroring == 0) {
+					if (mirroring == MIRR_HORIZONTAL) {
 						while ( (tempv >= 0x2400 && tempv < 0x2800) || (tempv >= 0x2c00 && tempv < 0x3000) ) {
 							tempv -= 0x0400;
 						}
+						while (tempv >= 0x2800 && tempv < 0x3000) {
+							tempv -= 0x0400;
+						}
 					}
-					else if (MEM::mirroring == 1) {
+					//Vertical mirroring
+					else if (mirroring == MIRR_VERTICAL) {
 						while (tempv >= 0x2800 && tempv < 0x3000) {
 							tempv -= 0x0800;
 						}
 					}
+					//Single screen mirroring
+					else if (mirroring >= MIRR_SINGLE1 && mirroring <= MIRR_SINGLE4) {
+						while (tempv >= 0x2400 && tempv < 0x3000) {
+							tempv -= 0x0400;
+						}
+						if (tempv >= 0x2000 && tempv < 0x3000) tempv += (mirroring - MIRR_SINGLE1) * 0x400;
+					}
+
 					//*/
 
 					tempvalue = MEM::VRAM[tempv];
@@ -651,19 +663,30 @@ namespace PPU {
 
 				//*
 				//Horizontal mirroring
-				if (MEM::mirroring == 0) {
+				if (mirroring == MIRR_HORIZONTAL) {
 					while ( (tempv >= 0x2400 && tempv < 0x2800) || (tempv >= 0x2c00 && tempv < 0x3000) ) {
 						tempv -= 0x0400;
 					}
+					while (tempv >= 0x2800 && tempv < 0x3000) {
+						tempv -= 0x0400;
+					}
 				}
-				else if (MEM::mirroring == 1) {
+				//Vertical mirroring
+				else if (mirroring == MIRR_VERTICAL) {
 					while (tempv >= 0x2800 && tempv < 0x3000) {
 						tempv -= 0x0800;
 					}
 				}
+				//Single screen mirroring
+				else if (mirroring >= MIRR_SINGLE1 && mirroring <= MIRR_SINGLE4) {
+					while (tempv >= 0x2400 && tempv < 0x3000) {
+						tempv -= 0x0400;
+					}
+					if (tempv >= 0x2000 && tempv < 0x3000) tempv += (mirroring - MIRR_SINGLE1) * 0x400;
+				}
 				//*/
 
-				if (tempv >= 0x2000 * !!(MEM::chrsize) ) { MEM::VRAM[tempv] = value; }
+				if (tempv >= 0x2000 * !!(MEM::chrsize) ) { MEM::VRAM[tempv & 0x3fff] = value; }
 
 				if (VRAMincrement == 0) {
 					V = (V + 1) % 0x4000;

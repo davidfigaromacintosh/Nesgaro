@@ -36,7 +36,7 @@ namespace SCREEN {
 ;
 				int offy = -2 * 224 + 1080 / 2;
 
-				sf::Vector2f origin(scale * i, scale * (j - 8));
+				sf::Vector2f origin(scale * i + offx, scale * (j - 8) + offy);
 
 				//Jeden piksel jest kwadratem sk³adaj¹cym siê z dwóch trójk¹tów
 

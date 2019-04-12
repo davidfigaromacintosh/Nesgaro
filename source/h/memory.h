@@ -42,7 +42,7 @@ namespace MEM {
 	
 		//Sekcja RAM
 		for (int i = 0; i < 0x800; i++) {
-			RAM[i] = rand();
+			RAM[i] = 0x00;
 		}
 
 		//Sekcja PRGRAM
@@ -117,11 +117,17 @@ namespace MEM {
 		CHRBANKS = (u8*)malloc(chrsize * sizeof(u8));
 
 		mirroring = header[6] & 0b00000001 | ((header[6] & 0b00001000) >> 2);
+		if (mirroring == 0) PPU::mirroring = MIRR_HORIZONTAL;
+		else if (mirroring == 0) PPU::mirroring = MIRR_VERTICAL;
+		else PPU::mirroring = MIRR_4SCREEN;
+
 		battery = !!(header[6] & 0b00000010);
 		trainer = !!(header[6] & 0b00000100);
 		mapper = (header[6] & 0b11110000) >> 4;
 
 		mapper |= (header[7] & 0b11110000);
+
+		if (mapper == 7) PPU::mirroring = MIRR_SINGLE1;
 		MAPPER::setMapper(mapper);
 
 		printf("Mapper %d\n", mapper);

@@ -8,23 +8,32 @@ namespace MAPPER {
 	void writebus(u16 address, u8 value);
 
 	// MMC1
-	u8 mmc1Count;
-	u8 mmc1Control;
-	u8 mmc1CHRmode;
-	u8 mmc1PRGmode;
-	u8 mmc1Shift;
-	void mmc1SetPRGBanks();
+	namespace MMC1 {
+		u8 count;
+		u8 control;
+		u8 CHRmode;
+		u8 PRGmode;
+		u8 shift;
+		void setPRGBanks();
+	}
 
 	// MMC3
-	u8 mmc3BankMode;
-	u8 mmc3PRGmode;
-	u8 mmc3CHRinversion;
-	u8 mmc3IRQenable;
-	u8 mmc3IRQlatch;
-	u8 mmc3IRQcounter;
-	u8 mmc3IRQreloadRequest;
-	u8 mmc3IRQhalt;
-	u8 mmc3risingEdge;
+	namespace MMC3 {
+		u8 bankMode;
+		u8 PRGmode;
+		u8 CHRinversion;
+		u8 IRQenable;
+		u8 IRQlatch;
+		u8 IRQcounter;
+		u8 IRQreloadRequest;
+		u8 IRQhalt;
+		u8 risingEdge;
+	}
+
+	//100-in-1 Contra Function 16
+	namespace CF16 {
+		u8 bankMode;
+	}
 
 	
 }
