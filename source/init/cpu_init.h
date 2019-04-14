@@ -308,6 +308,7 @@ namespace CPU {
 	u16 getOpcodeMnemonicCode(u8 opcode);
 
 	void init();
+	void power();
 	void reset();
 	
 	//Zwraca wartoœæ flagi

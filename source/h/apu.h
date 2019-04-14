@@ -20,8 +20,8 @@ namespace APU {
 		apu.dmc_reader(MEM::dmc_read);
 	}
 
-	void reset() {
-		apu.reset(false, 0);
+	void reset(b tvreg) {
+		apu.reset(tvreg, 0x7f);
 	}
 
 	cpu_time_t irqBefore() {

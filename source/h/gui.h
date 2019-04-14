@@ -1,5 +1,16 @@
 namespace GUI {
 
+	void power() {
+		MEM::power();
+		CPU::power();
+		PPU::power();
+	}
+
+	void reset() {
+		CPU::reset();
+		PPU::reset();
+	}
+
 	const char* getCurPath(const char* path) {
 
 		static char buff[MAX_PATH] = { 0 };

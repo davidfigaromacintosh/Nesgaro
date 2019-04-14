@@ -65,11 +65,60 @@ namespace MEM {
 		}
 	}
 
+	void power() {
+
+		//Sekcja RAM
+		for (int i = 0; i < 0x800; i++) {
+			RAM[i] = rand();
+		}
+
+		//Sekcja PRGRAM
+		for (int i = 0; i < 0x2000; i++) {
+			PRGRAM[i] = rand();
+		}
+
+		//Sekcja VRAM
+		for (int i = (chrsize == 0 ? 0 : 0x2000); i < 0x3f00; i++) {
+			VRAM[i] = rand();
+		}
+
+		//Paleta
+		for (int i = 0x3f00; i < 0x4000; i++) {
+			VRAM[i] = 0x00;
+		}
+
+		//Sekcja OAM
+		for (int i = 0; i < 0x100; i++) {
+			OAM[i] = rand();
+		}
+
+		// Kopiujemy banki PRG do pamiêci
+		switch (mapper) {
+
+			case 15: {
+				for (u32 i = 0; i < 0x8000; i++) {
+					PRGROM[i] = PRGBANKS[i];
+				} break;
+			}
+
+			default: {
+				for (u32 i = 0; i < 0x4000; i++) {
+					PRGROM[i] = PRGBANKS[i];
+					PRGROM[i + 0x4000] = PRGBANKS[i + prgsize - 0x4000];
+				} break;
+			}
+
+		}
+
+	}
+
 	int loadROM(const char* filename) {
 
 		if (strlen(filename) == 0) return 1;
 
+		#ifdef DEBUG_MODE
 		printf("ROM FIlename: %s\n", filename);
+		#endif
 
 		u8 header[16];
 		FILE* f;
@@ -91,13 +140,18 @@ namespace MEM {
 			fread_s(&header[i], sizeof(header), 1, 1, f);
 		}
 
-		if (header[0] == 'N' && header[1] == 'E' && header[2] == 'S' && header[3] == 0x1a) {
-			puts("This file is a NES rom!");
-		}
-		else {
+		if (header[0] != 'N' || header[1] != 'E' || header[2] != 'S' || header[3] != 0x1a) {
+			#ifdef DEBUG_MODE
 			puts("This file is not a NES rom!");
+			#endif
 			return 1;
 		}
+
+		#ifdef DEBUG_MODE
+		else {
+			puts("This file is a NES rom!");
+		}
+		#endif
 
 		nes2 = (header[7] & 0b00001100) >> 2;
 
@@ -110,16 +164,19 @@ namespace MEM {
 		prgsize *= 16384;
 		chrsize *= 8192;
 
+		#ifdef DEBUG_MODE
 		printf("%lu KB of PRGROM\n", prgsize / 1024);
 		printf("%lu KB of CHRROM\n", chrsize / 1024);
+		#endif
+
 		//Rezerwacja pamiêci dla PRG i CHR
 		PRGBANKS = (u8*)malloc(prgsize * sizeof(u8));
 		CHRBANKS = (u8*)malloc(chrsize * sizeof(u8));
 
 		mirroring = header[6] & 0b00000001 | ((header[6] & 0b00001000) >> 2);
-		if (mirroring == 0) PPU::mirroring = MIRR_HORIZONTAL;
-		else if (mirroring == 0) PPU::mirroring = MIRR_VERTICAL;
-		else PPU::mirroring = MIRR_4SCREEN;
+		PPU::mirroring = MIRR_4SCREEN;
+		if (mirroring == 0) { PPU::mirroring = MIRR_HORIZONTAL; }
+		else if (mirroring == 1) { PPU::mirroring = MIRR_VERTICAL; }
 
 		battery = !!(header[6] & 0b00000010);
 		trainer = !!(header[6] & 0b00000100);
@@ -130,8 +187,10 @@ namespace MEM {
 		if (mapper == 7) PPU::mirroring = MIRR_SINGLE1;
 		MAPPER::setMapper(mapper);
 
+		#ifdef DEBUG_MODE
 		printf("Mapper %d\n", mapper);
 		printf("Mirroring %d\n", mirroring);
+		#endif
 
 		//Je¿eli wystêpuj¹ banki PRG, za³aduj je
 		if (prgsize > 0) {
@@ -140,12 +199,6 @@ namespace MEM {
 			//for (u32 i = 0; i < prgsize; i++)
 			fread_s(PRGBANKS, prgsize, sizeof(u8), prgsize, f);
 
-			// Kopiujemy pierwszy i ostatni bank PRG do pamiêci
-			for (u32 i = 0; i < 0x4000; i++) {
-				PRGROM[i] = PRGBANKS[i];
-				PRGROM[i + 0x4000] = PRGBANKS[i + prgsize - 0x4000];
-				//PRGROM[i + 0x4000] = PRGBANKS[i + 0x4000];
-			}
 		}
 
 		//Je¿eli wystêpuj¹ banki CHR, za³aduj je
@@ -163,6 +216,9 @@ namespace MEM {
 
 		// zamykamy
 		fclose(f);
+
+		MAPPER::init();
+		GUI::power();
 		return 0;
 	}
 

@@ -22,7 +22,9 @@ static int tvregion = NTSC;
 #include <SFML/Window.hpp>
 #include <SFML/Audio.hpp>
 
+#ifdef DEBUG_MODE
 #include <stdio.h>
+#endif
 #include <string>
 #include <iostream>
 
@@ -40,6 +42,7 @@ static int tvregion = NTSC;
 #include "init/ppu_init.h"
 #include "init/cpu_init.h"
 #include "init/apu_init.h"
+#include "init/gamegenie_init.h"
 #include "init/gui_init.h"
 
 #include "h/memory.h"
@@ -50,6 +53,7 @@ static int tvregion = NTSC;
 #include "h/ppu.h"
 #include "h/cpu.h"
 #include "h/apu.h"
+#include "h/gamegenie.h"
 #include "h/gui.h"
 
 static bool vsync = false;
@@ -71,7 +75,7 @@ int _NESGARO(int argc, char **argv) {
 
 	sf::RenderWindow window{ sf::VideoMode{(unsigned int)windowScale * 256, (unsigned int)windowScale * 224}, GUI::getNesgaroTitle(), sf::Style::Close | (sf::Uint32)(sf::Style::Fullscreen * fullScreen) }; //= ⬤ ᆺ ⬤ =
 
-#ifdef DEBUG_MODE
+	#ifdef DEBUG_MODE
 	system("title Nesgaro mini debugger");
 	//system("color 5f");
 
@@ -83,8 +87,9 @@ int _NESGARO(int argc, char **argv) {
 			i, CPU::getOpcodeMnemonic(i), CPU::opcodeCycle[i], CPU::getOpcodeLength(i), CPU::getOpcodeAddressingModeName(i));
 
 	}
-#endif
+	#endif
 
+	window.setKeyRepeatEnabled(false);
 	window.setVerticalSyncEnabled(true);
 	window.setFramerateLimit(fps[tvregion]);
 
@@ -97,6 +102,17 @@ int _NESGARO(int argc, char **argv) {
 
 	MEM::init();
 	MAPPER::init();
+	PPU::init();
+	CPU::init();
+	APU::init();
+	GAMEGENIE::init();
+	PAD::init();
+
+	screen.resize(windowScale);
+	PPU::loadPalette(GUI::getCurPath("\\resources\\palette.pal"));
+	PPU::connectScreen(screen);
+	APU::setVolume(0.125);
+	PAD::focus(window);
 
 	//ROMy do testowania
 
@@ -110,16 +126,7 @@ int _NESGARO(int argc, char **argv) {
 	//if (MessageBoxA(NULL, "A new version of Nesgaro is available. Would you like to download it now?", "An update is available", MB_YESNO) == IDYES) {
 	//	ShellExecuteA(NULL, "open", "https://nes.figaro.ga/download", NULL, NULL, SW_SHOWNORMAL);
 	//}
-	
-	screen.resize(windowScale);
-	PPU::loadPalette( GUI::getCurPath("\\resources\\palette.pal") );
-	PPU::init();
-	PPU::connectScreen(screen);
-	CPU::init();
-	APU::init();
-	APU::setVolume(0.125);
-	PAD::init();
-	PAD::focus(window);
+
 
 	u64 masterclock = 0;
 	bool vsync = false;
@@ -159,17 +166,31 @@ int _NESGARO(int argc, char **argv) {
 					}
 
 					case sf::Event::KeyPressed: {
-						if (wEvent.key.code == sf::Keyboard::Escape && window.hasFocus()) {
-							window.close();
-							return 0xF19A20;
-						}
+						if (window.hasFocus()) {
 
+							//Quit
+							if (wEvent.key.code == sf::Keyboard::Escape) {
+								window.close();
+								return 0xF19A20;
+							}
+
+							//Hard reset
+							if ((wEvent.key.code == sf::Keyboard::T) /*&& sf::Keyboard::isKeyPressed(sf::Keyboard::Key::LShift)*/) {
+								GUI::power();
+							}
+
+							//Soft reset
+							else if ((wEvent.key.code == sf::Keyboard::R) /*&& sf::Keyboard::isKeyPressed(sf::Keyboard::Key::LShift)*/) {
+								GUI::reset();
+							}
+
+						}
 					}
 
 				}
 			}
 
-			window.clear(sf::Color(PPU::colors[0x0f]));
+			//window.clear(sf::Color(PPU::colors[0x0f]));
 			window.draw(screen);
 			window.display();
 

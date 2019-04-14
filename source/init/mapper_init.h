@@ -7,7 +7,8 @@ namespace MAPPER {
 
 	void writebus(u16 address, u8 value);
 
-	// MMC1
+
+	//Mapper 1
 	namespace MMC1 {
 		u8 count;
 		u8 control;
@@ -17,7 +18,7 @@ namespace MAPPER {
 		void setPRGBanks();
 	}
 
-	// MMC3
+	//Mapper 4
 	namespace MMC3 {
 		u8 bankMode;
 		u8 PRGmode;
@@ -29,9 +30,9 @@ namespace MAPPER {
 		u8 IRQhalt;
 		u8 risingEdge;
 	}
-
-	//100-in-1 Contra Function 16
-	namespace CF16 {
+	
+	//Mapper 178
+	namespace EDU178 {
 		u8 bankMode;
 	}
 

@@ -185,19 +185,39 @@ namespace CPU {
 		X = 0;
 		Y = 0;
 
+		MEM::init();
 		PC = MAINBUS::readAddr(MEM::reset);
 		oddCycle = 1;
 		S = 0xfd;
-		P = 0b00000100;
+		P = 0b00110100;
 		NMIoccured = 0;
 		readyForNMI = 0;
 		cycles = 0;
 		APUelapsed = 0;
+		APU::reset(tvregion == PAL);
 
 	}
 
+	void power() {
+		P = 0x34;
+		S = 0xfd;
+		A = 0;
+		X = 0;
+		Y = 0;
+		NMIoccured = 0;
+		readyForNMI = 0;
+		cycles = 0;
+		oddCycle = 1;
+		APUelapsed = 0;
+		APU::reset(tvregion == PAL);
+		PC = MAINBUS::readAddr(MEM::reset);
+	}
+	
 	void reset() {
-		//TODO gdy napiszê menedzera pamiêci
+		P |= 0x04;
+		S -= 3;
+		APU::reset(tvregion == PAL);
+		PC = MAINBUS::readAddr(MEM::reset);
 	}
 
 	/* Wartoœci zwracane przez funkcje:

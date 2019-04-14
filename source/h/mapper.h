@@ -6,16 +6,20 @@
 namespace MAPPER {
 
 	void init() {
-		mapper = 0;
+
+		mapper = MEM::mapper;
 
 		//MMC1
+		#pragma region mapper1
 		MMC1::count = 0;
 		MMC1::control = 0x0c;
 		MMC1::CHRmode = 0;
 		MMC1::PRGmode = 3;
 		MMC1::shift = 0;
+		#pragma endregion
 
 		//MMC3
+		#pragma region mapper4
 		MMC3::bankMode = 0;
 		MMC3::PRGmode = 0;
 		MMC3::CHRinversion = 0;
@@ -25,6 +29,12 @@ namespace MAPPER {
 		MMC3::IRQreloadRequest = 0;
 		MMC3::IRQhalt = 0;
 		MMC3::risingEdge = 0;
+		#pragma endregion
+
+		//Educational Computer
+		#pragma region mapper178
+		EDU178::bankMode = 0;
+		#pragma endregion
 	}
 
 	void setMapper(u32 mapperid) {
@@ -239,7 +249,71 @@ namespace MAPPER {
 			#pragma region mapper7
 			case 7: {	
 				memcpy(MEM::PRGROM, MEM::PRGBANKS + ((0x8000 * (value & 0b111)) % MEM::prgsize), 0x8000);
-				PPU::mirroring = MIRR_SINGLE1 + ((value & 0b10000) >> 4);
+				PPU::mirroring = MIRR_SINGLE1 + !!(value & 0b10000);
+				break;
+			}
+			#pragma endregion
+
+			//100-in-1 Contra Function 16
+			#pragma region mapper15
+			case 15: {
+				if (address & 0x8000) {
+
+					PPU::mirroring = !(value & 0x40);
+
+					u8 bank = value & 0x3f;
+					u8 subbank = !!(value & 0x80);
+					switch (address & 3) {
+					
+						//32K
+						case 0: {
+							if (MEM::prgsize > 0) {
+								memcpy(MEM::PRGROM			, MEM::PRGBANKS + ((0x4000 * bank) % MEM::prgsize), 0x4000);	//Bank B
+								memcpy(MEM::PRGROM + 0x4000	, MEM::PRGBANKS + ((0x4000 * (bank | 1)) % MEM::prgsize), 0x4000);	//Bank B OR 1
+							}
+							break;
+						}
+
+						//128K
+						case 1: {
+							if (MEM::prgsize > 0) {
+								memcpy(MEM::PRGROM			, MEM::PRGBANKS + ((0x4000 * bank) % MEM::prgsize), 0x4000);	//Bank B
+								memcpy(MEM::PRGROM + 0x4000	, MEM::PRGBANKS + ((0x4000 * (bank | 7)) % MEM::prgsize), 0x4000);	//Bank B OR 7
+							}
+							break;
+						}
+
+						//8K
+						case 2: {
+							if (MEM::prgsize > 0) {
+								memcpy(MEM::PRGROM			, MEM::PRGBANKS + (((0x4000 * bank) + (0x2000 * subbank)) % MEM::prgsize), 0x2000);	//Subbank b of bank B
+								memcpy(MEM::PRGROM + 0x2000	, MEM::PRGBANKS + (((0x4000 * bank) + (0x2000 * subbank)) % MEM::prgsize), 0x2000);	//Mirror of $8000-$9FFF
+								memcpy(MEM::PRGROM + 0x4000	, MEM::PRGBANKS + (((0x4000 * bank) + (0x2000 * subbank)) % MEM::prgsize), 0x2000);	//Mirror of $8000-$9FFF
+								memcpy(MEM::PRGROM + 0x6000	, MEM::PRGBANKS + (((0x4000 * bank) + (0x2000 * subbank)) % MEM::prgsize), 0x2000);	//Mirror of $8000-$9FFF
+							}
+							break;
+						}
+
+						//16K
+						case 3: {
+							if (MEM::prgsize > 0) {
+								memcpy(MEM::PRGROM			, MEM::PRGBANKS + ((0x4000 * bank) % MEM::prgsize), 0x4000);	//Bank B
+								memcpy(MEM::PRGROM + 0x4000	, MEM::PRGBANKS + ((0x4000 * bank) % MEM::prgsize), 0x4000);	//Mirror of $8000-$BFFF
+							}
+							break;
+						}
+					
+					}
+
+				}
+				break;
+			}
+			#pragma endregion
+
+			//BNROM NINA-001
+			#pragma region mapper34
+			case 34: {
+				if (MEM::prgsize > 0) memcpy(MEM::PRGROM, MEM::PRGBANKS + ((0x8000 * value) % MEM::prgsize), 0x8000);
 				break;
 			}
 			#pragma endregion

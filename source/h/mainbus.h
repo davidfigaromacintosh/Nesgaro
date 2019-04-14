@@ -82,32 +82,42 @@ namespace MAINBUS {
 		//  === DANE ===
 		//Je¿eli robimy odczyt z pamiêci RAM
 		if (addr >= 0x0000 && addr < 0x0800) {
-			return MEM::RAM[addr];
+			readval = MEM::RAM[addr];
 
 		}
 		//Odczyt z rejestrów PPU
 		if (addr >= 0x2000 && addr < 0x2008) {
-			return PPU::readbus(addr);
+			readval = PPU::readbus(addr);
 		}
 		//Status APU
 		if (addr == 0x4015) {
-			return APU::readbus(CPU::APUelapsed, addr);
+			readval = APU::readbus(CPU::APUelapsed, addr);
 		}
 		//Je¿eli robimy odczyt z PRGRAM
 		if (addr >= 0x6000 && addr < 0x8000) {
-			return MEM::PRGRAM[addr - 0x6000];
+			readval = MEM::PRGRAM[addr - 0x6000];
 		}
 
 		//Je¿eli robimy odczyt z PRGROM
 		if (addr >= 0x8000 && addr <= 0xffff) {
-			return MEM::PRGROM[addr - 0x8000];
+			readval = MEM::PRGROM[addr - 0x8000];
 		}
 		//Kontroler
 		if (addr == 0x4016) {
-			return PAD::read();
+			readval = PAD::read();
 		}
 
-		return 0;
+		//Game Genie
+		for (int i = 0; i < GAMEGENIE::codeno; i++) {
+
+				if ((address == GAMEGENIE::address[i]) && (GAMEGENIE::is8long[i] ? readval == GAMEGENIE::compare[i] : true)) {
+					readval = GAMEGENIE::replace[i];
+				}
+
+		}
+
+		//Zwróæ odczytan¹ wartoœæ
+		return readval;
 	}
 
 	//Wepchnij do stosu

@@ -5,6 +5,8 @@
 
 namespace MAINBUS {
 
+	u8 readval;
+
 	u16 readAddr(u16 addr);
 
 	// ### ZAPIS ###
