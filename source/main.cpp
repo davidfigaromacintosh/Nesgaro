@@ -11,16 +11,16 @@
 #define _CRT_SECURE_NO_WARNINGS
 #define NESGARO_VERSION "v0.42 alpha"
 
-#define NTSC		0
-#define PAL			1
-#define DENDY		2
-
-static int tvregion = NTSC;
-
 //LIBy: https://www.sfml-dev.org/tutorials/2.5/start-vc.php
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
 #include <SFML/Audio.hpp>
+
+#define NTSC		0
+#define PAL			1
+#define DENDY		2
+static int tvregion = NTSC;
+static sf::RenderWindow* window;
 
 #ifdef DEBUG_MODE
 #include <stdio.h>
@@ -58,14 +58,13 @@ static int tvregion = NTSC;
 
 static bool vsync = false;
 
-
-
 int _NESGARO(int argc, char **argv) {
 
 	srand(static_cast<unsigned int>(time(NULL)));
 
 	float windowScale = 3;
 	bool fullScreen = false;
+	char winTitle[1024] = { 0 };
 
 	unsigned int fps[] = { 60, 50, 50 };
 
@@ -73,7 +72,8 @@ int _NESGARO(int argc, char **argv) {
 	sf::Event wEvent;
 	sf::Image windowIcon;
 
-	sf::RenderWindow window{ sf::VideoMode{(unsigned int)windowScale * 256, (unsigned int)windowScale * 224}, GUI::getNesgaroTitle(), sf::Style::Close | (sf::Uint32)(sf::Style::Fullscreen * fullScreen) }; //= ⬤ ᆺ ⬤ =
+	strcpy(winTitle, GUI::getNesgaroTitle());
+	window = new sf::RenderWindow{ sf::VideoMode{(unsigned int)windowScale * 256, (unsigned int)windowScale * 224}, "Loading... =^_^=", sf::Style::Close | (sf::Uint32)(sf::Style::Fullscreen * fullScreen) }; //= ⬤ ᆺ ⬤ =
 
 	#ifdef DEBUG_MODE
 	system("title Nesgaro mini debugger");
@@ -89,16 +89,16 @@ int _NESGARO(int argc, char **argv) {
 	}
 	#endif
 
-	window.setKeyRepeatEnabled(false);
-	window.setVerticalSyncEnabled(true);
-	window.setFramerateLimit(fps[tvregion]);
+	window->setKeyRepeatEnabled(false);
+	window->setVerticalSyncEnabled(false);
+	window->setFramerateLimit(fps[tvregion]);
 
 	if (windowIcon.loadFromFile(GUI::getCurPath("\\resources\\icon.png"))) {
-		window.setIcon(16, 16, windowIcon.getPixelsPtr());
+		window->setIcon(16, 16, windowIcon.getPixelsPtr());
 	}
 
-	window.clear(sf::Color(0));
-	window.display();
+	window->clear(sf::Color(0));
+	window->display();
 
 	MEM::init();
 	MAPPER::init();
@@ -111,18 +111,20 @@ int _NESGARO(int argc, char **argv) {
 	screen.resize(windowScale);
 	PPU::loadPalette(GUI::getCurPath("\\resources\\palette.pal"));
 	PPU::connectScreen(screen);
-	APU::setVolume(0.125);
-	PAD::focus(window);
+	APU::setVolume(0.75);
 
 	//ROMy do testowania
 
 	if (argc > 1) {
-		MEM::loadROM(argv[1]); window.setTitle(GUI::getNesgaroTitle(GUI::getFileName(argv[1])));
+		MEM::loadROM(argv[1]);
+		GAMEGENIE::purgeCheatCodes(); GAMEGENIE::readFromFile(argv[1]);
+		strcpy(winTitle, GUI::getNesgaroTitle(GUI::getFileName(argv[1], false)));
 	}
 	else {
 		MEM::loadROM(GUI::getCurPath("\\resources\\hello.nes"));
 	}
 
+	//GAMEGENIE::readFromFile("D:\\PENDRIVE BACKUP (G)\\nes\\Super Mario Bros. (World).nes");
 	//if (MessageBoxA(NULL, "A new version of Nesgaro is available. Would you like to download it now?", "An update is available", MB_YESNO) == IDYES) {
 	//	ShellExecuteA(NULL, "open", "https://nes.figaro.ga/download", NULL, NULL, SW_SHOWNORMAL);
 	//}
@@ -155,22 +157,23 @@ int _NESGARO(int argc, char **argv) {
 			vsync = true;
 
 			APU::run_frame(CPU::APUelapsed);
-			CPU::APUelapsed = 0;
+			//if (APU::earliest_irq_before(CPU::APUelapsed) >= CPU::APUelapsed)
+				CPU::APUelapsed = 0;
 
-			while (window.pollEvent(wEvent)) {
+			while (window->pollEvent(wEvent)) {
 				switch (wEvent.type) {
 
 					case sf::Event::Closed: {
-						window.close();
+						window->close();
 						return 0xF19A20;
 					}
 
 					case sf::Event::KeyPressed: {
-						if (window.hasFocus()) {
+						if (window->hasFocus()) {
 
 							//Quit
 							if (wEvent.key.code == sf::Keyboard::Escape) {
-								window.close();
+								window->close();
 								return 0xF19A20;
 							}
 
@@ -184,6 +187,17 @@ int _NESGARO(int argc, char **argv) {
 								GUI::reset();
 							}
 
+							//Fullscreen
+							if ((wEvent.key.code == sf::Keyboard::F4)) {
+								fullScreen = !fullScreen;
+
+								delete window,
+								window = new sf::RenderWindow{ sf::VideoMode{(unsigned int)windowScale * 256, (unsigned int)windowScale * 224}, "Loading... =^_^=", sf::Style::Close | (sf::Uint32)(sf::Style::Fullscreen * fullScreen) }; //= ⬤ ᆺ ⬤ =
+								screen.resize(fullScreen ? 4 : windowScale);
+								window->setIcon(16, 16, windowIcon.getPixelsPtr());
+								
+							}
+
 						}
 					}
 
@@ -191,8 +205,9 @@ int _NESGARO(int argc, char **argv) {
 			}
 
 			//window.clear(sf::Color(PPU::colors[0x0f]));
-			window.draw(screen);
-			window.display();
+			window->setTitle(winTitle);
+			window->draw(screen);
+			window->display();
 
 		}
 

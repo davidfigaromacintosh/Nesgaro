@@ -133,7 +133,7 @@ void Nes_Apu::irq_changed()
 
 void Nes_Apu::run_until( cpu_time_t end_time )
 {
-	require( end_time >= last_time );
+	//require( end_time >= last_time );
 	
 	if ( end_time == last_time )
 		return;

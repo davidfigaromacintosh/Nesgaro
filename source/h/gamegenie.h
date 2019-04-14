@@ -89,5 +89,41 @@ namespace GAMEGENIE {
 		return 0;
 	}
 
-	void readFromFile(const char* filename) {}
+	void purgeCheatCodes() {
+		codeno = 0;
+	}
+
+	void readFromFile(const char* romfname) {
+
+		char temp[1024] = { 0 };
+		char codes[255][9] = { 0 };
+
+		strcpy(temp, romfname);
+		int ptr = strlen(temp);
+		while (temp[ptr] != '.') {
+			if (temp[--ptr] == '.') {
+				temp[ptr] = 0;
+				strcat(temp, ".gg");
+			}
+		}
+
+		FILE* f;
+		int letterno = 0, codeno = 0, chr = 0, ferror = fopen_s(&f, temp, "rb");
+		if (ferror != 0) return;
+
+		while (true) {
+
+			chr = getc(f);
+
+			if (chr == '\n' || chr == EOF) {
+				addCheatCode(&codes[codeno++][0]);
+				if (chr == EOF) break;
+				letterno = 0;
+			}
+			else if (((chr >= 'A' && chr <= 'Z') || (chr >= 'a' && chr <= 'z')) && letterno < 8) codes[codeno][letterno++] = chr;
+
+		}
+
+		fclose(f);
+	}
 }

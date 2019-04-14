@@ -8,7 +8,7 @@ namespace GUI {
 	const char* getCurPath(const char* path);
 	const char* getNesgaroTitle();
 	const char* getNesgaroTitle(const char* str);
-	const char* getFileName(const char* str);
+	const char* getFileName(const char* str, bool allowext);
 
 	void power();
 	void reset();

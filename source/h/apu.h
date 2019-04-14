@@ -18,6 +18,7 @@ namespace APU {
 		apu.reset(tvregion == PAL, 0);
 		apu.output(&buff);
 		apu.dmc_reader(MEM::dmc_read);
+		//apu.irq_notifier(irq_changed);
 	}
 
 	void reset(b tvreg) {
@@ -37,6 +38,10 @@ namespace APU {
 				end_time = irq_time;
 		}
 		return end_time;
+	}
+
+	void irq_changed(void*) {
+		CPU::APUelapsed -= earliest_irq_before(CPU::APUelapsed);
 	}
 
 	void writebus(int elapsed, u16 address, u8 value) {

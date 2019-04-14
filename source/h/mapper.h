@@ -61,7 +61,7 @@ namespace MAPPER {
 					MMC1::PRGmode = 3;
 					MMC1::count = 0;
 					MMC1::shift = 0;
-					MMC1::setPRGBanks();
+					//MMC1::setPRGBanks();
 					break;
 				}
 

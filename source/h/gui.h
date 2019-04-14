@@ -34,19 +34,19 @@ namespace GUI {
 
 		static char buff[MAX_PATH] = { 0 };
 		strcpy(buff, str);
-		strcat(buff, " - Nesgaro ");
+		strcat(buff, " ~ Nesgaro ");
 		strcat(buff, NESGARO_VERSION);
 		return buff;
 	}
 
-	const char* getFileName(const char* str) {
+	const char* getFileName(const char* str, bool allowext) {
 	
 		static char buff[MAX_PATH] = { 0 };
 		char tempstr[MAX_PATH] = { 0 };
 		strcpy(tempstr, str);
 
 		int ptr = strlen(tempstr);
-		while (tempstr[ptr] != '\\' && ptr > 0) { --ptr; }
+		while (tempstr[ptr] != '\\' && ptr > 0) { if (!allowext && tempstr[ptr] == '.') { tempstr[ptr] = 0; } --ptr; }
 		strcpy(buff, &tempstr[ptr + 1]);
 		return buff;
 	}

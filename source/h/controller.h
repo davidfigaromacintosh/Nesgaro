@@ -17,13 +17,9 @@ namespace PAD {
 				if (i == BN_UP		&& sf::Keyboard::isKeyPressed(keys[BN_DOWN]))	butt = false;
 				if (i == BN_DOWN	&& sf::Keyboard::isKeyPressed(keys[BN_UP]))		butt = false;
 				status = status << 1;
-				status = status | (butt && win->hasFocus());
+				status = status | (butt && window->hasFocus());
 			}
 		}
-	}
-
-	void focus(sf::Window &wind) {
-		win = &wind;
 	}
 
 	u8 read() {

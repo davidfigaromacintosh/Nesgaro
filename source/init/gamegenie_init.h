@@ -17,6 +17,8 @@ namespace GAMEGENIE {
 	//Dodaj kod Game Genie
 	int addCheatCode(const char*);
 
+	void purgeCheatCodes();
+
 	//Za³aduj listê kodów z pliku tekstowego
 	void readFromFile(const char*);
 

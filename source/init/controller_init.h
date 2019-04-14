@@ -37,7 +37,6 @@ namespace PAD {
 	
 	void init();
 
-	void focus(sf::Window &wind);
 	void strobe(u8 value);
 	u8 read();
 }
