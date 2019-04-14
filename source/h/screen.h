@@ -3,6 +3,7 @@
 namespace SCREEN {
 
 	Screen::Screen() {
+		scale = 2.0;
 		pixel.resize(256 * 240 * 6);
 		pixel.setPrimitiveType(sf::Triangles);
 
@@ -36,7 +37,7 @@ namespace SCREEN {
 ;
 				int offy = -2 * 224 + 1080 / 2;
 
-				sf::Vector2f origin(scale * i + offx, scale * (j - 8) + offy);
+				sf::Vector2f origin(scale * i, scale * (j - 8));
 
 				//Jeden piksel jest kwadratem sk³adaj¹cym siê z dwóch trójk¹tów
 

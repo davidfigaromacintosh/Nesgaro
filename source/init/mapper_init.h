@@ -30,7 +30,14 @@ namespace MAPPER {
 		u8 IRQhalt;
 		u8 risingEdge;
 	}
-	
+
+	//Mapper 232
+	namespace CAMQUATTRO {
+		u8 bankBlock;
+		u8 bankPage;
+		void setPRGbanks();
+	}
+
 	//Mapper 178
 	namespace EDU178 {
 		u8 bankMode;

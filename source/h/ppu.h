@@ -403,8 +403,11 @@ namespace PPU {
 		printf(" Dot=%d Line=%d Odd=%d VBlank=%d NMI=%d BG=%d SPR=%d SPR0=%d SPROV=%d T=%04x V=%04x X=%d W=%d B=%02x", dot, scanline, oddframe, vblank, NMIenabled, BGenable, SPRenable, spr0, sproverflow, T, V, X, W, readbuffer);
 		#endif
 
-
-		dot++;
+		//Co drug¹ klatkê video, prescan jest o 1 dot krótszy
+		if (oddframe && scanline == -1 && dot == 339 && renderingEnabled() && (tvregion == NTSC)) {
+			dot = 0;
+			scanline = 0;
+		} else dot++;
 
 		if (dot > 340) {
 			dot = 0;
@@ -417,11 +420,7 @@ namespace PPU {
 			//exit(CPU::cycles);
 		}
 
-		//Co drug¹ klatkê video, prescan jest o 1 dot krótszy
-		if (oddframe && scanline == -1 && dot > 339 && BGenable && (tvregion == NTSC)) {
-			dot = 0;
-			scanline++;
-		}
+		////
 
 	}
 

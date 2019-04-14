@@ -35,6 +35,12 @@ namespace MAPPER {
 		#pragma region mapper178
 		EDU178::bankMode = 0;
 		#pragma endregion
+
+		//Camerica Quattro
+		#pragma region mapper232
+		CAMQUATTRO::bankBlock = 0;
+		CAMQUATTRO::bankPage = 0;
+		#pragma endregion
 	}
 
 	void setMapper(u32 mapperid) {
@@ -46,7 +52,6 @@ namespace MAPPER {
 		switch (mapper) {
 			
 			//MMC1
-			#pragma region mapper1
 			case 1: {	
 				MMC1::shift = ((value & 0b00001) << 4) | (MMC1::shift >> 1);
 				MMC1::count++;
@@ -91,7 +96,7 @@ namespace MAPPER {
 						if (MEM::chrsize > 0) {
 
 							if (MMC1::CHRmode == 0) {
-								memcpy(MEM::VRAM, MEM::CHRBANKS + ((0x4000 * (MMC1::shift >> 1)) % MEM::chrsize), 0x2000);
+								memcpy(MEM::VRAM, MEM::CHRBANKS + ((0x1000 * (MMC1::shift & 0b11110)) % MEM::chrsize), 0x2000);
 							}
 							if (MMC1::CHRmode == 1) {
 								memcpy(MEM::VRAM, MEM::CHRBANKS + ((0x1000 * (MMC1::shift & 0b11111)) % MEM::chrsize), 0x1000);
@@ -126,28 +131,22 @@ namespace MAPPER {
 				}
 				break;
 			}
-			#pragma endregion
 
 			//UxROM
-			#pragma region mapper2
 			case 2: {
 				if (MEM::prgsize > 0)
 				memcpy(MEM::PRGROM, MEM::PRGBANKS + ((0x4000 * (value & (MEM::nes2 == 2 ? 0b11111111 : 0b1111))) % MEM::prgsize), 0x4000);
 				break;
 			}
-			#pragma endregion
-			
+		
 			//CNROM
-			#pragma region mapper3
 			case 3: {
 				if (MEM::chrsize > 0)
 				memcpy(MEM::VRAM, MEM::CHRBANKS + ((0x2000 * value) % MEM::chrsize), 0x2000);
 				break;
 			}
-			#pragma endregion
 
 			//MMC3
-			#pragma region mapper4
 			case 4: {
 				if (address >= 0x8000 && address <= 0x9fff) {
 					
@@ -243,19 +242,15 @@ namespace MAPPER {
 
 				break;
 			}
-			#pragma endregion
 
 			//AxROM
-			#pragma region mapper7
 			case 7: {	
 				memcpy(MEM::PRGROM, MEM::PRGBANKS + ((0x8000 * (value & 0b111)) % MEM::prgsize), 0x8000);
 				PPU::mirroring = MIRR_SINGLE1 + !!(value & 0b10000);
 				break;
 			}
-			#pragma endregion
 
 			//100-in-1 Contra Function 16
-			#pragma region mapper15
 			case 15: {
 				if (address & 0x8000) {
 
@@ -308,23 +303,42 @@ namespace MAPPER {
 				}
 				break;
 			}
-			#pragma endregion
 
 			//BNROM NINA-001
-			#pragma region mapper34
 			case 34: {
 				if (MEM::prgsize > 0) memcpy(MEM::PRGROM, MEM::PRGBANKS + ((0x8000 * value) % MEM::prgsize), 0x8000);
 				break;
 			}
-			#pragma endregion
 
 			//Camerica
-			#pragma region mapper71
 			case 71: {
-				if (address >= 0xc000 && address <= 0xffff)	memcpy(MEM::PRGROM, MEM::PRGBANKS + ((0x4000 * (value & 0b1111)) % MEM::prgsize), 0x4000);
+
+				if (address >= 0x9000 && address <= 0x9fff) {
+					PPU::mirroring = !!(value & 0b00010000) + MIRR_SINGLE1;
+				}
+
+				else if (address >= 0xc000 && address <= 0xffff) {
+					memcpy(MEM::PRGROM, MEM::PRGBANKS + ((0x4000 * (value & 0b1111)) % MEM::prgsize), 0x4000);
+				}
+
 				break;
 			}
-			#pragma endregion
+
+			//Camerica Quattro
+			case 232: {
+
+				if (address >= 0x8000 && address <= 0x9fff) {
+					CAMQUATTRO::bankBlock = (value & 0b00011000) >> 3;
+					CAMQUATTRO::setPRGbanks();
+				}
+
+				else if (address >= 0xa000 && address <= 0xffff) {
+					CAMQUATTRO::bankPage = value & 0b11;
+					CAMQUATTRO::setPRGbanks();
+				}
+
+				break;
+			}
 
 		}
 	}
@@ -355,5 +369,10 @@ namespace MAPPER {
 			//memcpy(MEM::PRGROM + 0x4000, MEM::PRGBANKS + MEM::prgsize - 0x4000, 0x4000);
 		}
 
+	}
+
+	void CAMQUATTRO::setPRGbanks() {
+		memcpy(MEM::PRGROM, MEM::PRGBANKS + ((0x10000 * CAMQUATTRO::bankBlock + 0x4000 * CAMQUATTRO::bankPage) % MEM::prgsize), 0x4000);
+		memcpy(MEM::PRGROM + 0x4000, MEM::PRGBANKS + ((0x10000 * CAMQUATTRO::bankBlock + 0xc000) % MEM::prgsize), 0x4000);
 	}
 }

@@ -93,11 +93,19 @@ namespace MEM {
 		}
 
 		// Kopiujemy banki PRG do pamiêci
+		MAPPER::init();
 		switch (mapper) {
 
 			case 15: {
 				for (u32 i = 0; i < 0x8000; i++) {
 					PRGROM[i] = PRGBANKS[i];
+				} break;
+			}
+
+			case 232: {
+				for (u32 i = 0; i < 0x4000; i++) {
+					PRGROM[i] = PRGBANKS[i];
+					PRGROM[i + 0x4000] = PRGBANKS[i + 0xc000];
 				} break;
 			}
 
@@ -184,7 +192,7 @@ namespace MEM {
 
 		mapper |= (header[7] & 0b11110000);
 
-		if (mapper == 7) PPU::mirroring = MIRR_SINGLE1;
+		//if (mapper == 7) PPU::mirroring = MIRR_SINGLE1;
 		MAPPER::setMapper(mapper);
 
 		#ifdef DEBUG_MODE
