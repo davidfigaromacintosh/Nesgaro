@@ -9,7 +9,7 @@
 
 //#pragma comment(lib, "ws2_32.lib")
 #define _CRT_SECURE_NO_WARNINGS
-#define NESGARO_VERSION "v0.42 alpha"
+#define NESGARO_VERSION "v0.43 alpha"
 
 //LIBy: https://www.sfml-dev.org/tutorials/2.5/start-vc.php
 #include <SFML/Graphics.hpp>
@@ -157,8 +157,7 @@ int _NESGARO(int argc, char **argv) {
 			vsync = true;
 
 			APU::run_frame(CPU::APUelapsed);
-			//if (APU::earliest_irq_before(CPU::APUelapsed) >= CPU::APUelapsed)
-				CPU::APUelapsed = 0;
+			CPU::APUelapsed = 0;
 
 			while (window->pollEvent(wEvent)) {
 				switch (wEvent.type) {

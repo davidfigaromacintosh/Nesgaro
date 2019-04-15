@@ -324,6 +324,13 @@ namespace MAPPER {
 				break;
 			}
 
+			//Magic Jewerly 2
+			case 216: {
+				if (MEM::prgsize > 0) memcpy(MEM::PRGROM, MEM::PRGBANKS + ((0x8000 * (address & 1)) % MEM::prgsize), 0x8000);
+				if (MEM::chrsize > 0) memcpy(MEM::VRAM, MEM::CHRBANKS + ((0x2000 * (address & 0x0e) >> 1) % MEM::prgsize), 0x2000);
+				break;
+			}
+
 			//Camerica Quattro
 			case 232: {
 
@@ -339,6 +346,8 @@ namespace MAPPER {
 
 				break;
 			}
+
+
 
 		}
 	}
