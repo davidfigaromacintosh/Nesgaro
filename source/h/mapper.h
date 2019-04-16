@@ -162,12 +162,12 @@ namespace MAPPER {
 						switch (MMC3::bankMode) {
 						case 0: {	//Select 2 KB CHR bank at PPU $0000-$07FF (or $1000-$17FF)
 							if (MEM::chrsize > 0)
-							memcpy(MEM::VRAM			+ 0x1000 * MMC3::CHRinversion, MEM::CHRBANKS + 0x000 + ((0x800 * (value >> 1)) % MEM::chrsize), 0x800);
+							memcpy(MEM::VRAM			+ 0x1000 * MMC3::CHRinversion, MEM::CHRBANKS + 0x000 + ((0x400 * (value & 0b11111110)) % MEM::chrsize), 0x800);
 							break;
 						}
 						case 1: {	//Select 2 KB CHR bank at PPU $0800-$0FFF (or $1800-$1FFF)
 							if (MEM::chrsize > 0)
-							memcpy(MEM::VRAM + 0x800	+ 0x1000 * MMC3::CHRinversion, MEM::CHRBANKS + 0x000 + ((0x800 * (value >> 1)) % MEM::chrsize), 0x800);
+							memcpy(MEM::VRAM + 0x800	+ 0x1000 * MMC3::CHRinversion, MEM::CHRBANKS + 0x000 + ((0x400 * (value & 0b11111110)) % MEM::chrsize), 0x800);
 							break;
 						}
 						case 2: {	//Select 1 KB CHR bank at PPU $1000-$13FF (or $0000-$03FF)
