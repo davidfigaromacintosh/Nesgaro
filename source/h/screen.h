@@ -7,7 +7,7 @@ namespace SCREEN {
 		pixel.resize(256 * 240 * 6);
 		pixel.setPrimitiveType(sf::Triangles);
 
-		for (int j = 8; j < 232; j++) {
+		for (int j = 0; j < 240; j++) {
 			for (int i = 0; i < 256; i++) {
 
 				int index = 6 * (i + 256 * j);
@@ -28,16 +28,16 @@ namespace SCREEN {
 
 	void Screen::rescale() {
 
-		for (int j = 8; j < 232; j++) {
-			for (int i = 0; i < 256; i++) {
+		for (int j = (240 - NES_HEIGHT) / 2; j < 240 - (240 - NES_HEIGHT) / 2; j++) {
+			for (int i = (256 - NES_WIDTH) / 2; i < 256 - (256 - NES_WIDTH) / 2; i++) {
 
 				int index = 6 * (i + 256 * j);
 
-				int offx = (int)((-scale / 2.0) * 256 + (window->getSize().x / 2));
+				int offx = (int)((-scale / 2.0) * NES_WIDTH + (window->getSize().x / 2));
 ;
-				int offy = (int)((-scale / 2.0) * 224 + (window->getSize().y / 2));
+				int offy = (int)((-scale / 2.0) * NES_HEIGHT + (window->getSize().y / 2));
 
-				sf::Vector2f origin(scale * i + offx, scale * (j - 8) + offy);
+				sf::Vector2f origin(scale * (i - (256 - NES_WIDTH) / 2) + offx, scale * (j - (240 - NES_HEIGHT) / 2) + offy);
 
 				//Jeden piksel jest kwadratem sk³adaj¹cym siê z dwóch trójk¹tów
 
@@ -59,7 +59,7 @@ namespace SCREEN {
 
 	}
 
-	void Screen::resize(float _scale) {
+	void Screen::resize(float _scale = ((float)std::max(1, (int)std::min(window->getSize().x / NES_WIDTH, window->getSize().y / NES_HEIGHT)))) {
 		scale = _scale;
 		rescale();
 

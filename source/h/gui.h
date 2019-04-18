@@ -46,7 +46,8 @@ namespace GUI {
 		strcpy(tempstr, str);
 
 		int ptr = strlen(tempstr);
-		while (tempstr[ptr] != '\\' && ptr > 0) { if (!allowext && tempstr[ptr] == '.') { tempstr[ptr] = 0; } --ptr; }
+		bool dotted = false;
+		while (tempstr[ptr] != '\\' && ptr > 0) { if (!allowext && tempstr[ptr] == '.' && !dotted) { tempstr[ptr] = 0, dotted = true; } --ptr; }
 		strcpy(buff, &tempstr[ptr + 1]);
 		return buff;
 	}

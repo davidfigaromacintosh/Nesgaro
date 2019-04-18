@@ -8,8 +8,11 @@
 #endif
 
 //#pragma comment(lib, "ws2_32.lib")
+#pragma comment(lib, "winhttp.lib")
+
 #define _CRT_SECURE_NO_WARNINGS
-#define NESGARO_VERSION "v0.43 alpha"
+
+#define NESGARO_VERSION "v0.45 alpha"
 
 //LIBy: https://www.sfml-dev.org/tutorials/2.5/start-vc.php
 #include <SFML/Graphics.hpp>
@@ -19,13 +22,20 @@
 #define NTSC		0
 #define PAL			1
 #define DENDY		2
+
+#define NES_WIDTH	256
+#define NES_HEIGHT	224
+
 static int tvregion = NTSC;
 static sf::RenderWindow* window;
 
 #ifdef DEBUG_MODE
 #include <stdio.h>
 #endif
+
 #include <string>
+//#include <chrono>
+//#include <thread>
 #include <iostream>
 
 #include "include/Nes_Apu.h"
@@ -56,6 +66,8 @@ static sf::RenderWindow* window;
 #include "h/gamegenie.h"
 #include "h/gui.h"
 
+static SCREEN::Screen* screen;
+
 static bool vsync = false;
 
 int _NESGARO(int argc, char **argv) {
@@ -68,12 +80,12 @@ int _NESGARO(int argc, char **argv) {
 
 	unsigned int fps[] = { 60, 50, 50 };
 
-	SCREEN::Screen screen;
 	sf::Event wEvent;
 	sf::Image windowIcon;
 
 	strcpy(winTitle, GUI::getNesgaroTitle());
-	window = new sf::RenderWindow{ sf::VideoMode{(unsigned int)windowScale * 256, (unsigned int)windowScale * 224}, "Loading... =^_^=", sf::Style::Close | (sf::Uint32)(sf::Style::Fullscreen * fullScreen) }; //= ⬤ ᆺ ⬤ =
+	window = new sf::RenderWindow{ sf::VideoMode{(unsigned int)windowScale * NES_WIDTH, (unsigned int)windowScale * NES_HEIGHT}, "Loading... =^_^=", sf::Style::Default | (sf::Uint32)(sf::Style::Fullscreen * fullScreen) }; //= ⬤ ᆺ ⬤ =
+	screen = new SCREEN::Screen();
 
 	#ifdef DEBUG_MODE
 	system("title Nesgaro mini debugger");
@@ -90,7 +102,7 @@ int _NESGARO(int argc, char **argv) {
 	#endif
 
 	window->setKeyRepeatEnabled(false);
-	window->setVerticalSyncEnabled(false);
+	window->setVerticalSyncEnabled(true);
 	window->setFramerateLimit(fps[tvregion]);
 
 	if (windowIcon.loadFromFile(GUI::getCurPath("\\resources\\icon.png"))) {
@@ -107,11 +119,10 @@ int _NESGARO(int argc, char **argv) {
 	APU::init();
 	GAMEGENIE::init();
 	PAD::init();
-
-	screen.resize(windowScale);
+	screen->resize(windowScale);
 	PPU::loadPalette(GUI::getCurPath("\\resources\\palette.pal"));
 	PPU::connectScreen(screen);
-	APU::setVolume(0.75);
+	APU::setVolume(0.25);
 
 	//ROMy do testowania
 
@@ -124,17 +135,55 @@ int _NESGARO(int argc, char **argv) {
 		MEM::loadROM(GUI::getCurPath("\\resources\\hello.nes"));
 	}
 
-	//GAMEGENIE::readFromFile("D:\\PENDRIVE BACKUP (G)\\nes\\Super Mario Bros. (World).nes");
-	//if (MessageBoxA(NULL, "A new version of Nesgaro is available. Would you like to download it now?", "An update is available", MB_YESNO) == IDYES) {
-	//	ShellExecuteA(NULL, "open", "https://nes.figaro.ga/download", NULL, NULL, SW_SHOWNORMAL);
-	//}
+	//Tutaj jest ciekawie, bo emulator wysyła requesta do strony "https://nes.figaro.ga/?ver" requesta i porównuje wersje. Jeśli są różne, wyskoczy komunikat o updacie
+	HINTERNET hSession = NULL, hConnect = NULL, hRequest = NULL; bool bResults = false; DWORD dwSize = 0, dwDownloaded = 0; char dwVersion[64] = { 0 }, notifyV[256] = { 0 };
 
+	//Tworzymy sesję
+	hSession = WinHttpOpen(L"WinHTTP Nesgaro/1.0", WINHTTP_ACCESS_TYPE_DEFAULT_PROXY, WINHTTP_NO_PROXY_NAME, WINHTTP_NO_PROXY_BYPASS, 0);
 
+	//Gdzie
+	if (hSession)
+		hConnect = WinHttpConnect(hSession, L"nes.figaro.ga", 443, 0);
+
+	//Tworzymy requesta
+	if (hConnect)
+		hRequest = WinHttpOpenRequest(hConnect, L"GET", L"/?ver", NULL, WINHTTP_NO_REFERER, WINHTTP_DEFAULT_ACCEPT_TYPES, WINHTTP_FLAG_SECURE);
+
+	//Wysyłamy requesta
+	if (hRequest)
+		bResults = WinHttpSendRequest(hRequest, WINHTTP_NO_ADDITIONAL_HEADERS, 0, WINHTTP_NO_REQUEST_DATA, 0, 0, 0);
+
+	//Otrzymaj odpowiedź
+	if (bResults)
+		bResults = WinHttpReceiveResponse(hRequest, NULL);
+
+	//Jeśli wszystko poszło OK
+	if (bResults) {
+
+		if (WinHttpQueryDataAvailable(hRequest, &dwSize) && WinHttpReadData(hRequest, (void*)dwVersion, dwSize, &dwDownloaded) && _stricmp(dwVersion, NESGARO_VERSION)) {
+
+			sprintf(notifyV, "A new version of Nesgaro is available to download: %s.\nWould you like to download it now?", dwVersion);
+			if (MessageBoxA(NULL, notifyV, "Update", MB_YESNO) == IDYES) {
+				ShellExecuteA(NULL, "open", "https://nes.figaro.ga/", NULL, NULL, SW_SHOWNORMAL);
+			}
+
+		}
+
+	}
+
+	//Sprzątamy po sobie
+	if (hSession) WinHttpCloseHandle(hSession);
+	if (hConnect) WinHttpCloseHandle(hConnect);
+	if (hRequest) WinHttpCloseHandle(hRequest);
+
+	window->setTitle(winTitle);
+
+	//Główna pętla (tutaj odprawia się cała emulacja)
 	u64 masterclock = 0;
 	bool vsync = false;
-	//Klatka video
-	while (1) {
+	while (window->isOpen()) {
 
+		//NTSC
 		if (tvregion == NTSC || tvregion == DENDY) {
 
 			if (masterclock % 3 == 0)		CPU::step();	//Cykl CPU dla standardu NTSC
@@ -142,14 +191,13 @@ int _NESGARO(int argc, char **argv) {
 
 		}
 
+		//PAL
 		if (tvregion == PAL) {
 
 			if (masterclock % 16 == 0)		CPU::step();	//Cykl CPU dla standardu PAL
 			if (masterclock % 5 == 0)		PPU::step();	//Cykl PPU dla standardu PAL
 
-		}
-
-		masterclock += 1;
+		} masterclock += 1;
 
 		//SFML Poll
 		if (PPU::scanline >= 240 && !vsync) {
@@ -167,7 +215,18 @@ int _NESGARO(int argc, char **argv) {
 						return 0xF19A20;
 					}
 
+					case sf::Event::Resized: {
+						window->setSize(sf::Vector2u(
+							window->getSize().x < NES_WIDTH ? NES_WIDTH : window->getSize().x,
+							window->getSize().y < NES_HEIGHT ? NES_HEIGHT : window->getSize().y
+						));
+						window->setView(sf::View(sf::FloatRect(0.f, 0.f, (float)window->getSize().x, (float)window->getSize().y)));
+						screen->resize();
+						break;
+					}
+
 					case sf::Event::KeyPressed: {
+
 						if (window->hasFocus()) {
 
 							//Quit
@@ -191,23 +250,27 @@ int _NESGARO(int argc, char **argv) {
 								fullScreen = !fullScreen;
 
 								delete window,
-								window = new sf::RenderWindow{ sf::VideoMode{(unsigned int)windowScale * 256, (unsigned int)windowScale * 224}, "Loading... =^_^=", sf::Style::Close | (sf::Uint32)(sf::Style::Fullscreen * fullScreen) }; //= ⬤ ᆺ ⬤ =
-								screen.resize(fullScreen ? 4 : windowScale);
+								window = new sf::RenderWindow{ sf::VideoMode{(unsigned int)windowScale * NES_WIDTH, (unsigned int)windowScale * NES_HEIGHT}, "Loading... =^_^=", sf::Style::Default | (sf::Uint32)(sf::Style::Fullscreen * fullScreen) }; //= ⬤ ᆺ ⬤ =
+								screen->resize();
+								window->setTitle(winTitle);
 								window->setIcon(16, 16, windowIcon.getPixelsPtr());
+								window->requestFocus();
 								
 							}
 
 						}
+
+						break;
 					}
 
 				}
 			}
 
-			//window.clear(sf::Color(PPU::colors[0x0f]));
-			window->setTitle(winTitle);
-			window->draw(screen);
+			window->clear(sf::Color(PPU::colors[0x0d]));
+			window->draw(*screen);
 			window->display();
 
+			
 		}
 
 		if (PPU::scanline < 240 && vsync) {

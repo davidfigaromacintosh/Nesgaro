@@ -74,6 +74,9 @@ namespace PPU {
 	b	OAMPriority[256];	//Priorytet rysowania (czy za t³em czy przed t³em)
 	b	OAMIsSpr0[256];
 	u8	OAMIndex[8];		//Index sprite'u
+
+	//u8 
+
 	// Zwi¹zane z VRAM...
 	u8 fineX;
 	u8 fineY;
@@ -184,8 +187,8 @@ namespace PPU {
 	void reset();
 
 	void step();
-	void connectScreen(SCREEN::Screen &_scr) {
-		scr = &_scr;
+	void connectScreen(SCREEN::Screen *_scr) {
+		scr = _scr;
 	}
 
 	u8 fetchPixel(u8 liteColor);
