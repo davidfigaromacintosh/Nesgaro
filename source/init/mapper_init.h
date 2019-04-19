@@ -5,6 +5,7 @@ namespace MAPPER {
 
 	void setMapper(u32 mapperid);
 
+	u8 readbus(u16 address);
 	void writebus(u16 address, u8 value);
 
 
@@ -45,6 +46,15 @@ namespace MAPPER {
 		void setPRGbanks();
 	}
 
+	//Mapper 178
+	namespace EDU178 {
+		u8 bankMode;
+	}
+
+	namespace ACTION52 {
+        u8 RAM[16];
+	}
+
 	//Mapper 232
 	namespace CAMQUATTRO {
 		u8 bankBlock;
@@ -52,10 +62,5 @@ namespace MAPPER {
 		void setPRGbanks();
 	}
 
-	//Mapper 178
-	namespace EDU178 {
-		u8 bankMode;
-	}
 
-	
 }

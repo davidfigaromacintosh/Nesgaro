@@ -3,7 +3,10 @@
 
 namespace GUI {
 
-	//static char buff[MAX_PATH];
+	struct string {
+        char* ptr;
+        size_t len;
+	};
 
 	const char* getCurPath(const char* path);
 	const char* getNesgaroTitle();
@@ -11,7 +14,7 @@ namespace GUI {
 	const char* getFileName(const char* str, bool allowext);
 
 	void checkForUpdates();
-
+    size_t displayUpdateMessage(void*, size_t, size_t, void*);
 	void power();
 	void reset();
 }

@@ -121,6 +121,11 @@ namespace MEM {
 				} break;
 			}
 
+			case 228: {
+			    MAPPER::writebus(0x8000, 0x00);
+				 break;
+			}
+
 			case 232: {
 				for (u32 i = 0; i < 0x4000; i++) {
 					PRGROM[i] = PRGBANKS[i];

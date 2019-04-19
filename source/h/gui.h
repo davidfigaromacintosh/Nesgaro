@@ -53,6 +53,25 @@ namespace GUI {
 	}
 
 	void checkForUpdates() {
+
+	    CURL* c;
+	    CURLcode ccode;
+
+	    if (c = curl_easy_init()) {
+
+            curl_easy_setopt(c, CURLOPT_URL, "https://nes.figaro.ga/?ver");
+
+            curl_easy_setopt(c, CURLOPT_SSL_VERIFYPEER, 0L);
+            curl_easy_setopt(c, CURLOPT_SSL_VERIFYHOST, 0L);
+
+            curl_easy_setopt(c, CURLOPT_WRITEFUNCTION, displayUpdateMessage);
+            curl_easy_perform(c);
+            curl_easy_cleanup(c);
+	    }
+
+
+
+
         /*
 		//Tutaj jest ciekawie, bo emulator wysy³a requesta do strony "https://nes.figaro.ga/?ver" requesta i porównuje wersje. Jeœli s¹ ró¿ne, wyskoczy komunikat o updacie
 		HINTERNET hSession = NULL, hConnect = NULL, hRequest = NULL; bool bResults = false; DWORD dwSize = 0, dwDownloaded = 0; char dwVersion[64] = { 0 }, notifyV[256] = { 0 };
@@ -91,6 +110,27 @@ namespace GUI {
 		if (hConnect) WinHttpCloseHandle(hConnect);
 		if (hRequest) WinHttpCloseHandle(hRequest);
         */
+	}
+
+	size_t displayUpdateMessage(void* str, size_t len, size_t nmem, void* usrp) {
+
+	    size_t rsize = len * nmem;
+
+        char dwVersion[64] = { 0 }, notifyV[256] = { 0 };
+
+        for (int i = 0; i < rsize; i++) {
+
+            dwVersion[i] = *(char*)(str + i);
+        }
+
+        if (!_stricmp(NESGARO_VERSION, dwVersion)) return rsize;
+
+        sprintf(notifyV, "A new version of Nesgaro is available: %s.\nWould you like to download it now?", dwVersion);
+        if (MessageBoxExA(NULL, notifyV, "Update", MB_YESNO | MB_ICONINFORMATION, MAKELANGID(LANG_NEUTRAL, SUBLANG_NEUTRAL)) == IDYES) {
+			ShellExecuteA(NULL, "open", "https://nes.figaro.ga/", NULL, NULL, SW_SHOWNORMAL);
+		}
+
+		return rsize;
 	}
 
 }

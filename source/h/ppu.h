@@ -328,13 +328,13 @@ namespace PPU {
 				}
 
 			}
-			if (scanline >= 241) {
+			if (scanline >= 241 || scanline == -1) {
 
 				if (NMIenabled == 0) {
 					NMIsuppresion = 0;
 				}
 
-				if (((scanline == 241 && dot >= 3) || (scanline > 241)) && NMIenabled == 1 && vblank == 1 && NMIsuppresion == 0) {
+				if (((scanline == 241 && dot >= 3) || (scanline > 241) || (scanline == -1)) && NMIenabled == 1 && vblank == 1 && NMIsuppresion == 0) {
 					CPU::NMIoccured = 1;
 					NMIsuppresion = 1;
 				}

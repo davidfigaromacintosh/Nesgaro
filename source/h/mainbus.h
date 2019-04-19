@@ -49,13 +49,8 @@ namespace MAINBUS {
 			PAD::strobe(value);
 		}
 
-		//Je¿eli robimy wpis do PRGRAM
-		if (addr >= 0x6000 && addr < 0x8000) {
-			MEM::PRGRAM[addr - 0x6000] = value;
-		}
-
 		//Je¿eli robimy wpis do regionu PRGROM (mapper)
-		if (addr >= 0x8000 && addr <= 0xffff) {
+		if (addr >= 0x4020 && addr <= 0xffff) {
 			MAPPER::writebus(addr, value);
 		}
 
@@ -64,7 +59,7 @@ namespace MAINBUS {
 
 	// ### ODCZYT ###
 	u8 read(u16 address) {
-	
+
 		u16 addr = address;
 
 		//  === MIRRORING ===
@@ -94,8 +89,8 @@ namespace MAINBUS {
 			readval = APU::readbus(CPU::APUelapsed, addr);
 		}
 		//Je¿eli robimy odczyt z PRGRAM
-		if (addr >= 0x6000 && addr < 0x8000) {
-			readval = MEM::PRGRAM[addr - 0x6000];
+		if (addr >= 0x4020 && addr < 0x8000) {
+			readval = MAPPER::readbus(addr);
 		}
 
 		//Je¿eli robimy odczyt z PRGROM

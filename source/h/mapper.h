@@ -60,12 +60,33 @@ namespace MAPPER {
 		mapper = mapperid;
 	}
 
+	u8 readbus(u16 address) {
+
+        u8 retval = 0;
+
+        switch (mapper) {
+
+			case 228: {
+
+			    if (address >= 0x4020 && address <= 0x5fff) {
+
+                    retval = ACTION52::RAM[address & 0b11];
+			    }
+                break;
+			}
+
+        }
+
+        return retval;
+
+	}
+
 	// DEFINICJE DLA MAPPERÓW
 	void writebus(u16 address, u8 value) {
 		switch (mapper) {
-			
+
 			//MMC1
-			case 1: {	
+			case 1: {
 				MMC1::shift = ((value & 0b00001) << 4) | (MMC1::shift >> 1);
 				MMC1::count++;
 
@@ -80,7 +101,7 @@ namespace MAPPER {
 
 				//Po 5-tym wpisie...
 				if (MMC1::count == 5) {
-				
+
 					//Control
 					if (address >= 0x8000 && address <= 0x9fff) {
 						MMC1::PRGmode = (MMC1::shift & 0b01100) >> 2;
@@ -135,7 +156,7 @@ namespace MAPPER {
 
 						if (MEM::prgsize > 0)
 							MMC1::setPRGBanks();
-						
+
 					}
 
 
@@ -151,7 +172,7 @@ namespace MAPPER {
 				memcpy(MEM::PRGROM, MEM::PRGBANKS + ((0x4000 * (value & (MEM::nes2 == 2 ? 0b11111111 : 0b1111))) % MEM::prgsize), 0x4000);
 				break;
 			}
-		
+
 			//CNROM
 			case 3: {
 				if (MEM::chrsize > 0)
@@ -162,16 +183,16 @@ namespace MAPPER {
 			//MMC3
 			case 4: {
 				if (address >= 0x8000 && address <= 0x9fff) {
-					
+
 					//Bank select (even)
-					if (address % 2 == 0) {	
+					if (address % 2 == 0) {
 						MMC3::bankMode = value & 0b111;
 						MMC3::PRGmode = !!(value & 0b01000000);
 						MMC3::CHRinversion = !!(value & 0b10000000);
 					}
 
 					//Bank data (odd)
-					else {	
+					else {
 						switch (MMC3::bankMode) {
 						case 0: {	//Select 2 KB CHR bank at PPU $0000-$07FF (or $1000-$17FF)
 							if (MEM::chrsize > 0)
@@ -228,7 +249,7 @@ namespace MAPPER {
 					}
 
 					else {	//PRGRAM protection (odd)
-					
+
 					}
 				}
 
@@ -257,7 +278,7 @@ namespace MAPPER {
 			}
 
 			//AxROM
-			case 7: {	
+			case 7: {
 				memcpy(MEM::PRGROM, MEM::PRGBANKS + ((0x8000 * (value & 0b111)) % MEM::prgsize), 0x8000);
 				PPU::mirroring = MIRR_SINGLE1 + !!(value & 0b10000);
 				break;
@@ -307,7 +328,7 @@ namespace MAPPER {
 					u8 bank = value & 0x3f;
 					u8 subbank = !!(value & 0x80);
 					switch (address & 3) {
-					
+
 						//32K
 						case 0: {
 							if (MEM::prgsize > 0) {
@@ -345,7 +366,7 @@ namespace MAPPER {
 							}
 							break;
 						}
-					
+
 					}
 
 				}
@@ -387,6 +408,48 @@ namespace MAPPER {
 				if (MEM::prgsize > 0) memcpy(MEM::PRGROM, MEM::PRGBANKS + ((0x8000 * (address & 1)) % MEM::prgsize), 0x8000);
 				if (MEM::chrsize > 0) memcpy(MEM::VRAM, MEM::CHRBANKS + ((0x2000 * (address & 0x0e) >> 1) % MEM::prgsize), 0x2000);
 				break;
+			}
+
+			//Action 52 / Cheetahmen II
+			case 228: {
+
+                //RAM
+			    if (address >= 0x4020 && address < 0x5fff) {
+
+                    ACTION52::RAM[address & 0b11] = value & 0b1111;
+			    }
+
+			    //Reszta
+			    if (address >= 0x8000 && address <= 0xffff) {
+
+                    //CHR
+                    if (MEM::chrsize > 0) memcpy(MEM::VRAM, MEM::CHRBANKS + ((0x2000 * ( (value & 0b11) | ((address & 0b1111) << 2) )) % MEM::prgsize), 0x2000);
+
+                    //PRG
+                    if (MEM::prgsize > 0) {
+
+                        u8 chip;
+
+                        switch((address & 0b0001100000000000) >> 11) {
+                            case 1:  { chip = 1; break; }
+                            case 3:  { chip = 2; break; }
+                            default: { chip = 0; break; }
+                        }
+
+                        if (!(address & 0b100000)) {
+                            memcpy(MEM::PRGROM         , MEM::PRGBANKS + ((0x80000 * chip + 0x4000 * ((address & 0b0000011110000000) >> 6)) % MEM::prgsize), 0x8000);
+                        } else {
+                            memcpy(MEM::PRGROM         , MEM::PRGBANKS + ((0x80000 * chip + 0x4000 * ((address & 0b0000011111000000) >> 6)) % MEM::prgsize), 0x4000);
+                            memcpy(MEM::PRGROM + 0x4000, MEM::PRGBANKS + ((0x80000 * chip + 0x4000 * ((address & 0b0000011111000000) >> 6)) % MEM::prgsize), 0x4000);
+                        }
+
+                    }
+
+                    //Mirroring
+                    PPU::mirroring = !(address & 0b0010000000000000);
+			    }
+
+                break;
 			}
 
 			//Camerica Quattro

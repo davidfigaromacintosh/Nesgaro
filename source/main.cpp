@@ -1,17 +1,6 @@
 ﻿//W razie jakby pojawił się jakiś błąd!
 //#define DEBUG_MODE
 
-#ifndef DEBUG_MODE
-#pragma comment(linker, "/subsystem:windows")
-#else
-#pragma comment(linker, "/subsystem:console")
-#endif
-
-//#pragma comment(lib, "ws2_32.lib")
-#pragma comment(lib, "winhttp.lib")
-
-#define _CRT_SECURE_NO_WARNINGS
-
 #define NESGARO_VERSION "v0.47 alpha"
 
 //LIBy: https://www.sfml-dev.org/tutorials/2.5/start-vc.php
@@ -34,15 +23,13 @@ static sf::RenderWindow* window;
 #endif
 
 #include <string>
-//#include <chrono>
-//#include <thread>
 #include <iostream>
 
 #include "include/Nes_Apu.h"
 #include "include/Sound_Queue.h"
 
 #include <Windows.h>
-//#include <winhttp.h>
+#include <curl/curl.h>
 #include "types.h"
 
 #include "init/mainbus_init.h"
