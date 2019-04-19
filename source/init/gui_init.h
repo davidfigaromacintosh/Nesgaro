@@ -10,6 +10,8 @@ namespace GUI {
 	const char* getNesgaroTitle(const char* str);
 	const char* getFileName(const char* str, bool allowext);
 
+	void checkForUpdates();
+
 	void power();
 	void reset();
 }

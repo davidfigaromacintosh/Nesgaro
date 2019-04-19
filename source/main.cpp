@@ -12,7 +12,7 @@
 
 #define _CRT_SECURE_NO_WARNINGS
 
-#define NESGARO_VERSION "v0.45 alpha"
+#define NESGARO_VERSION "v0.47 alpha"
 
 //LIBy: https://www.sfml-dev.org/tutorials/2.5/start-vc.php
 #include <SFML/Graphics.hpp>
@@ -42,7 +42,7 @@ static sf::RenderWindow* window;
 #include "include/Sound_Queue.h"
 
 #include <Windows.h>
-#include <winhttp.h>
+//#include <winhttp.h>
 #include "types.h"
 
 #include "init/mainbus_init.h"
@@ -135,52 +135,13 @@ int _NESGARO(int argc, char **argv) {
 		MEM::loadROM(GUI::getCurPath("\\resources\\hello.nes"));
 	}
 
-	//Tutaj jest ciekawie, bo emulator wysyła requesta do strony "https://nes.figaro.ga/?ver" requesta i porównuje wersje. Jeśli są różne, wyskoczy komunikat o updacie
-	HINTERNET hSession = NULL, hConnect = NULL, hRequest = NULL; bool bResults = false; DWORD dwSize = 0, dwDownloaded = 0; char dwVersion[64] = { 0 }, notifyV[256] = { 0 };
-
-	//Tworzymy sesję
-	hSession = WinHttpOpen(L"WinHTTP Nesgaro/1.0", WINHTTP_ACCESS_TYPE_DEFAULT_PROXY, WINHTTP_NO_PROXY_NAME, WINHTTP_NO_PROXY_BYPASS, 0);
-
-	//Gdzie
-	if (hSession)
-		hConnect = WinHttpConnect(hSession, L"nes.figaro.ga", 443, 0);
-
-	//Tworzymy requesta
-	if (hConnect)
-		hRequest = WinHttpOpenRequest(hConnect, L"GET", L"/?ver", NULL, WINHTTP_NO_REFERER, WINHTTP_DEFAULT_ACCEPT_TYPES, WINHTTP_FLAG_SECURE);
-
-	//Wysyłamy requesta
-	if (hRequest)
-		bResults = WinHttpSendRequest(hRequest, WINHTTP_NO_ADDITIONAL_HEADERS, 0, WINHTTP_NO_REQUEST_DATA, 0, 0, 0);
-
-	//Otrzymaj odpowiedź
-	if (bResults)
-		bResults = WinHttpReceiveResponse(hRequest, NULL);
-
-	//Jeśli wszystko poszło OK
-	if (bResults) {
-
-		if (WinHttpQueryDataAvailable(hRequest, &dwSize) && WinHttpReadData(hRequest, (void*)dwVersion, dwSize, &dwDownloaded) && _stricmp(dwVersion, NESGARO_VERSION)) {
-
-			sprintf(notifyV, "A new version of Nesgaro is available to download: %s.\nWould you like to download it now?", dwVersion);
-			if (MessageBoxA(NULL, notifyV, "Update", MB_YESNO) == IDYES) {
-				ShellExecuteA(NULL, "open", "https://nes.figaro.ga/", NULL, NULL, SW_SHOWNORMAL);
-			}
-
-		}
-
-	}
-
-	//Sprzątamy po sobie
-	if (hSession) WinHttpCloseHandle(hSession);
-	if (hConnect) WinHttpCloseHandle(hConnect);
-	if (hRequest) WinHttpCloseHandle(hRequest);
+	//GUI::checkForUpdates();
 
 	window->setTitle(winTitle);
 
 	//Główna pętla (tutaj odprawia się cała emulacja)
 	u64 masterclock = 0;
-	bool vsync = false;
+	//bool vsync = false;
 	while (window->isOpen()) {
 
 		//NTSC
@@ -255,7 +216,7 @@ int _NESGARO(int argc, char **argv) {
 								window->setTitle(winTitle);
 								window->setIcon(16, 16, windowIcon.getPixelsPtr());
 								window->requestFocus();
-								
+
 							}
 
 						}
@@ -270,7 +231,7 @@ int _NESGARO(int argc, char **argv) {
 			window->draw(*screen);
 			window->display();
 
-			
+
 		}
 
 		if (PPU::scanline < 240 && vsync) {

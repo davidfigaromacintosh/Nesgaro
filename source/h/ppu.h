@@ -130,7 +130,7 @@ namespace PPU {
 		#endif
 
 		// === Pre scan (-1) ===
-		if (scanline == -1) { 
+		if (scanline == -1) {
 
 			//Zawsze na docie 1 pre-linii flagi VBlank, SPR0 oraz SPROV s¹ czyszczone
 			if (dot == 1) {
@@ -178,8 +178,8 @@ namespace PPU {
 
 			//VRAM zwiêkszenie X dla dot od 1 do 256 oraz Y gdy dot = 256
 			if ((dot >= 2) && (dot <= 257) && renderingEnabled()) {
-				
-				
+
+
 				u16 temp = (((V & 0b11111) << 3) + (X + (dot - 1) % 8));
 				if (temp >= 256) {
 					//V = V & 0b111101111111111 | (((nametable & 0b01) ^ 0b01) << 10);
@@ -187,7 +187,7 @@ namespace PPU {
 						V ^= 0b000010000000000;
 					}
 				}
-				
+
 
 				if ((dot - 1) % 8 == 0) {
 					u16 tempX = V & 0b11111;
@@ -206,12 +206,12 @@ namespace PPU {
 					u16 tempY = (V & 0b111000000000000) >> 12 | (V & 0b000001111100000) >> 2;
 					tempY++;
 					if ((tempY) >= 62) {
-						
+
 					}
 					if ((tempY >> 3) == 30) {
 						tempY = 0;
 						V ^= 0b000100000000000;
-						
+
 					}
 					V = (V & 0b000110000011111) | ((tempY & 0b00000111) << 12) | ((tempY & 0b11111000) << 2);
 				}
@@ -220,7 +220,7 @@ namespace PPU {
 				if (dot == 257 && dot < 320) {
 					OAMV = 0;
 				}
-				
+
 			}
 
 			//dot 257: scroll update
@@ -228,7 +228,7 @@ namespace PPU {
 
 				V = (V & 0b111101111100000) | (T & 0b000010000011111);
 			}
-			
+
 			//if ((dot == 320 || dot == 328 || dot == 336) && renderingEnabled()) {
 			//
 			//	V = (V & 0b111111111100000) | ((V+1) & 0b000000000011111);
@@ -249,7 +249,7 @@ namespace PPU {
 				//Wype³niamy OAM2 na podstawie danych zawartych w OAM
 				int sprindex = 0;
 				for (int i = 0; i < 64; i++) {
-					
+
 					if (MEM::OAM[4 * i] > 0xef) continue;
 
 
@@ -271,7 +271,7 @@ namespace PPU {
 
 							OAMIndex[sprindex] = i;
 
-							
+
 						}
 						sprindex++;
 					}
@@ -298,7 +298,7 @@ namespace PPU {
 								+
 							2 *	!!(MEM::VRAM[8 +	0x1000 * SPRpattern + 16 * OAM2[4 * i + 1] + (flipY ? 7 - OAM2[4 * i] : OAM2[4 * i])] & (0b10000000 >> (flipX ? 7 - j : j)))
 								);
-							
+
 							if (sprpxl % 4 != 0) {
 								OAM2Final[OAM2[4 * i + 3] + j] = sprpxl;
 
@@ -316,7 +316,7 @@ namespace PPU {
 
 
 		// === Post scan (od 240 do 260) ===
-		else if (scanline >= 240) { 
+		else if (scanline >= 240) {
 
 			//Pocz¹tek VBlank oraz NMI
 			if (scanline == 241) {
@@ -326,7 +326,7 @@ namespace PPU {
 						vblank = 1;
 					}
 				}
-				
+
 			}
 			if (scanline >= 241) {
 
@@ -376,7 +376,7 @@ namespace PPU {
 
 		//MMC3
 		if ((scanline >= -1 && scanline <= 239)) {
-		
+
 			//MMC3
 			if (dot == 297) {
 				//Reload request
@@ -500,16 +500,16 @@ namespace PPU {
 		#endif
 
 		FILE *f;
-		if((f = fopen(filename, "rb")) == nullptr) return;
+		if((f = fopen(filename, "rb")) == NULL) return;
 
 		u8 buff;
 
-		for (int i = 0; i < 64; i++) 
+		for (int i = 0; i < 64; i++)
 		{
 			colors[i] = 0x000000ff;
 
 			for (int j = 0; j < 3; j++) {
-				fread_s(&buff,1, 1, 1, f);
+				fread(&buff, 1, 1, f);
 				colors[i] |= buff << (24 - 8 * j);
 			}
 
@@ -541,7 +541,7 @@ namespace PPU {
 						NMIsuppresion = 1;
 						CPU::NMIoccured = 0;
 					}
-					
+
 				}
 
 				return (tempvblank << 7) | (spr0 << 6) | (sproverflow << 5) | (lsbWrite & 0b00011111);
@@ -553,8 +553,8 @@ namespace PPU {
 					if (dot < 64) return 0xff;
 					if (dot < 256) return 0x00;
 					if (dot < 320) return 0xff;
-					return OAM2[0]; 
-				} else { 
+					return OAM2[0];
+				} else {
 					return MEM::OAM[OAMV];
 				}
 			}
@@ -568,18 +568,51 @@ namespace PPU {
 					tempv -= 0x4000;
 				}
 
+                //Playfield
 				if (tempv < 0x3f00) {
-					
+
 					//Nametable mirroring
 					while (tempv >= 0x3000 && tempv < 0x3f00) {
 						tempv -= 0x1000;
 					}
+
+					//*
+					//Horizontal mirroring
+					if (mirroring == MIRR_HORIZONTAL) {
+						if (tempv >= 0x2400 && tempv < 0x2800) {
+							tempv -= 0x0400;
+						}
+						else if (tempv >= 0x2800 && tempv < 0x2c00) {
+							tempv -= 0x0400;
+						}
+						else if (tempv >= 0x2c00 && tempv < 0x3000) {
+							tempv -= 0x0800;
+						}
+					}
+					//Vertical mirroring
+					else if (mirroring == MIRR_VERTICAL) {
+						while (tempv >= 0x2800 && tempv < 0x3000) {
+							tempv -= 0x0800;
+						}
+					}
+					//Single screen mirroring
+					else if (mirroring >= MIRR_SINGLE1 && mirroring <= MIRR_SINGLE4) {
+						while (tempv >= 0x2400 && tempv < 0x3000) {
+							tempv -= 0x0400;
+						}
+						if (tempv >= 0x2000 && tempv < 0x2400) tempv += (mirroring - MIRR_SINGLE1) * 0x400;
+					}
+
+					//*/
+
 
 					tempvalue = readbuffer;
 					readbuffer = MEM::VRAM[tempv];
 
 					//tempvalue = MEM::VRAM[tempv];
 				}
+
+				//Paleta kolorów
 				else {
 
 					//mirroring koloru t³a
@@ -599,35 +632,6 @@ namespace PPU {
 					while (tempv >= 0x3f20 && tempv < 0x4000) {
 						tempv -= 0x20;
 					}
-
-					//*
-					//Horizontal mirroring
-					if (mirroring == MIRR_HORIZONTAL) {
-						if (tempv >= 0x2400 && tempv < 0x2800) {
-							tempv -= 0x0400;
-						}
-						if (tempv >= 0x2800 && tempv < 0x2c00) {
-							tempv -= 0x0400;
-						}
-						if (tempv >= 0x2c00 && tempv < 0x3000) {
-							tempv -= 0x0800;
-						}
-					}
-					//Vertical mirroring
-					else if (mirroring == MIRR_VERTICAL) {
-						while (tempv >= 0x2800 && tempv < 0x3000) {
-							tempv -= 0x0800;
-						}
-					}
-					//Single screen mirroring
-					else if (mirroring >= MIRR_SINGLE1 && mirroring <= MIRR_SINGLE4) {
-						while (tempv >= 0x2400 && tempv < 0x3000) {
-							tempv -= 0x0400;
-						}
-						if (tempv >= 0x2000 && tempv < 0x2400) tempv += (mirroring - MIRR_SINGLE1) * 0x400;
-					}
-
-					//*/
 
 					tempvalue = MEM::VRAM[tempv];
 				}
@@ -655,7 +659,7 @@ namespace PPU {
 			case PPU_CTRL: {	//Write $2000 W
 
 				T = (T & 0b111001111111111) | ((value & 0b00000011) << 10);
-				
+
 				NMIenabled =		!!(value & 0b10000000);
 				PPUmasterslave =	!!(value & 0b01000000);
 				SPRsize =			!!(value & 0b00100000);
@@ -717,7 +721,7 @@ namespace PPU {
 					W = 0;
 				}
 				//W = !W;
-				
+
 				break;
 			}
 			case PPU_DATA: {	//Write $2007 R W
@@ -757,10 +761,10 @@ namespace PPU {
 					if (tempv >= 0x2400 && tempv < 0x2800) {
 						tempv -= 0x0400;
 					}
-					if (tempv >= 0x2800 && tempv < 0x2c00) {
+					else if (tempv >= 0x2800 && tempv < 0x2c00) {
 						tempv -= 0x0400;
 					}
-					if (tempv >= 0x2c00 && tempv < 0x3000) {
+					else if (tempv >= 0x2c00 && tempv < 0x3000) {
 						tempv -= 0x0800;
 					}
 				}

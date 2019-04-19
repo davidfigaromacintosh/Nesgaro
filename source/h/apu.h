@@ -1,10 +1,10 @@
 namespace APU {
-	
+
 	const int samplerate = 88200;
 	Nes_Apu apu;
 	Blip_Buffer buff;
 	Sound_Queue* soundQueue;
-	
+
 
 	const int out_size = 2048;
 	blip_sample_t output[out_size];
@@ -54,7 +54,7 @@ namespace APU {
 
 	void setVolume(double vol) {
 		apu.volume(vol);
-		
+
 	}
 
 	void output_samples(const blip_sample_t* samples, size_t count) {
@@ -63,7 +63,7 @@ namespace APU {
 
 
 	void run_frame(int elapsed) {
-		
+
 		apu.end_frame(elapsed);
 		buff.end_frame(elapsed);
 

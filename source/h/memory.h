@@ -39,7 +39,7 @@ namespace MEM {
 	u8 nes2 = 0;
 
 	void init() {
-	
+
 		//Sekcja RAM
 		for (int i = 0; i < 0x800; i++) {
 			RAM[i] = 0x00;
@@ -96,9 +96,28 @@ namespace MEM {
 		MAPPER::init();
 		switch (mapper) {
 
+			//case 4: {
+			//	//for (u32 i = 0; i < 0x6000; i++) PRGROM[i] = PRGBANKS[i];
+			//	for (u32 i = 0; i < 0x8000; i++) PRGROM[i] = PRGBANKS[i + prgsize - 0x8000];
+			//	break;
+			//}
+
+			case 9: {
+				for (u32 i = 0; i < 0x2000; i++) PRGROM[i] = PRGBANKS[i];
+				for (u32 i = 0; i < 0x6000; i++) PRGROM[i + 0x2000] = PRGBANKS[i + prgsize - 0x6000];
+				break;
+			}
+
 			case 15: {
 				for (u32 i = 0; i < 0x8000; i++) {
 					PRGROM[i] = PRGBANKS[i];
+				} break;
+			}
+
+			case 71: {
+				for (u32 i = 0; i < 0x4000; i++) {
+					PRGROM[i] = PRGBANKS[i];
+					PRGROM[i + 0x4000] = PRGBANKS[i + std::min(prgsize - 0x4000, 0x3c000ul)];
 				} break;
 			}
 
@@ -130,9 +149,9 @@ namespace MEM {
 
 		u8 header[16];
 		FILE* f;
-		int ferror = fopen_s(&f, filename, "rb");
+		f = fopen(filename, "rb");
 
-		if (ferror != 0) {
+		if (f == NULL) {
 			return 1;
 		}
 
@@ -145,7 +164,7 @@ namespace MEM {
 
 		//Odczytujemy nag³ówek iNES
 		for (int i = 0; i < 0x10; i++) {
-			fread_s(&header[i], sizeof(header), 1, 1, f);
+			fread(&header[i], 1, 1, f);
 		}
 
 		if (header[0] != 'N' || header[1] != 'E' || header[2] != 'S' || header[3] != 0x1a) {
@@ -205,7 +224,7 @@ namespace MEM {
 
 			// £adujemy wszystkie banki PRG do bufora
 			//for (u32 i = 0; i < prgsize; i++)
-			fread_s(PRGBANKS, prgsize, sizeof(u8), prgsize, f);
+			fread(PRGBANKS, sizeof(u8), prgsize, f);
 
 		}
 
@@ -214,7 +233,7 @@ namespace MEM {
 
 			// £adujemy wszystkie banki CHR do bufora
 			//for (u32 i = 0; i < chrsize; i++)
-			fread_s(CHRBANKS, chrsize, sizeof(u8), chrsize, f);
+			fread(CHRBANKS, sizeof(u8), chrsize, f);
 
 			// Kopiujemy pierwszy i drugi bank PRG do pamiêci
 			for (int i = 0; i < 0x2000; i++) {
@@ -231,14 +250,14 @@ namespace MEM {
 	}
 
 	void DMA(u8 page) {
-		
+
 		CPU::cyclesLeft = CPU::cyclesLeft + 513 + CPU::oddCycle;
 		for (int i = 0; i < 0x100; i++) {
 			OAM[i] = MAINBUS::read((page << 8) + i);
 		}
 
 	}
-	
+
 	int dmc_read(void*, cpu_addr_t addr) {
 		return MAINBUS::read(addr);
 	}

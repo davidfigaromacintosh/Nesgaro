@@ -80,7 +80,7 @@ namespace CPU {
 	}
 
 	u16 getOpcodeMnemonicCode(u8 opcode) {
-	
+
 		switch (opcode) {
 
 		case ADC_ABS: case ADC_ABS_X: case ADC_ABS_Y: case ADC_IMM: case ADC_IND_X: case ADC_IND_Y: case ADC_ZP: case ADC_ZP_X: {
@@ -212,7 +212,7 @@ namespace CPU {
 		APU::reset(tvregion == PAL);
 		PC = MAINBUS::readAddr(MEM::reset);
 	}
-	
+
 	void reset() {
 		P |= 0x04;
 		S -= 3;
@@ -238,13 +238,13 @@ namespace CPU {
 	*/
 
 	u8 getOpcodeAddressingMode(u8 opcode) {
-	
+
 		switch (opcode) {
-		
+
 		//INDIRECT_X
 		/*1*/ case ADC_IND_X: case AND_IND_X: case CMP_IND_X: case EOR_IND_X: case LDA_IND_X: case ORA_IND_X: case SBC_IND_X: case STA_IND_X:
-		/*2*/ 
-		/*3*/ 
+		/*2*/
+		/*3*/
 		/*4*/
 		/*5*/
 		/*6*/
@@ -266,7 +266,7 @@ namespace CPU {
 		//IMMEDIATE
 		/*1*/ case ADC_IMM: case AND_IMM: case CMP_IMM: case EOR_IMM: case LDA_IMM: case ORA_IMM: case SBC_IMM:
 		/*2*/               case LDX_IMM: case LDY_IMM:
-		/*3*/ 
+		/*3*/
 		/*4*/ case CPX_IMM: case CPY_IMM:
 		/*5*/
 		/*6*/
@@ -288,8 +288,8 @@ namespace CPU {
 
 		//INDIRECT_Y
 		/*1*/ case ADC_IND_Y: case AND_IND_Y: case CMP_IND_Y: case EOR_IND_Y: case LDA_IND_Y: case ORA_IND_Y: case SBC_IND_Y: case STA_IND_Y:
-		/*2*/ 
-		/*3*/ 
+		/*2*/
+		/*3*/
 		/*4*/
 		/*5*/
 		/*6*/
@@ -309,7 +309,7 @@ namespace CPU {
 		}
 
 		//ZEROPAGE_Y
-		/*1*/ 
+		/*1*/
 		/*2*/                case LDX_ZP_Y:
 		/*3*/                               case STX_ZP_Y:
 		/*4*/
@@ -322,7 +322,7 @@ namespace CPU {
 		//ABSOLUTE_Y
 		/*1*/ case ADC_ABS_Y: case AND_ABS_Y: case CMP_ABS_Y: case EOR_ABS_Y: case LDA_ABS_Y: case ORA_ABS_Y: case SBC_ABS_Y: case STA_ABS_Y:
 		/*2*/                 case LDX_ABS_Y:
-		/*3*/ 
+		/*3*/
 		/*4*/
 		/*5*/
 		/*6*/
@@ -344,18 +344,18 @@ namespace CPU {
 		//ACCUMULATOR
 		/*1*/
 		/*2*/ case ASL_ACC:                             case LSR_ACC: case ROL_ACC: case ROR_ACC:
-		/*3*/ 
+		/*3*/
 		/*4*/
 		/*5*/
 		/*6*/
 		{
 			return ACCUMULATOR;
 		}
-	
+
 		//INDIRECT
 		/*1*/
-		/*2*/ 
-		/*3*/ 
+		/*2*/
+		/*3*/
 		/*4*/
 		/*5*/
 		/*6*/ case JMP_IND:
@@ -537,7 +537,7 @@ namespace CPU {
 	}
 
 	/*
-	
+
 	u8 tf =
 			(flag) |
 			getZ() << 1 |
@@ -697,7 +697,7 @@ namespace CPU {
 				return (address + Y);
 			}
 		}
-		
+
 		return pointer;
 	}
 
@@ -705,7 +705,7 @@ namespace CPU {
 
 	void executeBranch(u8 branch_type) {
 		u8 br = 0;
-		
+
 		switch (branch_type) {
 			case BPL: {
 				br = !getN();
@@ -758,7 +758,7 @@ namespace CPU {
 	//Definicje zadañ dla instrukcji
 	//1A - 8 typów adresacji
 	void executeADC(u8 addrmode) {	//ADC
-		
+
 		u8 operand = MAINBUS::read(getAddressFromType(addrmode, PC, 1));
 
 		u16 sum = A + operand + getC();
@@ -820,7 +820,7 @@ namespace CPU {
 			setFlagsZN(operand);
 			MAINBUS::write(address, operand);
 		}
-		
+
 	}
 	void executeLDX(u8 addrmode) { //LDX
 		X = MAINBUS::read(getAddressFromType(addrmode, PC, 1));
@@ -831,7 +831,7 @@ namespace CPU {
 		setFlagsZN(Y);
 	}
 	void executeLSR(u8 addrmode) {	//LSR
-		
+
 		if (addrmode == ACCUMULATOR) {
 			setC(!!(A & 0x01));
 			A = A >> 1;
@@ -844,10 +844,10 @@ namespace CPU {
 			setFlagsZN(operand);
 			MAINBUS::write(address, operand);
 		}
-		
+
 	}
 	void executeROL(u8 addrmode) {	//ROL
-		
+
 		if (addrmode == ACCUMULATOR) {
 			u8 tempC = getC();
 			setC(!!(A & 0x80));
@@ -865,7 +865,7 @@ namespace CPU {
 
 	}
 	void executeROR(u8 addrmode) {	//ROR
-		
+
 		if(addrmode == ACCUMULATOR) {
 
 			u8 tempC = getC();
@@ -881,7 +881,7 @@ namespace CPU {
 			setFlagsZN(operand);
 			MAINBUS::write(address, operand);
 		}
-		
+
 	}
 
 	//2A - 4 typów adresacji
@@ -944,7 +944,7 @@ namespace CPU {
 
 		u16 address = getAddressFromType(addrmode, PC, 0);
 		PC = address;
-		
+
 	}
 
 	//4 - 1 typ adresacji
@@ -1029,7 +1029,7 @@ namespace CPU {
 		setN(!!(tempP & 0b10000000));
 	}
 	void executeRTI() {	//RTI
-		u8 tempP = MAINBUS::pullStack(); 
+		u8 tempP = MAINBUS::pullStack();
 
 		setC(!!(tempP & 0b00000001));
 		setZ(!!(tempP & 0b00000010));
@@ -1101,7 +1101,7 @@ namespace CPU {
 			//Najpierw odczytaj jaki to opcode:
 			//High nibble
 			switch (num[stringptr]) {
-			
+
 				case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9': {
 					_opcode |= (num[stringptr] - '0') << 4; break;
 				}
@@ -1115,7 +1115,7 @@ namespace CPU {
 				}
 
 				default: break;
-	
+
 			}
 			stringptr++;
 
@@ -1147,7 +1147,7 @@ namespace CPU {
 			while (howmany > 0) {
 
 				while (num[stringptr] == ' ') { stringptr++; }
-			
+
 				//Potem odczytujemy operandy:
 				//High nibble
 				switch (num[stringptr]) {
@@ -1193,13 +1193,13 @@ namespace CPU {
 
 				if ( howmany == 0) {
 					switch (getOpcodeAddressingMode(_opcode)) {
-					
+
 					case ACCUMULATOR: {
 						putchar('A'); break;
 					}
 					case IMMEDIATE: {
 						printf("#$%02x", _operand[0]); break;
-						
+
 					}
 					case RELATIVE: case ZEROPAGE: {
 						printf("$%02x", _operand[0]); break;
@@ -1257,6 +1257,7 @@ namespace CPU {
 
 			if (readyForNMI == 1) {
 				readyForNMI = 0;
+				//NMIoccured = 0;
 				interrupt(INT_NMI);
 				#ifdef DEBUG_MODE
 				printf(" NMI occured @ Dot=%d Scanline=%d", PPU::dot, PPU::scanline);
@@ -1290,14 +1291,14 @@ namespace CPU {
 						break;
 					}
 				}
-			
+
 				printf(" (%s %s, %d length, %d cycles) @ PC=%04x (pointing at %04x)", getOpcodeMnemonic(op), getOpcodeAddressingModeName(op), getOpcodeLength(op), opcodeCycle[op], PC, getAddressFromType(addrmode, PC+1, 0));
 				#endif
 
 				//cyclesLeft = opcodeCycle[op];
 				PC++;
 
-				//Wertujesz listê 
+				//Wertujesz listê
 				switch (opcode) {
 
 					//1A - 8 typów adresacji
@@ -1325,7 +1326,7 @@ namespace CPU {
 					case STA: {
 						executeSTA(addrmode); break;
 					}
-				
+
 					//1B - 6 typów adresacji
 					case ASL: {
 						executeASL(addrmode); break;
@@ -1345,7 +1346,7 @@ namespace CPU {
 					case ROR: {
 						executeROR(addrmode); break;
 					}
-				
+
 					//2A - 4 typy adresacji
 					case DEC: {
 						executeDEC(addrmode); break;
@@ -1367,7 +1368,7 @@ namespace CPU {
 					case CPY: {
 						executeCPY(addrmode); break;
 					}
-				
+
 					//3A - 2 typy adresacji
 					case BIT: {
 						executeBIT(addrmode); break;
@@ -1463,7 +1464,7 @@ namespace CPU {
 					}
 				}
 
-				
+
 				if (opcode != JSR && opcode != JMP && opcode != BRK) { PC += getOpcodeLength(op) - 1; }
 
 				cyclesLeft += opcodeCycle[op];
@@ -1487,14 +1488,14 @@ namespace CPU {
 
 		} else {
 
-		
+
 
 		#ifdef DEBUG_MODE
 		printf(" Still executing...");
 		#endif
 
 		}
-		
+
 		if (cyclesLeft > 0) cyclesLeft--;
 		oddCycle = !oddCycle;
 

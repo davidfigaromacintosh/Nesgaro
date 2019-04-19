@@ -8,7 +8,7 @@
 
 #ifndef BLARGG_COMMON_H
 #define BLARGG_COMMON_H
-
+#define HAVE_CONFIG_H
 // Allow prefix configuration file *which can re-include blargg_common.h*
 // (probably indirectly).
 #ifdef HAVE_CONFIG_H
@@ -150,10 +150,10 @@ const blargg_err_t blargg_success = 0;
 #if !defined (BLARGG_BIG_ENDIAN) && !defined (BLARGG_LITTLE_ENDIAN)
 	#if defined (__powerc) || defined (macintosh)
 		#define BLARGG_BIG_ENDIAN 1
-	
+
 	#elif defined (_MSC_VER) && defined (_M_IX86)
 		#define BLARGG_LITTLE_ENDIAN 1
-	
+
 	#endif
 #endif
 
@@ -169,10 +169,10 @@ const blargg_err_t blargg_success = 0;
 #if !defined (BLARGG_CPU_POWERPC) && !defined (BLARGG_CPU_X86)
 	#if defined (__powerc)
 		#define BLARGG_CPU_POWERPC 1
-	
+
 	#elif defined (_MSC_VER) && defined (_M_IX86)
 		#define BLARGG_CPU_X86 1
-	
+
 	#endif
 #endif
 

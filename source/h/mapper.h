@@ -31,6 +31,19 @@ namespace MAPPER {
 		MMC3::risingEdge = 0;
 		#pragma endregion
 
+		//MMC2
+		#pragma region mapper9
+		MMC2::latch0 = 0xfd;
+		MMC2::latch1 = 0xfd;
+		#pragma endregion
+
+		//Camerica
+		#pragma region mapper71
+		CAMERICA::bankBlock = 0;
+		CAMERICA::bankProtect = 0;
+		CAMERICA::bankPage = 0;
+		#pragma endregion
+
 		//Educational Computer
 		#pragma region mapper178
 		EDU178::bankMode = 0;
@@ -250,6 +263,41 @@ namespace MAPPER {
 				break;
 			}
 
+			//MMC2
+			case 9: {
+
+				//Select 8 KB PRG ROM bank for CPU $8000-$9FFF
+				if (address >= 0xa000 && address <= 0xafff) {
+					memcpy(MEM::PRGROM, MEM::PRGBANKS + ((0x2000 * (value & 0b1111)) % MEM::prgsize), 0x2000);
+				}
+
+				//Select 4 KB CHR ROM bank for PPU $0000-$0FFF used when latch 0 = $FD
+				if (address >= 0xb000 && address <= 0xbfff) {
+					if (MMC2::latch0 == 0xfd) memcpy(MEM::VRAM, MEM::CHRBANKS + ((0x1000 * (value & 0b11111)) % MEM::chrsize), 0x1000);
+				}
+
+				//Select 4 KB CHR ROM bank for PPU $0000-$0FFF used when latch 0 = $FE
+				if (address >= 0xc000 && address <= 0xcfff) {
+					if (MMC2::latch0 == 0xfe) memcpy(MEM::VRAM, MEM::CHRBANKS + ((0x1000 * (value & 0b11111)) % MEM::chrsize), 0x1000);
+				}
+
+				//Select 4 KB CHR ROM bank for PPU $1000-$1FFF used when latch 1 = $FD
+				if (address >= 0xd000 && address <= 0xdfff) {
+					if (MMC2::latch1 == 0xfd) memcpy(MEM::VRAM + 0x1000, MEM::CHRBANKS + ((0x1000 * (value & 0b11111)) % MEM::chrsize), 0x1000);
+				}
+
+				//Select 4 KB CHR ROM bank for PPU $1000-$1FFF used when latch 1 = $FE
+				if (address >= 0xe000 && address <= 0xefff) {
+					if (MMC2::latch1 == 0xfe) memcpy(MEM::VRAM + 0x1000, MEM::CHRBANKS + ((0x1000 * (value & 0b11111)) % MEM::chrsize), 0x1000);
+				}
+
+				//Select 4 KB CHR ROM bank for PPU $1000-$1FFF
+				if (address >= 0xf000 && address <= 0xffff) {
+					PPU::mirroring = !(value & 1);
+				}
+				break;
+			}
+
 			//100-in-1 Contra Function 16
 			case 15: {
 				if (address & 0x8000) {
@@ -313,12 +361,22 @@ namespace MAPPER {
 			//Camerica
 			case 71: {
 
+				//Outer banks
+				if (address >= 0x8000 && address <= 0xbfff) {
+					if (!CAMERICA::bankProtect) CAMERICA::bankBlock = (value & 0b111);
+					CAMERICA::bankProtect = !!(value & 0b1000);
+					CAMERICA::setPRGbanks();
+				}
+
+				//Mirroring
 				if (address >= 0x9000 && address <= 0x9fff) {
 					PPU::mirroring = !!(value & 0b00010000) + MIRR_SINGLE1;
 				}
 
+				//Inner banks
 				else if (address >= 0xc000 && address <= 0xffff) {
-					memcpy(MEM::PRGROM, MEM::PRGBANKS + ((0x4000 * (value & 0b1111)) % MEM::prgsize), 0x4000);
+					CAMERICA::bankPage = value & 0b1111;
+					CAMERICA::setPRGbanks();
 				}
 
 				break;
@@ -378,6 +436,11 @@ namespace MAPPER {
 			//memcpy(MEM::PRGROM + 0x4000, MEM::PRGBANKS + MEM::prgsize - 0x4000, 0x4000);
 		}
 
+	}
+
+	void CAMERICA::setPRGbanks() {
+		memcpy(MEM::PRGROM, MEM::PRGBANKS + ((0x40000 * CAMERICA::bankBlock + 0x4000 * CAMERICA::bankPage) % MEM::prgsize), 0x4000);
+		memcpy(MEM::PRGROM + 0x4000, MEM::PRGBANKS + ((0x40000 * CAMERICA::bankBlock + 0x3c000) % MEM::prgsize), 0x4000);
 	}
 
 	void CAMQUATTRO::setPRGbanks() {

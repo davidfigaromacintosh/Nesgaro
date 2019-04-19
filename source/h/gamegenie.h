@@ -1,5 +1,5 @@
 namespace GAMEGENIE {
-	
+
 	void init() {
 		codeno = 0;
 		for (int i = 0; i < 256; i++) {
@@ -11,7 +11,7 @@ namespace GAMEGENIE {
 	}
 
 	u8 getLetterValue(char lett) {
-	
+
 		//Litery i odpowiadaj¹ce im wartoœci
 		switch (lett) {
 			case 'A': case 'a': return 0x0;
@@ -108,8 +108,8 @@ namespace GAMEGENIE {
 		}
 
 		FILE* f;
-		int letterno = 0, codeno = 0, chr = 0, ferror = fopen_s(&f, temp, "rb");
-		if (ferror != 0) return;
+		int letterno = 0, codeno = 0, chr = 0; f = fopen(temp, "rb");
+		if (f == NULL) return;
 
 		while (true) {
 
