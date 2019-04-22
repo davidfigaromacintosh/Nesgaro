@@ -16,6 +16,7 @@ namespace MAPPER {
 		u8 CHRmode;
 		u8 PRGmode;
 		u8 shift;
+		b PRGRAMenable;
 		void setPRGBanks();
 	}
 
@@ -23,6 +24,8 @@ namespace MAPPER {
 	namespace MMC3 {
 		u8 bankMode;
 		u8 PRGmode;
+		u8 PRGRAMenable;
+		u8 PRGRAMprotect;
 		u8 CHRinversion;
 		u8 IRQenable;
 		u8 IRQlatch;

@@ -263,6 +263,7 @@ namespace CPU {
 	u8 P;			//0bNV1BDIZC (Flagi C, Z, I, D, flaga czwarta B i pi¹ta s¹ pozorne, V, N)
 	u8 S;			//WskaŸnik stosu
 	u16 PC;			//WskaŸnik programu
+	u8 openBus;     //Open bus
 	u64 cycles;		//Licznik cykli
 	u8 oddCycle;
 	u8 NMIoccured;	//Czy wystapi³o NMI
@@ -296,8 +297,8 @@ namespace CPU {
 	F0	*/	BEQ, SBC, ILL, ILL, ILL, SBC, INC, ILL, SED, SBC, ILL, ILL, ILL, SBC, INC, ILL	/*
 		*/																					};
 
-	
-	
+
+
 
 	//Zwraca dan¹ instrukcjê jako identyfikator
 	u16 getOpcode(u8 opcode);
@@ -310,7 +311,7 @@ namespace CPU {
 	void init();
 	void power();
 	void reset();
-	
+
 	//Zwraca wartoœæ flagi
 	b getC();
 	b getZ();
@@ -318,7 +319,7 @@ namespace CPU {
 	b getD();
 	b getV();
 	b getN();
-	
+
 	//Ustaw flagê na 1
 	void setC();
 	void setZ();
@@ -344,7 +345,7 @@ namespace CPU {
 	void clrN();
 
 	u8 opcodeCycle[] = {
-	
+
 		7, 6, 8, 8, 8, 3, 5, 8, 3, 2, 2, 8, 8, 4, 6, 8,
 		2, 5, 8, 8, 8, 4, 6, 8, 2, 4, 8, 8, 8, 4, 7, 8,
 		6, 6, 8, 8, 3, 3, 5, 8, 4, 2, 2, 8, 4, 4, 6, 8,

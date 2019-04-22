@@ -52,6 +52,11 @@ namespace GUI {
 		return buff;
 	}
 
+	u32 crc32() {
+
+        return 0xffffffff;
+	}
+
 	void checkForUpdates() {
 
 	    CURL* c;
@@ -69,47 +74,6 @@ namespace GUI {
             curl_easy_cleanup(c);
 	    }
 
-
-
-
-        /*
-		//Tutaj jest ciekawie, bo emulator wysy³a requesta do strony "https://nes.figaro.ga/?ver" requesta i porównuje wersje. Jeœli s¹ ró¿ne, wyskoczy komunikat o updacie
-		HINTERNET hSession = NULL, hConnect = NULL, hRequest = NULL; bool bResults = false; DWORD dwSize = 0, dwDownloaded = 0; char dwVersion[64] = { 0 }, notifyV[256] = { 0 };
-
-		//Tworzymy sesjê
-		hSession = WinHttpOpen(L"WinHTTP Nesgaro/1.0", WINHTTP_ACCESS_TYPE_DEFAULT_PROXY, WINHTTP_NO_PROXY_NAME, WINHTTP_NO_PROXY_BYPASS, 0);
-
-		//Gdzie
-		if (hSession) hConnect = WinHttpConnect(hSession, L"nes.figaro.ga", 443, 0);
-
-		//Tworzymy requesta
-		if (hConnect) hRequest = WinHttpOpenRequest(hConnect, L"GET", L"/?ver", NULL, WINHTTP_NO_REFERER, WINHTTP_DEFAULT_ACCEPT_TYPES, WINHTTP_FLAG_SECURE);
-
-		//Wysy³amy requesta
-		if (hRequest) bResults = WinHttpSendRequest(hRequest, WINHTTP_NO_ADDITIONAL_HEADERS, 0, WINHTTP_NO_REQUEST_DATA, 0, 0, 0);
-
-		//Otrzymaj odpowiedŸ
-		if (bResults) bResults = WinHttpReceiveResponse(hRequest, NULL);
-
-		//Jeœli wszystko posz³o OK
-		if (bResults) {
-
-			if (WinHttpQueryDataAvailable(hRequest, &dwSize) && WinHttpReadData(hRequest, (void*)dwVersion, dwSize, &dwDownloaded) && _stricmp(dwVersion, NESGARO_VERSION)) {
-
-				sprintf(notifyV, "A new version of Nesgaro is available: %s.\nWould you like to download it now?", dwVersion);
-				if (MessageBoxExA(NULL, notifyV, "Update", MB_YESNO | MB_ICONINFORMATION, MAKELANGID(LANG_NEUTRAL, SUBLANG_NEUTRAL)) == IDYES) {
-					ShellExecuteA(NULL, "open", "https://nes.figaro.ga/", NULL, NULL, SW_SHOWNORMAL);
-				}
-
-			}
-
-		}
-
-		//Sprz¹tamy po sobie
-		if (hSession) WinHttpCloseHandle(hSession);
-		if (hConnect) WinHttpCloseHandle(hConnect);
-		if (hRequest) WinHttpCloseHandle(hRequest);
-        */
 	}
 
 	size_t displayUpdateMessage(void* str, size_t len, size_t nmem, void* usrp) {
@@ -123,12 +87,16 @@ namespace GUI {
             dwVersion[i] = *(char*)(str + i);
         }
 
-        if (!_stricmp(NESGARO_VERSION, dwVersion)) return rsize;
+        if (!_stricmp(NESGARO_VERSION, dwVersion)) {
+            MessageBoxA(NULL, "Your version of Nesgaro is up to date.", "No updates available", MB_OK | MB_SETFOREGROUND);
+        }
 
-        sprintf(notifyV, "A new version of Nesgaro is available: %s.\nWould you like to download it now?", dwVersion);
-        if (MessageBoxExA(NULL, notifyV, "Update", MB_YESNO | MB_ICONINFORMATION, MAKELANGID(LANG_NEUTRAL, SUBLANG_NEUTRAL)) == IDYES) {
-			ShellExecuteA(NULL, "open", "https://nes.figaro.ga/", NULL, NULL, SW_SHOWNORMAL);
-		}
+        else {
+            sprintf(notifyV, "A new version of Nesgaro is available: %s.\nWould you like to download it now?", dwVersion);
+            if (MessageBoxA(NULL, notifyV, "An update is available", MB_YESNO | MB_SETFOREGROUND | MB_ICONINFORMATION) == IDYES) {
+                ShellExecuteA(NULL, "open", "https://nes.figaro.ga/", NULL, NULL, SW_SHOWNORMAL);
+            }
+        }
 
 		return rsize;
 	}

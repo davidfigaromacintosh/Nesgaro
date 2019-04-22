@@ -1,7 +1,7 @@
-﻿//W razie jakby pojawił się jakiś błąd!
+//W razie jakby pojawił się jakiś błąd!
 //#define DEBUG_MODE
 
-#define NESGARO_VERSION "v0.47 alpha"
+#define NESGARO_VERSION "v0.49 alpha"
 
 //LIBy: https://www.sfml-dev.org/tutorials/2.5/start-vc.php
 #include <SFML/Graphics.hpp>
@@ -119,10 +119,8 @@ int _NESGARO(int argc, char **argv) {
 		strcpy(winTitle, GUI::getNesgaroTitle(GUI::getFileName(argv[1], false)));
 	}
 	else {
-		MEM::loadROM(GUI::getCurPath("\\resources\\hello.nes"));
+		MEM::loadROM(GUI::getCurPath("\\resources\\hello"));
 	}
-
-	//GUI::checkForUpdates();
 
 	window->setTitle(winTitle);
 
@@ -184,17 +182,17 @@ int _NESGARO(int argc, char **argv) {
 							}
 
 							//Hard reset
-							if ((wEvent.key.code == sf::Keyboard::T) /*&& sf::Keyboard::isKeyPressed(sf::Keyboard::Key::LShift)*/) {
+							if (wEvent.key.code == sf::Keyboard::T /*&& sf::Keyboard::isKeyPressed(sf::Keyboard::Key::LShift)*/) {
 								GUI::power();
 							}
 
 							//Soft reset
-							else if ((wEvent.key.code == sf::Keyboard::R) /*&& sf::Keyboard::isKeyPressed(sf::Keyboard::Key::LShift)*/) {
+							else if (wEvent.key.code == sf::Keyboard::R /*&& sf::Keyboard::isKeyPressed(sf::Keyboard::Key::LShift)*/) {
 								GUI::reset();
 							}
 
 							//Fullscreen
-							if ((wEvent.key.code == sf::Keyboard::F4)) {
+							if (wEvent.key.code == sf::Keyboard::F4) {
 								fullScreen = !fullScreen;
 
 								delete window,
@@ -204,6 +202,10 @@ int _NESGARO(int argc, char **argv) {
 								window->setIcon(16, 16, windowIcon.getPixelsPtr());
 								window->requestFocus();
 
+							}
+
+							if (wEvent.key.code == sf::Keyboard::F12) {
+                                GUI::checkForUpdates();
 							}
 
 						}

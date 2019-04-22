@@ -12,6 +12,7 @@ namespace GUI {
 	const char* getNesgaroTitle();
 	const char* getNesgaroTitle(const char* str);
 	const char* getFileName(const char* str, bool allowext);
+    u32 crc32();
 
 	void checkForUpdates();
     size_t displayUpdateMessage(void*, size_t, size_t, void*);

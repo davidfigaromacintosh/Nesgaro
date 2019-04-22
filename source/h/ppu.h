@@ -12,6 +12,7 @@ namespace PPU {
 		spr0 = 0;
 		sproverflow = 1;
 		vblank = 1;
+		vblAfter = 1;
 
 		//Wewnêtrzne rejestry PPU
 		T = 0;
@@ -71,6 +72,7 @@ namespace PPU {
 		spr0 = 0;
 		sproverflow = 1;
 		vblank = 1;
+        vblAfter = 1;
 
 		NMIsuppresion = 0;
 		VBLsuppresion = 0;
@@ -230,7 +232,7 @@ namespace PPU {
 			}
 
 			//if ((dot == 320 || dot == 328 || dot == 336) && renderingEnabled()) {
-			//
+            //
 			//	V = (V & 0b111111111100000) | ((V+1) & 0b000000000011111);
 			//}
 
@@ -334,7 +336,7 @@ namespace PPU {
 					NMIsuppresion = 0;
 				}
 
-				if (((scanline == 241 && dot >= 3) || (scanline > 241) || (scanline == -1)) && NMIenabled == 1 && vblank == 1 && NMIsuppresion == 0) {
+				if (((scanline == 241 && dot >= 3) || (scanline > 241) || (scanline == -1 && dot <= 2)) && NMIenabled == 1 && vblank == 1 && NMIsuppresion == 0) {
 					CPU::NMIoccured = 1;
 					NMIsuppresion = 1;
 				}
@@ -421,6 +423,7 @@ namespace PPU {
 		}
 
 		////
+	    vblAfter = vblank;
 
 	}
 
@@ -529,7 +532,7 @@ namespace PPU {
 
 				if (scanline == 241) {
 					//if (dot == 0) {
-					//	VBLsuppresion = 1;
+					//	NMIsuppresion = 1;
 					//}
 					if (dot == 1) {
 						tempvblank = 0;
@@ -582,10 +585,10 @@ namespace PPU {
 						if (tempv >= 0x2400 && tempv < 0x2800) {
 							tempv -= 0x0400;
 						}
-						else if (tempv >= 0x2800 && tempv < 0x2c00) {
+						if (tempv >= 0x2800 && tempv < 0x2c00) {
 							tempv -= 0x0400;
 						}
-						else if (tempv >= 0x2c00 && tempv < 0x3000) {
+						if (tempv >= 0x2c00 && tempv < 0x3000) {
 							tempv -= 0x0800;
 						}
 					}
@@ -761,10 +764,10 @@ namespace PPU {
 					if (tempv >= 0x2400 && tempv < 0x2800) {
 						tempv -= 0x0400;
 					}
-					else if (tempv >= 0x2800 && tempv < 0x2c00) {
+					if (tempv >= 0x2800 && tempv < 0x2c00) {
 						tempv -= 0x0400;
 					}
-					else if (tempv >= 0x2c00 && tempv < 0x3000) {
+					if (tempv >= 0x2c00 && tempv < 0x3000) {
 						tempv -= 0x0800;
 					}
 				}

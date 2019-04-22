@@ -115,6 +115,7 @@ namespace MEM {
 			}
 
 			case 71: {
+			    memset(RAM, 0, 0x800);
 				for (u32 i = 0; i < 0x4000; i++) {
 					PRGROM[i] = PRGBANKS[i];
 					PRGROM[i + 0x4000] = PRGBANKS[i + std::min(prgsize - 0x4000, 0x3c000ul)];
@@ -192,6 +193,7 @@ namespace MEM {
 		if (nes2 == 2) {
 			prgsize += (header[9] & 0b00001111) << 8;
 			chrsize += (header[9] & 0b11110000) << 4;
+			mapper  |= (header[8] & 0b00001111) << 8;
 		}
 		prgsize *= 16384;
 		chrsize *= 8192;
@@ -212,7 +214,7 @@ namespace MEM {
 
 		battery = !!(header[6] & 0b00000010);
 		trainer = !!(header[6] & 0b00000100);
-		mapper = (header[6] & 0b11110000) >> 4;
+		mapper |= (header[6] & 0b11110000) >> 4;
 
 		mapper |= (header[7] & 0b11110000);
 

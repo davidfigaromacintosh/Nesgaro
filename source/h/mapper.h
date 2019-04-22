@@ -16,12 +16,15 @@ namespace MAPPER {
 		MMC1::CHRmode = 0;
 		MMC1::PRGmode = 3;
 		MMC1::shift = 0;
+		MMC1::PRGRAMenable = 1;
 		#pragma endregion
 
 		//MMC3
 		#pragma region mapper4
 		MMC3::bankMode = 0;
 		MMC3::PRGmode = 0;
+		MMC3::PRGRAMenable = 0;
+		MMC3::PRGRAMprotect = 0;
 		MMC3::CHRinversion = 0;
 		MMC3::IRQenable = 0;
 		MMC3::IRQlatch = 0;
@@ -60,20 +63,43 @@ namespace MAPPER {
 		mapper = mapperid;
 	}
 
+	//READ MAPPER
 	u8 readbus(u16 address) {
 
-        u8 retval = 0;
+        u8 retval = CPU::openBus;
 
         switch (mapper) {
+
+            case 0: {
+                if (address >= 0x6000 && address <= 0x7fff) {
+                    retval = MEM::PRGRAM[address - 0x6000];
+			    } break;
+            }
+
+            case 1: {
+                if (address >= 0x6000 && address <= 0x7fff && MMC1::PRGRAMenable) {
+                    retval = MEM::PRGRAM[address - 0x6000];
+			    } break;
+            }
+
+            case 4: {
+                if (address >= 0x6000 && address <= 0x7fff && MMC3::PRGRAMenable) {
+                    retval = MEM::PRGRAM[address - 0x6000];
+			    } break;
+            }
 
 			case 228: {
 
 			    if (address >= 0x4020 && address <= 0x5fff) {
-
                     retval = ACTION52::RAM[address & 0b11];
-			    }
-                break;
+			    } break;
 			}
+
+			//Nesgaro
+            case 4044: {
+                if (address >= 0x6000 && address <= 0x7fff) retval = rand();
+                break;
+            }
 
         }
 
@@ -85,19 +111,36 @@ namespace MAPPER {
 	void writebus(u16 address, u8 value) {
 		switch (mapper) {
 
+            //NROM
+            case 0: {
+            	if (address >= 0x6000 && address <= 0x7fff) {
+                    MEM::PRGRAM[address - 0x6000] = value;
+			    } break;
+            }
+
 			//MMC1
 			case 1: {
-				MMC1::shift = ((value & 0b00001) << 4) | (MMC1::shift >> 1);
-				MMC1::count++;
 
-				//Reset shiftu gdy bit na MSB
-				if (value & 0b10000000) {
-					MMC1::PRGmode = 3;
-					MMC1::count = 0;
-					MMC1::shift = 0;
-					//MMC1::setPRGBanks();
-					break;
-				}
+			    if (address >= 0x6000 && address <= 0x7fff && MMC1::PRGRAMenable) {
+                    MEM::PRGRAM[address - 0x6000] = value;
+			    }
+
+			    //Rejestry przesuwne MMC1
+			    if (address >= 0x8000 && address <= 0xffff) {
+
+                    MMC1::shift = ((value & 0b00001) << 4) | (MMC1::shift >> 1);
+                    MMC1::count++;
+
+                    //Reset shiftu gdy bit na MSB
+                    if (value & 0b10000000) {
+                        MMC1::PRGmode = 3;
+                        MMC1::count = 0;
+                        MMC1::shift = 0;
+                        //MMC1::setPRGBanks();
+                        break;
+                    }
+
+			    }
 
 				//Po 5-tym wpisie...
 				if (MMC1::count == 5) {
@@ -153,12 +196,9 @@ namespace MAPPER {
 
 					//PRG
 					if (address >= 0xe000 && address <= 0xffff) {
-
-						if (MEM::prgsize > 0)
-							MMC1::setPRGBanks();
-
+                        MMC1::PRGRAMenable = !(MMC1::shift & 0b10000);
+						if (MEM::prgsize > 0) MMC1::setPRGBanks();
 					}
-
 
 					MMC1::shift = 0;
 					MMC1::count = 0;
@@ -168,20 +208,25 @@ namespace MAPPER {
 
 			//UxROM
 			case 2: {
-				if (MEM::prgsize > 0)
-				memcpy(MEM::PRGROM, MEM::PRGBANKS + ((0x4000 * (value & (MEM::nes2 == 2 ? 0b11111111 : 0b1111))) % MEM::prgsize), 0x4000);
-				break;
+			    if (address & 0x8000) {
+                    if (MEM::prgsize > 0) memcpy(MEM::PRGROM, MEM::PRGBANKS + ((0x4000 * (value & (MEM::nes2 == 2 ? 0b11111111 : 0b1111))) % MEM::prgsize), 0x4000);
+				} break;
 			}
 
 			//CNROM
 			case 3: {
-				if (MEM::chrsize > 0)
-				memcpy(MEM::VRAM, MEM::CHRBANKS + ((0x2000 * value) % MEM::chrsize), 0x2000);
-				break;
+			    if (address & 0x8000) {
+                    if (MEM::chrsize > 0) memcpy(MEM::VRAM, MEM::CHRBANKS + ((0x2000 * value) % MEM::chrsize), 0x2000);
+				} break;
 			}
 
 			//MMC3
 			case 4: {
+
+			    if (address >= 0x6000 && address <= 0x7fff && MMC3::PRGRAMenable && !MMC3::PRGRAMprotect) {
+                    MEM::PRGRAM[address - 0x6000] = value;
+			    }
+
 				if (address >= 0x8000 && address <= 0x9fff) {
 
 					//Bank select (even)
@@ -249,7 +294,8 @@ namespace MAPPER {
 					}
 
 					else {	//PRGRAM protection (odd)
-
+                        MMC3::PRGRAMprotect =!!(value & 0b01000000);
+                        MMC3::PRGRAMenable = !!(value & 0b10000000);
 					}
 				}
 
@@ -279,9 +325,10 @@ namespace MAPPER {
 
 			//AxROM
 			case 7: {
-				memcpy(MEM::PRGROM, MEM::PRGBANKS + ((0x8000 * (value & 0b111)) % MEM::prgsize), 0x8000);
-				PPU::mirroring = MIRR_SINGLE1 + !!(value & 0b10000);
-				break;
+			    if (address & 0x8000) {
+                    memcpy(MEM::PRGROM, MEM::PRGBANKS + ((0x8000 * (value & 0b111)) % MEM::prgsize), 0x8000);
+                    PPU::mirroring = MIRR_SINGLE1 + !!(value & 0b10000);
+				} break;
 			}
 
 			//MMC2
@@ -375,8 +422,9 @@ namespace MAPPER {
 
 			//BNROM NINA-001
 			case 34: {
-				if (MEM::prgsize > 0) memcpy(MEM::PRGROM, MEM::PRGBANKS + ((0x8000 * value) % MEM::prgsize), 0x8000);
-				break;
+			    if (address & 0x8000) {
+                    if (MEM::prgsize > 0) memcpy(MEM::PRGROM, MEM::PRGBANKS + ((0x8000 * value) % MEM::prgsize), 0x8000);
+				} break;
 			}
 
 			//Camerica
@@ -395,7 +443,7 @@ namespace MAPPER {
 				}
 
 				//Inner banks
-				else if (address >= 0xc000 && address <= 0xffff) {
+				if (address >= 0xc000 && address <= 0xffff) {
 					CAMERICA::bankPage = value & 0b1111;
 					CAMERICA::setPRGbanks();
 				}
@@ -405,9 +453,10 @@ namespace MAPPER {
 
 			//Magic Jewerly 2
 			case 216: {
-				if (MEM::prgsize > 0) memcpy(MEM::PRGROM, MEM::PRGBANKS + ((0x8000 * (address & 1)) % MEM::prgsize), 0x8000);
-				if (MEM::chrsize > 0) memcpy(MEM::VRAM, MEM::CHRBANKS + ((0x2000 * (address & 0x0e) >> 1) % MEM::prgsize), 0x2000);
-				break;
+			    if (address & 0x8000) {
+                    if (MEM::prgsize > 0) memcpy(MEM::PRGROM, MEM::PRGBANKS + ((0x8000 * (address & 1)) % MEM::prgsize), 0x8000);
+                    if (MEM::chrsize > 0) memcpy(MEM::VRAM, MEM::CHRBANKS + ((0x2000 * (address & 0x0e) >> 1) % MEM::chrsize), 0x2000);
+				} break;
 			}
 
 			//Action 52 / Cheetahmen II
@@ -420,7 +469,7 @@ namespace MAPPER {
 			    }
 
 			    //Reszta
-			    if (address >= 0x8000 && address <= 0xffff) {
+			    if (address & 0x8000) {
 
                     //CHR
                     if (MEM::chrsize > 0) memcpy(MEM::VRAM, MEM::CHRBANKS + ((0x2000 * ( (value & 0b11) | ((address & 0b1111) << 2) )) % MEM::prgsize), 0x2000);
@@ -468,7 +517,11 @@ namespace MAPPER {
 				break;
 			}
 
+            //Nesgaro
+            case 4044: {
 
+                break;
+            }
 
 		}
 	}

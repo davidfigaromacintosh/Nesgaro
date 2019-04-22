@@ -50,6 +50,7 @@ namespace PPU {
 	u8 spr0;			//Flaga okreœla, czy nast¹pi³o zdarzenie Sprite 0 Hit
 	u8 sproverflow;	//Czy jest Sprite Overflow
 	u8 vblank;		//czy jest VBlank
+    u8 vblAfter;
 
 	//Wewnêtrzne rejestry PPU
 	/* Rejestr V to adres VRAM, jego bity odpowiadaj¹ nastêpuj¹cym:
@@ -75,7 +76,7 @@ namespace PPU {
 	b	OAMIsSpr0[256];
 	u8	OAMIndex[8];		//Index sprite'u
 
-	//u8 
+	//u8
 
 	// Zwi¹zane z VRAM...
 	u8 fineX;
