@@ -2,6 +2,35 @@
 
 ![alt text][logo]
 
-# **A portable NES emulator written in C++**
+# **WHAT IS NESGARO?**
+Well, as the name tells, it's just a regular NES emulator.
+
+**SUPPORTED MAPPERS:**
+
+-Mapper #0 NROM
+
+-Mapper #1 SxROM MMC1
+
+-Mapper #2 UxROM
+
+-Mapper #3 CNROM
+
+-Mapper #4 TxROM MMC3
+
+-Mapper #7 AxROM
+
+-Mapper #9 PxROM MMC2 (glitchy)
+
+-Mapper #15 100-in-1 Contra Function 16
+
+-Mapper #34 BNROM NINA-001
+
+-Mapper #71 Camerica / Pegasus 5-in-1
+
+-Mapper #216 Magic Jewerly II
+
+-Mapper #228 Action 52 / Cheetahmen II
+
+-Mapper #232 Camerica Quattro
 
 ###### Work in progress...
