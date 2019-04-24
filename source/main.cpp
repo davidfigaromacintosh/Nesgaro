@@ -28,7 +28,10 @@ static sf::RenderWindow* window;
 #include "include/Nes_Apu.h"
 #include "include/Sound_Queue.h"
 
+//#ifdef _WIN32
 #include <Windows.h>
+//#endif
+
 #include <curl/curl.h>
 #include "types.h"
 
@@ -55,7 +58,7 @@ static sf::RenderWindow* window;
 
 static SCREEN::Screen* screen;
 
-static bool vsync = false;
+//static bool vsync = false;
 
 int _NESGARO(int argc, char **argv) {
 
@@ -89,7 +92,7 @@ int _NESGARO(int argc, char **argv) {
 	#endif
 
 	window->setKeyRepeatEnabled(false);
-	window->setVerticalSyncEnabled(true);
+	window->setVerticalSyncEnabled(false);
 	window->setFramerateLimit(fps[tvregion]);
 
 	if (windowIcon.loadFromFile(GUI::getCurPath("\\resources\\icon.png"))) {
@@ -119,14 +122,14 @@ int _NESGARO(int argc, char **argv) {
 		strcpy(winTitle, GUI::getNesgaroTitle(GUI::getFileName(argv[1], false)));
 	}
 	else {
-		MEM::loadROM(GUI::getCurPath("\\resources\\hello"));
+		MEM::loadROM(GUI::getCurPath("\\resources\\hello")); MEM::mapper = 4097; MAPPER::setMapper(MEM::mapper);
 	}
 
 	window->setTitle(winTitle);
 
 	//Główna pętla (tutaj odprawia się cała emulacja)
 	u64 masterclock = 0;
-	//bool vsync = false;
+	bool vsync = false;
 	while (window->isOpen()) {
 
 		//NTSC

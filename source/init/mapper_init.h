@@ -52,6 +52,9 @@ namespace MAPPER {
 	//Mapper 178
 	namespace EDU178 {
 		u8 bankMode;
+		u8 PRGlowBank;
+		u8 PRGhiBank;
+		void setPRGbanks();
 	}
 
 	namespace ACTION52 {
@@ -63,6 +66,11 @@ namespace MAPPER {
 		u8 bankBlock;
 		u8 bankPage;
 		void setPRGbanks();
+	}
+
+	//Mapper 254
+	namespace PIKACHUY2K {
+        u8 exReg[2];
 	}
 
 

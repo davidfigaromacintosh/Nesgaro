@@ -96,14 +96,17 @@ namespace GAMEGENIE {
 	void readFromFile(const char* romfname) {
 
 		char temp[1024] = { 0 };
-		char codes[255][9] = { 0 };
+		char codes[256][9] = { 0 };
 
 		strcpy(temp, romfname);
 		int ptr = strlen(temp);
-		while (temp[ptr] != '.') {
+		while (true) {
 			if (temp[--ptr] == '.') {
 				temp[ptr] = 0;
-				strcat(temp, ".gg");
+				strcat(temp, ".gg"); break;
+			}
+			if (ptr == 0) {
+				strcat(temp, ".gg"); break;
 			}
 		}
 

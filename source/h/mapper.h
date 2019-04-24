@@ -50,12 +50,19 @@ namespace MAPPER {
 		//Educational Computer
 		#pragma region mapper178
 		EDU178::bankMode = 0;
+		EDU178::PRGlowBank = 0;
+		EDU178::PRGhiBank = 0;
 		#pragma endregion
 
 		//Camerica Quattro
 		#pragma region mapper232
 		CAMQUATTRO::bankBlock = 0;
 		CAMQUATTRO::bankPage = 0;
+		#pragma endregion
+
+        #pragma region mapper254
+		PIKACHUY2K::exReg[0] = 0;
+		PIKACHUY2K::exReg[1] = 0;
 		#pragma endregion
 	}
 
@@ -95,17 +102,37 @@ namespace MAPPER {
 			    } break;
 			}
 
+            case 254: {
+                if (address >= 0x6000 && address <= 0x7fff) {
+                    retval = MEM::PRGRAM[address - 0x6000] ^ (PIKACHUY2K::exReg[0] ? 0 : PIKACHUY2K::exReg[1]);
+			    } break;
+            }
+
 			//Nesgaro
-            case 4044: {
+            case 4097: {
+                if (address >= 0x4020 && address <= 0x5fff) {
+
+                        switch (address & 3) {
+
+                            case 0: { retval = 0xF1; break;}
+                            case 1: { retval = 0x9A; break;}
+                            case 2: { retval = 0x20; break;}
+                            case 3: { retval = 0x5A; break;}
+
+                        }
+                }
+
                 if (address >= 0x6000 && address <= 0x7fff) retval = rand();
+
                 break;
             }
 
         }
 
         return retval;
-
 	}
+
+
 
 	// DEFINICJE DLA MAPPERÓW
 	void writebus(u16 address, u8 value) {
@@ -220,11 +247,17 @@ namespace MAPPER {
 				} break;
 			}
 
-			//MMC3
-			case 4: {
+			//MMC3 & MMC3-like
+			case 4: case 254: {
 
 			    if (address >= 0x6000 && address <= 0x7fff && MMC3::PRGRAMenable && !MMC3::PRGRAMprotect) {
                     MEM::PRGRAM[address - 0x6000] = value;
+			    }
+
+			    //PIKACHU Y2K
+			    if (mapper == 254) {
+                    if (address == 0x8000) {PIKACHUY2K::exReg[0] = 0xff;}
+                    if (address == 0xa001) {PIKACHUY2K::exReg[1] = value;}
 			    }
 
 				if (address >= 0x8000 && address <= 0x9fff) {
@@ -451,6 +484,21 @@ namespace MAPPER {
 				break;
 			}
 
+			case 178: {
+
+                switch(address) {
+                    case 0x4800: {
+                        PPU::mirroring = !(value & 1);
+                        EDU178::bankMode = (value &0b110) > 1;
+                        break; }
+                    case 0x4801: {
+
+                        break; }
+                }
+
+                break;
+			}
+
 			//Magic Jewerly 2
 			case 216: {
 			    if (address & 0x8000) {
@@ -518,7 +566,7 @@ namespace MAPPER {
 			}
 
             //Nesgaro
-            case 4044: {
+            case 4097: {
 
                 break;
             }
