@@ -1410,6 +1410,9 @@ namespace CPU {
 					case INY: {
 						executeINY(); break;
 					}
+					case NOP: {
+                                      break;
+					}
 					case PHA: {
 						executePHA(); break;
 					}
@@ -1460,6 +1463,9 @@ namespace CPU {
 					}
 
 					default: {
+					    char temp[256] = {0};
+					    sprintf(temp, "An illegal opcode has been executed: 0x%02x", op);
+					    MessageBoxA(NULL, temp, "Error", MB_OK | MB_ICONERROR); exit(1);
 						break;
 					}
 				}

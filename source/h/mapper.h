@@ -95,6 +95,16 @@ namespace MAPPER {
 			    } break;
             }
 
+            //Sachen NROM 143
+            case 143: {
+                if ((address >= 0x4100 && address <= 0x5fff)) {
+                    retval = 0x40 | (~address & 0b111111);
+                }
+                if (address >= 0x6000 && address <= 0x7fff) {
+                    retval = MEM::PRGRAM[address & 0x1fff];
+			    } break;
+            }
+
 			case 228: {
 
 			    if (address >= 0x4020 && address <= 0x5fff) {
@@ -141,7 +151,7 @@ namespace MAPPER {
             //NROM
             case 0: {
             	if (address >= 0x6000 && address <= 0x7fff) {
-                    MEM::PRGRAM[address - 0x6000] = value;
+                    MEM::PRGRAM[address & 0x7ff] = value;
 			    } break;
             }
 
