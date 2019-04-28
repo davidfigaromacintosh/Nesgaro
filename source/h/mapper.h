@@ -120,7 +120,7 @@ namespace MAPPER {
 
 			//Nesgaro
             case 4097: {
-                if (address >= 0x4020 && address <= 0x5fff) {
+                if (address >= 0x4020 && address <= 0x4fff) {
 
                         switch (address & 3) {
 
@@ -132,7 +132,7 @@ namespace MAPPER {
                         }
                 }
 
-                if (address >= 0x6000 && address <= 0x7fff) retval = rand();
+                if (address >= 0x5000 && address <= 0x5fff) retval = rand();
 
                 break;
             }

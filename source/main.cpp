@@ -12,8 +12,8 @@
 #define PAL			1
 #define DENDY		2
 
-#define NES_WIDTH	256
-#define NES_HEIGHT	224
+static int NES_WIDTH	=256;
+static int NES_HEIGHT	=224;
 
 static int tvregion = NTSC;
 static sf::RenderWindow* window;
@@ -112,13 +112,14 @@ int _NESGARO(int argc, char **argv) {
 	screen->resize(windowScale);
 	PPU::loadPalette(GUI::getCurPath("\\resources\\palette.pal"));
 	PPU::connectScreen(screen);
-	APU::setVolume(0.25);
+	//APU::setVolume(0.25);
 
 	//ROMy do testowania
 
 	if (argc > 1) {
 		MEM::loadROM(argv[1]);
 		GAMEGENIE::purgeCheatCodes(); GAMEGENIE::readFromFile(argv[1]);
+		GUI::saveloadWRAM(argv[1], 0);
 		strcpy(winTitle, GUI::getNesgaroTitle(GUI::getFileName(argv[1], false)));
 	}
 	else {
@@ -144,7 +145,7 @@ int _NESGARO(int argc, char **argv) {
 		if (tvregion == PAL) {
 
 			if (masterclock % 16 == 0)		CPU::step();	//Cykl CPU dla standardu PAL
-			if (masterclock % 5 == 0)		PPU::step();	//Cykl PPU dla standardu PAL
+			if (masterclock %  5 == 0)		PPU::step();	//Cykl PPU dla standardu PAL
 
 		} masterclock += 1;
 
@@ -161,7 +162,7 @@ int _NESGARO(int argc, char **argv) {
 
 					case sf::Event::Closed: {
 						window->close();
-						return 0xF19A20;
+						return GUI::quit(argv[1]);
 					}
 
 					case sf::Event::Resized: {
@@ -181,7 +182,7 @@ int _NESGARO(int argc, char **argv) {
 							//Quit
 							if (wEvent.key.code == sf::Keyboard::Escape) {
 								window->close();
-								return 0xF19A20;
+								return GUI::quit(argv[1]);
 							}
 
 							//Hard reset
@@ -192,6 +193,23 @@ int _NESGARO(int argc, char **argv) {
 							//Soft reset
 							else if (wEvent.key.code == sf::Keyboard::R /*&& sf::Keyboard::isKeyPressed(sf::Keyboard::Key::LShift)*/) {
 								GUI::reset();
+							}
+
+							if (wEvent.key.code == sf::Keyboard::P /*&& sf::Keyboard::isKeyPressed(sf::Keyboard::Key::LShift)*/) {
+                                tvregion = !tvregion;
+
+                                if (tvregion == NTSC) NES_HEIGHT = 224;
+                                if (tvregion != NTSC) NES_HEIGHT = 240;
+
+                                window->setSize(sf::Vector2u(
+                                    window->getSize().x < NES_WIDTH ? NES_WIDTH : window->getSize().x,
+                                    window->getSize().y < NES_HEIGHT ? NES_HEIGHT : window->getSize().y
+                                ));
+                                screen->resize();
+                                window->setView(sf::View(sf::FloatRect(0.f, 0.f, (float)window->getSize().x, (float)window->getSize().y)));
+
+                                APU::setClockRate(tvregion);
+                                window->setFramerateLimit(fps[tvregion]);
 							}
 
 							//Fullscreen
@@ -231,5 +249,5 @@ int _NESGARO(int argc, char **argv) {
 		}
 	}
 
-	return 0xF19A20;
+    return GUI::quit(argv[1]);
 }

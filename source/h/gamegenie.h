@@ -101,18 +101,15 @@ namespace GAMEGENIE {
 		strcpy(temp, romfname);
 		int ptr = strlen(temp);
 		while (true) {
-			if (temp[--ptr] == '.') {
-				temp[ptr] = 0;
-				strcat(temp, ".gg"); break;
-			}
-			if (ptr == 0) {
+			if (temp[--ptr] == '.' || ptr == 0) {
+				if (ptr > 0) temp[ptr] = 0;
 				strcat(temp, ".gg"); break;
 			}
 		}
 
 		FILE* f;
-		int letterno = 0, codeno = 0, chr = 0; f = fopen(temp, "rb");
-		if (f == NULL) return;
+		if ((f = fopen(temp, "rb")) == NULL) return;
+		int letterno = 0, codeno = 0, chr = 0;
 
 		while (true) {
 

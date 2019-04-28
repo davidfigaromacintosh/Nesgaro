@@ -1,9 +1,10 @@
 namespace APU {
-	
+
 	unsigned int clock[] = { 1789773, 1662607, 1773448 };
 
 	void init();
 	void reset(b tvreg);
+	void setClockRate(long);
 	void run_frame(int elapsed);
 	void output_samples(const blip_sample_t* samples, size_t count);
 	cpu_time_t irqBefore();

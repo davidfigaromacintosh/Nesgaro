@@ -2,16 +2,16 @@
 
 PRZYDATNE INFORMACJE:
 http://nesdev.com/PPU%20addressing.txt									O adresowaniu
-https://wiki.nesdev.com/w/images/4/4f/Ppu.svg							Wydarzenia dla odpowiednich punktów na ekranie
+https://wiki.nesdev.com/w/images/4/4f/Ppu.svg							Wydarzenia dla odpowiednich punktÃ³w na ekranie
 https://wiki.nesdev.com/w/index.php/PPU_registers						Rejestry PPU
-https://wiki.nesdev.com/w/index.php/PPU_scrolling						Wpisy i odczyty do rejestrów $2005 i $2006
-http://nesdev.com/NES%20emulation%20discussion.txt						Ogólny poradnik jak renderowaæ itd
-https://wiki.nesdev.com/w/index.php/PPU_power_up_state					Status PPU zaraz po w³¹czeniu konsoli
-https://wiki.nesdev.com/w/index.php/PPU_pattern_tables					Jak dane kafelków s¹ przechowywane w CHR
-https://wiki.nesdev.com/w/index.php/PPU_attribute_tables				Wszystko o tzw. "tabeli atrybutów"
-https://wiki.nesdev.com/w/index.php/PPU_sprite_evaluation				O rysowaniu sprite'ów na ekranie
+https://wiki.nesdev.com/w/index.php/PPU_scrolling						Wpisy i odczyty do rejestrÃ³w $2005 i $2006
+http://nesdev.com/NES%20emulation%20discussion.txt						OgÃ³lny poradnik jak renderowaÃ¦ itd
+https://wiki.nesdev.com/w/index.php/PPU_power_up_state					Status PPU zaraz po wÂ³Â¹czeniu konsoli
+https://wiki.nesdev.com/w/index.php/PPU_pattern_tables					Jak dane kafelkÃ³w sÂ¹ przechowywane w CHR
+https://wiki.nesdev.com/w/index.php/PPU_attribute_tables				Wszystko o tzw. "tabeli atrybutÃ³w"
+https://wiki.nesdev.com/w/index.php/PPU_sprite_evaluation				O rysowaniu sprite'Ã³w na ekranie
 https://wiki.nesdev.com/w/index.php/PPU_programmer_reference			Wszystko
-http://thealmightyguru.com/Games/Hacking/Wiki/index.php/NES_Palette		Paleta kolorów
+http://thealmightyguru.com/Games/Hacking/Wiki/index.php/NES_Palette		Paleta kolorÃ³w
 
 */
 
@@ -41,19 +41,19 @@ http://thealmightyguru.com/Games/Hacking/Wiki/index.php/NES_Palette		Paleta kolo
 namespace PPU {
 
 	//Ekran
-	u16 dot;		//Okreœla numer piksela od pocz¹tku linii
+	u16 dot;		//OkreÅ“la numer piksela od poczÂ¹tku linii
 	s16 scanline;	//Numer linii na ekranie: -1 = prescan, od 0 do 239 = widzialne linie, od 240 do 260 = postscan
-	u8 oddframe;	//Okreœla, czy numer klatki video jest parzysty czy nie
+	u8 oddframe;	//OkreÅ“la, czy numer klatki video jest parzysty czy nie
 	u64 frame;		//Numer klatki
 
 	//Flagi
-	u8 spr0;			//Flaga okreœla, czy nast¹pi³o zdarzenie Sprite 0 Hit
+	u8 spr0;			//Flaga okreÅ“la, czy nastÂ¹piÂ³o zdarzenie Sprite 0 Hit
 	u8 sproverflow;	//Czy jest Sprite Overflow
 	u8 vblank;		//czy jest VBlank
     u8 vblAfter;
 
-	//Wewnêtrzne rejestry PPU
-	/* Rejestr V to adres VRAM, jego bity odpowiadaj¹ nastêpuj¹cym:
+	//WewnÃªtrzne rejestry PPU
+	/* Rejestr V to adres VRAM, jego bity odpowiadajÂ¹ nastÃªpujÂ¹cym:
 		V: yyy NN YYYYY XXXXX
 		   ||| || ||||| +++++-- Przewijanie w X
 		   ||| || +++++-------- Przewijanie w Y
@@ -69,16 +69,24 @@ namespace PPU {
 	u8 readbuffer;
 	u16 mirroring;
 
-	u8	BGFinal[256];		//Bufor scanlinii t³a
+	//Zawiera dane dwÃ³ch nastÄ™pnych kafelkÃ³w, czemu dwÃ³ch?
+	//Rejestr Fine X wybiera od ktÃ³rego bitu ma siÄ™ zaczÄ…Ä‡ renderowanie kafelkÃ³w na ekranie.
+    u16 bgRegister[2];
+
+    //Te zawierajÄ… informacje o kolorze kafelkÃ³w rysowanych na ekranie.
+    //Oficjalnie te rejestry sÄ… 8-bitowe i przeÅ‚Ä…czane za pomocÄ… specjalnego przeÅ‚Ä…cznika, ale dla uproszczenia obliczeÅ„ zdefiniowany jest on jako 16-bitowy.
+    //Nie zmieni to koÅ„cowego rezultatu w Å¼aden sposÃ³b.
+    u16 palRegister[2];
+
 	u8	OAM2[0x20];			//8*4 bajty OAM2
-	u8	OAM2Final[256];		//Koñcowa scanlinia ze sprite'ami
-	b	OAMPriority[256];	//Priorytet rysowania (czy za t³em czy przed t³em)
+	u8	OAM2Final[256];		//KoÃ±cowa scanlinia ze sprite'ami
+	b	OAMPriority[256];	//Priorytet rysowania (czy za tÂ³em czy przed tÂ³em)
 	b	OAMIsSpr0[256];
 	u8	OAMIndex[8];		//Index sprite'u
 
 	//u8
 
-	// Zwi¹zane z VRAM...
+	// ZwiÂ¹zane z VRAM...
 	u8 fineX;
 	u8 fineY;
 	u16 coarseX;
@@ -89,7 +97,7 @@ namespace PPU {
 
 	SCREEN::Screen *scr;
 
-	u16 scanlines[] = { 261, 311, 311};
+	u16 scanlines[] = { 262, 312, 312 };
 
 	//Bity $2000
 	u8 NMIenabled;
@@ -115,7 +123,7 @@ namespace PPU {
 
 	b isOpaque[256][240] = { 0 };
 
-	//Paleta kolorów (TODO)
+	//Paleta kolorÃ³w (TODO)
 	u32 colors[64] = {
 		0x7C7C7CFF,
 		0x0000FCFF,
@@ -191,6 +199,11 @@ namespace PPU {
 	void connectScreen(SCREEN::Screen *_scr) {
 		scr = _scr;
 	}
+
+	void setHori(u8);
+	void setVert(u8);
+	u8 getHori();
+	u8 getVert();
 
 	u8 fetchPixel(u8 liteColor);
 

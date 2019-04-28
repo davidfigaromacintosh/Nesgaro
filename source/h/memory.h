@@ -73,10 +73,11 @@ namespace MEM {
 		}
 
 		//Sekcja PRGRAM
-		for (int i = 0; i < 0x2000; i++) {
-			PRGRAM[i] = rand();
+		if (!battery) {
+            for (int i = 0; i < 0x2000; i++) {
+                PRGRAM[i] = rand();
+            }
 		}
-
 		//Sekcja VRAM
 		for (int i = (chrsize == 0 ? 0 : 0x2000); i < 0x3f00; i++) {
 			VRAM[i] = rand();
@@ -96,11 +97,12 @@ namespace MEM {
 		MAPPER::init();
 		switch (mapper) {
 
-			//case 4: {
-			//	//for (u32 i = 0; i < 0x6000; i++) PRGROM[i] = PRGBANKS[i];
-			//	for (u32 i = 0; i < 0x8000; i++) PRGROM[i] = PRGBANKS[i + prgsize - 0x8000];
-			//	break;
-			//}
+			case 4: case 254: {
+				//for (u32 i = 0; i < 0x6000; i++) PRGROM[i] = PRGBANKS[i];
+				//for (u32 i = 0; i < 0x8000; i++) PRGROM[i] = PRGBANKS[i + prgsize - 0x8000];
+				for (u32 i = 0; i < 0x8000; i++) PRGROM[i] = PRGBANKS[(i & 0x3fff) + prgsize - 0x4000];
+				break;
+			}
 
 			case 9: {
 				for (u32 i = 0; i < 0x2000; i++) PRGROM[i] = PRGBANKS[i];

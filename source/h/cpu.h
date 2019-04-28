@@ -206,6 +206,7 @@ namespace CPU {
 		Y = 0;
 		NMIoccured = 0;
 		readyForNMI = 0;
+		NMIidle = 0;
 		cycles = 0;
 		oddCycle = 1;
 		APUelapsed = 0;
@@ -747,7 +748,9 @@ namespace CPU {
 			s8 off = MAINBUS::read(PC);
 			u16 PC2 = PC + off;
 
-			checkPageCross(PC, PC2, 1);
+			checkPageCross(PC + 1, PC2 + 1, 1);
+
+			//if (off < 0) {cyclesLeft--;}
 
 			cyclesLeft++;
 			PC = PC2;
@@ -1256,7 +1259,6 @@ namespace CPU {
 		if (cyclesLeft == 0) {
 
 			if (readyForNMI == 1) {
-				readyForNMI = 0;
 				//NMIoccured = 0;
 				interrupt(INT_NMI);
 				#ifdef DEBUG_MODE
@@ -1264,13 +1266,13 @@ namespace CPU {
 				#endif
 			}
 			else if (IRQoccured == 1) {
-				IRQoccured = 0;
+				//IRQoccured = 0;
 				interrupt(INT_IRQ);
 				#ifdef DEBUG_MODE
 				printf(" IRQ occured @ Dot=%d Scanline=%d", PPU::dot, PPU::scanline);
 				#endif
 			}
-			else {
+			if(IRQoccured == 0 && readyForNMI != 2) {
 
 				u8 op = MAINBUS::read(PC);
 
@@ -1487,9 +1489,18 @@ namespace CPU {
 				#endif
 			}
 
+            //if (NMIidle == 1) readyForNMI = 0;
+            if (readyForNMI == 2 ) { readyForNMI = 0; }
+            if (readyForNMI == 1 ) { readyForNMI = 2; }
+            //else readyForNMI++;
+			//else { readyForNMI++; }
+			//else NMIidle = 0;
+
+			IRQoccured = 0;
+
 			if (NMIoccured == 1) {
-				readyForNMI = 1;
 				NMIoccured = 0;
+				if (readyForNMI == 0) readyForNMI = 1;
 			}
 
 		} else {

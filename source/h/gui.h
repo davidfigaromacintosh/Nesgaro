@@ -76,6 +76,35 @@ namespace GUI {
 
 	}
 
+	void saveloadWRAM(const char* savefname, bool _save) {
+
+	    if (!MEM::battery) return;
+
+        char temp[1024] = { 0 };
+
+		strcpy(temp, savefname);
+		int ptr = strlen(temp);
+		while (true) {
+			if (temp[--ptr] == '.' || ptr == 0) {
+				if (ptr > 0) temp[ptr] = 0;
+				strcat(temp, ".nesb"); break;
+			}
+		}
+
+		FILE* f;
+
+		if (_save) {
+            if ((f = fopen(temp, "wb")) == NULL) return;
+            fwrite(MEM::PRGRAM, sizeof(u8), 0x2000, f);
+		}
+		else {
+            if ((f = fopen(temp, "rb")) == NULL) return;
+            fread(MEM::PRGRAM, sizeof(u8), 0x2000, f);
+		}
+
+		fclose(f);
+	}
+
 	size_t displayUpdateMessage(void* str, size_t len, size_t nmem, void* usrp) {
 
 	    size_t rsize = len * nmem;
@@ -99,6 +128,11 @@ namespace GUI {
         }
 
 		return rsize;
+	}
+
+	int quit(const char* _path) {
+		if (MEM::battery) GUI::saveloadWRAM(_path, 1);
+		return 0xF19A20;
 	}
 
 }

@@ -22,7 +22,11 @@ namespace APU {
 	}
 
 	void reset(b tvreg) {
-		apu.reset(tvreg, 0x7f);
+		apu.reset(tvreg, 0);
+	}
+
+	void setClockRate(int tvreg) {
+        buff.clock_rate(clock[tvreg]);
 	}
 
 	cpu_time_t irqBefore() {
@@ -45,7 +49,7 @@ namespace APU {
 	}
 
 	void writebus(int elapsed, u16 address, u8 value) {
-		apu.write_register(elapsed, address, ((address == 0x4000 || address == 0x4004) && tvregion == DENDY) ? (((value & 0b01000000) << 1) | ((value & 0b10000000) >> 1) | value & 0b00111111) : value);
+		apu.write_register(elapsed, address, ((address == 0x4000 || address == 0x4004) && 0) ? (((value & 0b01000000) << 1) | ((value & 0b10000000) >> 1) | value & 0b00111111) : value);
 	}
 
 	u8 readbus(int elapsed, u16 address) {

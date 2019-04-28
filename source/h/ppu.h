@@ -145,6 +145,12 @@ namespace PPU {
 			}
 
 
+            if (NMIenabled == 1 && vblank == 1 && NMIsuppresion == 0 && VBLsuppresion == 0) {
+				CPU::NMIoccured = 1;
+				NMIsuppresion = 1;
+				//vblank = 0;
+			}
+
 			//Wyczyszczam OAM2
 			if (dot == 257) {
 				for (int i = 0; i < 256; i++) {
@@ -320,6 +326,10 @@ namespace PPU {
 		// === Post scan (od 240 do 260) ===
 		else if (scanline >= 240) {
 
+            if (NMIenabled == 0) {
+				NMIsuppresion = 0;
+			}
+
 			//Pocz¹tek VBlank oraz NMI
 			if (scanline == 241) {
 
@@ -330,15 +340,13 @@ namespace PPU {
 				}
 
 			}
+
 			if (scanline >= 241 || scanline == -1) {
 
-				if (NMIenabled == 0) {
-					NMIsuppresion = 0;
-				}
-
-				if (((scanline == 241 && dot >= 3) || (scanline > 241) || (scanline == -1 && dot <= 2)) && NMIenabled == 1 && vblank == 1 && NMIsuppresion == 0) {
+				if (((scanline == 241 && dot >= 3) || (scanline > 241) || (scanline == -1 && dot <= 2)) && NMIenabled == 1 && vblank == 1 && NMIsuppresion == 0 && VBLsuppresion == 0) {
 					CPU::NMIoccured = 1;
 					NMIsuppresion = 1;
+					//vblank = 0;
 				}
 
 			}
@@ -406,20 +414,18 @@ namespace PPU {
 		#endif
 
 		//Co drug¹ klatkê video, prescan jest o 1 dot krótszy
-		if (oddframe && scanline == -1 && dot == 339 && renderingEnabled() && (tvregion == NTSC)) {
-			dot = 0;
-			scanline = 0;
-		} else dot++;
+        dot++;
 
-		if (dot > 340) {
+		if (dot > 340 - (oddframe && scanline == -1 && renderingEnabled() && (tvregion == NTSC))) {
 			dot = 0;
 			scanline++;
-		}
-		if (scanline >= scanlines[tvregion]) {
-			scanline = -1;
-			oddframe = !oddframe;
-			frame++;
-			//exit(CPU::cycles);
+
+            if (scanline == scanlines[tvregion] - 1) {
+                scanline = -1;
+                oddframe = !oddframe;
+                frame++;
+                //exit(CPU::cycles);
+            }
 		}
 
 		////
@@ -429,6 +435,22 @@ namespace PPU {
 
 	b renderingEnabled() {
 		return BGenable || SPRenable;
+	}
+
+	void setHori(u8 _v) {
+        V = (V & 0b111111111100000) | (_v & 0b11111);
+	}
+
+    void setVert(u8 _v) {
+        V = (V & 0b000110000011111) | ((_v & 0b111) << 12) | ((_v & 0b11111000) << 5);
+	}
+
+	u8 getHori() {
+        return V & 0b11111;
+	}
+
+    u8 getVert() {
+        return ((V & 0b111) << 12) | ((V & 0b11111000) << 5);
 	}
 
 	u8 fetchPixel(u8 liteColor) {
@@ -639,10 +661,19 @@ namespace PPU {
 					tempvalue = MEM::VRAM[tempv];
 				}
 
-				if (VRAMincrement == 0) {
-					V = (V + 1) & 0x3fff;
-				} else {
-					V = (V + 32) & 0x3fff;
+				//https://wiki.nesdev.com/w/index.php/PPU_scrolling#.242007_reads_and_writes
+                if (scanline >= -1 && scanline <= 239 && renderingEnabled()) {
+                    u8 cX = V & 0b11111;
+                    u8 cY = ((V & 0b111000000000000) >> 12) | ((V & 0b1111100000) >> 2);
+                    cX++, cY++;
+                    V = (V & 0b000110000000000) | cX | ((cY & 0b111) << 12) | ((cY & 0b11111000) << 2);
+				}
+				else {
+                    if (VRAMincrement == 0) {
+                        V = (V + 1) & 0x3fff;
+                    } else {
+                        V = (V + 32) & 0x3fff;
+                    }
 				}
 
 				return tempvalue;
@@ -788,12 +819,28 @@ namespace PPU {
 
 				if (tempv >= 0x2000 * !!(MEM::chrsize) ) { MEM::VRAM[tempv & 0x3fff] = value; }
 
-				if (VRAMincrement == 0) {
-					V = (V + 1) & 0x3fff;
+				//if (VRAMincrement == 0) {
+				//	V = (V + 1) & 0x3fff;
+				//}
+				//else {
+				//	V = (V + 32) & 0x3fff;
+				//}
+
+				//https://wiki.nesdev.com/w/index.php/PPU_scrolling#.242007_reads_and_writes
+                if (scanline >= -1 && scanline <= 239 && renderingEnabled()) {
+                    u8 cX = V & 0b11111;
+                    u8 cY = ((V & 0b111000000000000) >> 12) | ((V & 0b1111100000) >> 2);
+                    cX++, cY++;
+                    V = (V & 0b000110000000000) | cX | ((cY & 0b111) << 12) | ((cY & 0b11111000) << 2);
 				}
 				else {
-					V = (V + 32) & 0x3fff;
+                    if (VRAMincrement == 0) {
+                        V = (V + 1) & 0x3fff;
+                    } else {
+                        V = (V + 32) & 0x3fff;
+                    }
 				}
+
 				break;
 			}
 			default: {

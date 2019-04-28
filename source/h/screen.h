@@ -28,32 +28,38 @@ namespace SCREEN {
 
 	void Screen::rescale() {
 
-		for (int j = (240 - NES_HEIGHT) / 2; j < 240 - (240 - NES_HEIGHT) / 2; j++) {
-			for (int i = (256 - NES_WIDTH) / 2; i < 256 - (256 - NES_WIDTH) / 2; i++) {
+		for (int j = 0; j < 240; j++) {
+			for (int i = 0; i < 256; i++) {
 
 				int index = 6 * (i + 256 * j);
 
 				int offx = (int)((-scale / 2.0) * NES_WIDTH + (window->getSize().x / 2));
-;
+
 				int offy = (int)((-scale / 2.0) * NES_HEIGHT + (window->getSize().y / 2));
 
-				sf::Vector2f origin(scale * (i - (256 - NES_WIDTH) / 2) + offx, scale * (j - (240 - NES_HEIGHT) / 2) + offy);
+				sf::Vector2f *origin;
+                if ( (i >= ((256 - NES_WIDTH) / 2)) && (i < (256 - (256 - NES_WIDTH) / 2)) && (j >= ((240 - NES_HEIGHT) / 2)) && (j < (240 - (240 - NES_HEIGHT) / 2)) )
+				origin = new sf::Vector2f(scale * (i - (256 - NES_WIDTH) / 2) + offx, scale * (j - (240 - NES_HEIGHT) / 2) + offy);
+                else
+                origin = new sf::Vector2f(-scale, -scale);
 
 				//Jeden piksel jest kwadratem sk³adaj¹cym siê z dwóch trójk¹tów
 
-				pixel[index].position		= origin;
+				pixel[index].position		= *origin;
 				pixel[index].color			= sf::Color(PPU::colors[0]);
-				pixel[index + 1].position	= origin + sf::Vector2f(scale, 0);
+				pixel[index + 1].position	= *origin + sf::Vector2f(scale, 0);
 				pixel[index + 1].color		= sf::Color(PPU::colors[0]);
-				pixel[index + 2].position	= origin + sf::Vector2f(scale, scale);
+				pixel[index + 2].position	= *origin + sf::Vector2f(scale, scale);
 				pixel[index + 2].color		= sf::Color(PPU::colors[0]);
 
-				pixel[index + 3].position	= origin + sf::Vector2f(scale, scale);
+				pixel[index + 3].position	= *origin + sf::Vector2f(scale, scale);
 				pixel[index + 3].color		= sf::Color(PPU::colors[0]);
-				pixel[index + 4].position	= origin + sf::Vector2f(0, scale);
+				pixel[index + 4].position	= *origin + sf::Vector2f(0, scale);
 				pixel[index + 4].color		= sf::Color(PPU::colors[0]);
-				pixel[index + 5].position	= origin;
+				pixel[index + 5].position	= *origin;
 				pixel[index + 5].color		= sf::Color(PPU::colors[0]);
+
+				delete origin;
 			}
 		}
 
