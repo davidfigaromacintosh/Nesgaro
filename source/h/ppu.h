@@ -3,7 +3,7 @@
 namespace PPU {
 
 	void init() {
-		dot = 0;
+		dot = 30;
 		scanline = 0;
 		oddframe = 0;
 		frame = 1;
@@ -86,7 +86,7 @@ namespace PPU {
 
 		readbuffer = 0;
 
-		dot = 0;
+		dot = 30;
 		scanline = 0;
 		oddframe = 0;
 		frame = 1;
