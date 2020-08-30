@@ -2,10 +2,10 @@
 
 ![alt text][logo]
 
-# **WHAT IS NESGARO?**
+# **OwO What's this?**
 Well, as the name tells, it's just a regular NES emulator.
 
-**SUPPORTED MAPPERS:**
+**Supported mappers:**
 
 -Mapper #0 NROM
 
@@ -32,5 +32,11 @@ Well, as the name tells, it's just a regular NES emulator.
 -Mapper #228 Action 52 / Cheetahmen II
 
 -Mapper #232 Camerica Quattro
+
+**Third-party modules:**
+
+Graphics: https://www.sfml-dev.org/
+
+Audio engine: https://www.slack.net/~ant/libs/audio.html#Blip_Buffer
 
 ###### Work in progress...
