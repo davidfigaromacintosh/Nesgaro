@@ -2,11 +2,27 @@
 
 ![alt text][logo]
 
-# **OwO What's this?**
+# OwO What's this?
 Well, as the name tells, it's just a regular NES emulator.
 
-**Supported mappers:**
+## Keyboard mapping...
+Arrows: (D-PAD)
 
+X - (A)
+
+Z - (B)
+
+Spacebar - (START)
+
+Enter - (SELECT)
+
+R - Soft reset
+
+T - Hard reset
+
+P - NTSC/PAL switch
+
+## Supported mappers...
 -Mapper #0 NROM
 
 -Mapper #1 SxROM MMC1
@@ -33,8 +49,7 @@ Well, as the name tells, it's just a regular NES emulator.
 
 -Mapper #232 Camerica Quattro
 
-**Third-party modules:**
-
+## Third-party libraries...
 Graphics: https://www.sfml-dev.org/
 
 Audio engine: https://www.slack.net/~ant/libs/audio.html#Blip_Buffer
