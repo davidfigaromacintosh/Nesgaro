@@ -6,7 +6,7 @@
 Well, as the name tells, it's just a regular NES emulator.
 
 ## Keyboard mapping...
-Arrows: (D-PAD)
+Arrows - (D-PAD)
 
 X - (A)
 
